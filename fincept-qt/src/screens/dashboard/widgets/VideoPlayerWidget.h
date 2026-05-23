@@ -7,6 +7,7 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QStackedWidget>
+#include <QString>
 
 #ifdef HAS_QT_MULTIMEDIA
 #    include <QAudioOutput>

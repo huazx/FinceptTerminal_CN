@@ -139,6 +139,10 @@ void NewsFeedDelegate::paint_wire_row(QPainter* painter, const QRect& rect, cons
     const QString tickers_str = index.data(FormattedTickersRole).toString();
     const QString threat_color = index.data(ThreatColorRole).toString();
 
+    // Use Chinese headline if available
+    QString headline_zh = index.data(HeadlineZhRole).toString();
+    const QString& display_headline = headline_zh.isEmpty() ? article.headline : headline_zh;
+
     // Source name
     painter->setFont(bold_font_);
     painter->setPen(QColor(ui::colors::CYAN()));
@@ -171,7 +175,7 @@ void NewsFeedDelegate::paint_wire_row(QPainter* painter, const QRect& rect, cons
     int headline_width = rect.right() - x - right_reserve;
     if (headline_width > 0) {
         QFontMetrics& fm = is_hot ? bold_fm_ : data_fm_;
-        QString elided = fm.elidedText(article.headline, Qt::ElideRight, headline_width);
+        QString elided = fm.elidedText(display_headline, Qt::ElideRight, headline_width);
         painter->drawText(QRect(x, rect.top(), headline_width, rect.height()), Qt::AlignVCenter | Qt::AlignLeft,
                           elided);
     }

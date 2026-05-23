@@ -32,7 +32,7 @@ void PortfolioHeatmap::build_ui() {
     layout->setSpacing(0);
 
     // Unified panel header — HOLDINGS title + 3 mode buttons in the controls slot.
-    auto header = make_panel_header("HOLDINGS", this);
+    auto header = make_panel_header(tr("HOLDINGS"), this);
 
     auto make_mode_btn = [&header](const QString& text) {
         auto* btn = new QPushButton(text);
@@ -50,9 +50,9 @@ void PortfolioHeatmap::build_ui() {
         return btn;
     };
 
-    pnl_btn_ = make_mode_btn("PNL");
-    weight_btn_ = make_mode_btn("WT");
-    day_btn_ = make_mode_btn("DAY");
+    pnl_btn_ = make_mode_btn(tr("PNL"));
+    weight_btn_ = make_mode_btn(tr("WT"));
+    day_btn_ = make_mode_btn(tr("DAY"));
     pnl_btn_->setChecked(true);
 
     auto set_mode = [this](portfolio::HeatmapMode m) {
@@ -107,7 +107,7 @@ void PortfolioHeatmap::build_ui() {
     movers_sep->setStyleSheet(QString("background:%1;").arg(ui::colors::BORDER_DIM()));
     layout->addWidget(movers_sep);
 
-    auto* movers_header = new QLabel("TOP MOVERS");
+    auto* movers_header = new QLabel(tr("TOP MOVERS"));
     movers_header->setStyleSheet(
         QString("color:%1; font-size:10px; font-weight:700; letter-spacing:1px;"
                 "  padding-top:4px;")

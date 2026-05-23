@@ -25,7 +25,7 @@ NewsSidePanel::NewsSidePanel(QWidget* parent) : QWidget(parent) {
     header_layout->setContentsMargins(10, 0, 6, 0);
     header_layout->setSpacing(0);
 
-    auto* title = new QLabel("INTELLIGENCE", header);
+    auto* title = new QLabel(tr("INTELLIGENCE"), header);
     title->setObjectName("newsDrawerTitle");
     header_layout->addWidget(title);
     header_layout->addStretch();
@@ -78,12 +78,12 @@ NewsSidePanel::NewsSidePanel(QWidget* parent) : QWidget(parent) {
         return section;
     };
 
-    entities_section_ = build_hidden_section("ENTITIES", entities_layout_);
-    locations_section_ = build_hidden_section("LOCATIONS", locations_layout_);
-    signals_section_ = build_hidden_section("SIGNALS", signals_layout_);
-    cii_section_ = build_hidden_section("INSTABILITY", cii_layout_);
-    predictions_section_ = build_hidden_section("PREDICTIONS", predictions_layout_);
-    saved_section_ = build_hidden_section("BOOKMARKS", saved_layout_);
+    entities_section_ = build_hidden_section(tr("ENTITIES"), entities_layout_);
+    locations_section_ = build_hidden_section(tr("LOCATIONS"), locations_layout_);
+    signals_section_ = build_hidden_section(tr("SIGNALS"), signals_layout_);
+    cii_section_ = build_hidden_section(tr("INSTABILITY"), cii_layout_);
+    predictions_section_ = build_hidden_section(tr("PREDICTIONS"), predictions_layout_);
+    saved_section_ = build_hidden_section(tr("BOOKMARKS"), saved_layout_);
 
     layout->addStretch();
     scroll->setWidget(content);
@@ -96,7 +96,7 @@ void NewsSidePanel::toggle_drawer() {
 }
 
 void NewsSidePanel::build_top_stories_section(QVBoxLayout* parent) {
-    auto* title = new QLabel("TOP STORIES", this);
+    auto* title = new QLabel(tr("TOP STORIES"), this);
     title->setObjectName("newsDrawerSectionTitle");
     parent->addWidget(title);
 
@@ -108,7 +108,7 @@ void NewsSidePanel::build_top_stories_section(QVBoxLayout* parent) {
 }
 
 void NewsSidePanel::build_categories_section(QVBoxLayout* parent) {
-    auto* title = new QLabel("CATEGORIES", this);
+    auto* title = new QLabel(tr("CATEGORIES"), this);
     title->setObjectName("newsDrawerSectionTitle");
     parent->addWidget(title);
 
@@ -120,7 +120,7 @@ void NewsSidePanel::build_categories_section(QVBoxLayout* parent) {
 }
 
 void NewsSidePanel::build_monitors_section(QVBoxLayout* parent) {
-    auto* title = new QLabel("KEYWORD MONITORS", this);
+    auto* title = new QLabel(tr("KEYWORD MONITORS"), this);
     title->setObjectName("newsDrawerSectionTitle");
     parent->addWidget(title);
 
@@ -138,7 +138,7 @@ void NewsSidePanel::build_monitors_section(QVBoxLayout* parent) {
 
     monitor_input_ = new QLineEdit(add_row);
     monitor_input_->setObjectName("newsMonitorInput");
-    monitor_input_->setPlaceholderText("label: kw1, kw2");
+    monitor_input_->setPlaceholderText(tr("label: kw1, kw2"));
     monitor_input_->setFixedHeight(22);
 
     auto* add_btn = new QPushButton("+", add_row);
@@ -180,7 +180,7 @@ void NewsSidePanel::build_deviations_section(QVBoxLayout* parent) {
     inner->setContentsMargins(0, 0, 0, 0);
     inner->setSpacing(2);
 
-    auto* title = new QLabel("DEVIATIONS", deviations_section_);
+    auto* title = new QLabel(tr("DEVIATIONS"), deviations_section_);
     title->setObjectName("newsDrawerSectionTitle");
     inner->addWidget(title);
 
@@ -283,7 +283,7 @@ void NewsSidePanel::update_monitors(const QVector<services::NewsMonitor>& monito
         hl->addWidget(label, 1);
 
         // Toggle button
-        auto* toggle = new QPushButton(monitor.enabled ? "ON" : "OFF", this);
+        auto* toggle = new QPushButton(monitor.enabled ? tr("ON") : tr("OFF"), this);
         toggle->setObjectName(monitor.enabled ? "newsMonitorToggleOn" : "newsMonitorToggleOff");
         toggle->setFixedSize(28, 18);
         toggle->setCursor(Qt::PointingHandCursor);

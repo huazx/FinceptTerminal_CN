@@ -72,7 +72,7 @@ class NewsScreen : public QWidget, public IStatefulScreen, public IGroupLinked {
     void on_monitor_toggled(const QString& id);
     void on_monitor_deleted(const QString& id);
 
-    void on_analyze_requested(const QString& url);
+    void on_analyze_requested(const QString& headline, const QString& summary);
     void on_related_clicked(const services::NewsArticle& article);
 
     void on_drawer_toggle();

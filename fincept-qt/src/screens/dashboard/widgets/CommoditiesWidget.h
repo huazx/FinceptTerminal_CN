@@ -1,16 +1,23 @@
 #pragma once
 #include "screens/dashboard/widgets/QuoteTableWidget.h"
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 namespace fincept::screens::widgets {
 
-/// Commodities widget — fetches 8 major commodities via yfinance.
 inline QuoteTableWidget* create_commodities_widget(QWidget* parent = nullptr) {
     QMap<QString, QString> labels = {
-        {"GC=F", "Gold"},    {"SI=F", "Silver"}, {"CL=F", "Crude WTI"}, {"BZ=F", "Brent"},
-        {"NG=F", "Nat Gas"}, {"HG=F", "Copper"}, {"PL=F", "Platinum"},  {"PA=F", "Palladium"},
+        {"GC=F", QCoreApplication::translate("MarketSymbol", "Gold")},
+        {"SI=F", QCoreApplication::translate("MarketSymbol", "Silver")},
+        {"CL=F", QCoreApplication::translate("MarketSymbol", "WTI Crude")},
+        {"BZ=F", QCoreApplication::translate("MarketSymbol", "Brent Crude")},
+        {"NG=F", QCoreApplication::translate("MarketSymbol", "Natural Gas")},
+        {"HG=F", QCoreApplication::translate("MarketSymbol", "Copper")},
+        {"PL=F", QCoreApplication::translate("MarketSymbol", "Platinum")},
+        {"PA=F", QCoreApplication::translate("MarketSymbol", "Palladium")},
     };
-    return new QuoteTableWidget("COMMODITIES", services::MarketDataService::commodity_symbols(), labels, 2,
+    return new QuoteTableWidget(QCoreApplication::translate("CommoditiesWidget", "COMMODITIES"), 
+                                services::MarketDataService::commodity_symbols(), labels, 2,
                                 ui::colors::WARNING(), parent);
 }
 

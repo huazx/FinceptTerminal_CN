@@ -529,13 +529,15 @@ void NewsScreen::on_monitor_deleted(const QString& id) {
     update_monitors();
 }
 
-void NewsScreen::on_analyze_requested(const QString& url) {
+void NewsScreen::on_analyze_requested(const QString& headline, const QString& summary) {
     QPointer<NewsScreen> self = this;
-    services::NewsService::instance().analyze_article(url, [self](bool ok, services::NewsAnalysis analysis) {
+    services::NewsService::instance().analyze_article(headline, summary, [self](bool ok, services::NewsAnalysis analysis, const QString& error) {
         if (!self)
             return;
         if (ok)
             self->detail_panel_->show_analysis(analysis);
+        else
+            self->detail_panel_->show_analysis_failed(error);
     });
 }
 

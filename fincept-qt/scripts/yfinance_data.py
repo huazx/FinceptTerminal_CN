@@ -9,6 +9,15 @@ import json
 import yfinance as yf
 import pandas as pd
 from datetime import datetime
+import logging
+
+# Configure logging to stderr so it doesn't corrupt JSON output
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    stream=sys.stderr
+)
+logger = logging.getLogger(__name__)
 
 def get_quote(symbol):
     """Fetch real-time quote for a single symbol"""
@@ -245,6 +254,7 @@ def get_batch_quotes(symbols):
     """Fetch quotes for multiple symbols at once using yfinance batch download"""
     try:
         import io, contextlib
+        logger.info(f"Fetching quotes for {len(symbols)} symbols")
         # Suppress any stdout noise from yfinance (progress bars, deprecation notices)
         # that would corrupt the JSON output parsed by the host
         _buf = io.StringIO()
@@ -253,6 +263,7 @@ def get_batch_quotes(symbols):
             data = yf.download(symbols, period="5d", group_by='ticker', progress=False, threads=True, auto_adjust=True)
 
         if data is None or data.empty:
+            logger.warning(f"yf.download returned empty data for symbols: {symbols[:5]}...")
             return []
 
         results = []
@@ -272,14 +283,17 @@ def get_batch_quotes(symbols):
                         # (Price, Ticker) ordering
                         hist = data.xs(symbol, axis=1, level=1)
                     else:
+                        logger.warning(f"Symbol {symbol} not found in downloaded data")
                         continue
 
                 if hist.empty or hist.dropna(how='all').empty:
+                    logger.warning(f"Empty history for {symbol}")
                     continue
 
                 hist = hist.dropna(how='all')
                 raw_price = hist['Close'].iloc[-1]
                 if pd.isna(raw_price):
+                    logger.warning(f"NaN price for {symbol}")
                     continue
                 current_price = float(raw_price)
                 # Use previous trading day close for accurate daily change.
@@ -302,17 +316,21 @@ def get_batch_quotes(symbols):
                     "timestamp": int(datetime.now().timestamp()),
                     "exchange": ""
                 })
-            except Exception:
+            except Exception as e:
+                logger.error(f"Error processing {symbol}: {e}")
                 continue
 
+        logger.info(f"Successfully fetched {len(results)}/{len(symbols)} quotes")
         return results
     except Exception as e:
+        logger.error(f"Batch quotes failed, falling back to individual fetches: {e}")
         # Fallback: fetch one by one
         results = []
         for symbol in symbols:
             quote = get_quote(symbol)
             if quote and "error" not in quote:
                 results.append(quote)
+        logger.info(f"Fallback: fetched {len(results)}/{len(symbols)} quotes")
         return results
 
 def get_batch_sparklines(symbols, period="5d", interval="1h"):
@@ -378,18 +396,22 @@ def get_batch_all(payload):
       }
     Any family absent from `payload` is omitted from the result.
     """
+    logger.info(f"get_batch_all called with payload keys: {list(payload.keys())}")
     out = {}
 
     quote_syms = payload.get("quotes") or []
     if quote_syms:
+        logger.info(f"Fetching {len(quote_syms)} quotes")
         out["quotes"] = get_batch_quotes(quote_syms)
 
     spark_syms = payload.get("sparklines") or []
     if spark_syms:
+        logger.info(f"Fetching {len(spark_syms)} sparklines")
         out["sparklines"] = get_batch_sparklines(spark_syms)
 
     hist_reqs = payload.get("histories") or []
     if hist_reqs:
+        logger.info(f"Fetching {len(hist_reqs)} histories")
         histories = []
         for req in hist_reqs:
             try:
@@ -406,6 +428,7 @@ def get_batch_all(payload):
                     "points": points if isinstance(points, list) else [],
                 })
             except Exception as e:
+                logger.error(f"Error fetching history for {req.get('symbol')}: {e}")
                 histories.append({
                     "symbol": req.get("symbol", ""),
                     "period": req.get("period", ""),
@@ -415,6 +438,7 @@ def get_batch_all(payload):
                 })
         out["histories"] = histories
 
+    logger.info(f"get_batch_all complete: {len(out.get('quotes', []))} quotes, {len(out.get('sparklines', {}))} sparklines, {len(out.get('histories', []))} histories")
     return out
 
 

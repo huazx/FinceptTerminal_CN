@@ -4,6 +4,7 @@
 #include "datahub/DataHubMetaTypes.h"
 #include "trading/TradingTypes.h"
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #include <QComboBox>
 #include <QDialog>
@@ -18,13 +19,13 @@
 namespace fincept::screens::widgets {
 
 TradeTapeWidget::TradeTapeWidget(const QJsonObject& cfg, QWidget* parent)
-    : BaseWidget("TRADES", parent) {
+    : BaseWidget(QCoreApplication::translate("TradeTapeWidget", "TRADES"), parent) {
     auto* vl = content_layout();
     vl->setContentsMargins(8, 6, 8, 6);
     vl->setSpacing(4);
 
     table_ = new QTableWidget(0, 3, this);
-    table_->setHorizontalHeaderLabels({"Time", "Price", "Size"});
+    table_->setHorizontalHeaderLabels({QCoreApplication::translate("TradeTapeWidget", "Time"), QCoreApplication::translate("TradeTapeWidget", "Price"), QCoreApplication::translate("TradeTapeWidget", "Size")});
     table_->verticalHeader()->setVisible(false);
     table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     table_->setSelectionMode(QAbstractItemView::NoSelection);
@@ -128,23 +129,23 @@ void TradeTapeWidget::render() {
 
 QDialog* TradeTapeWidget::make_config_dialog(QWidget* parent) {
     auto* dlg = new QDialog(parent);
-    dlg->setWindowTitle("Configure — Trades");
+    dlg->setWindowTitle(QCoreApplication::translate("TradeTapeWidget", "Configure — Trades"));
     auto* form = new QFormLayout(dlg);
 
     auto* ex = new QComboBox(dlg);
     ex->addItems({"kraken", "hyperliquid"});
     ex->setCurrentText(exchange_);
-    form->addRow("Exchange", ex);
+    form->addRow(QCoreApplication::translate("TradeTapeWidget", "Exchange"), ex);
 
     auto* pair = new QLineEdit(dlg);
     pair->setText(pair_);
-    pair->setPlaceholderText("e.g. BTC/USD");
-    form->addRow("Pair", pair);
+    pair->setPlaceholderText(QCoreApplication::translate("TradeTapeWidget", "e.g. BTC/USD"));
+    form->addRow(QCoreApplication::translate("TradeTapeWidget", "Pair"), pair);
 
     auto* spin = new QSpinBox(dlg);
     spin->setRange(5, 200);
     spin->setValue(max_rows_);
-    form->addRow("Max rows", spin);
+    form->addRow(QCoreApplication::translate("TradeTapeWidget", "Max rows"), spin);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, dlg);
     form->addRow(buttons);

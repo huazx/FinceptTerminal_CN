@@ -43,6 +43,10 @@ const QList<CredDef> CRED_KEYS = {
     {"POLYMARKET_SECRET",     "Polymarket Secret"},
     {"POLYMARKET_PASSPHRASE", "Polymarket Passphrase"},
     {"POLYMARKET_WALLET",     "Polymarket Wallet Address"},
+    {"BAIDU_TRANSLATE_APPID", "Baidu Translate APP ID"},
+    {"BAIDU_TRANSLATE_KEY",   "Baidu Translate Key"},
+    {"TENCENT_SECRET_ID",    "Tencent Secret ID"},
+    {"TENCENT_SECRET_KEY",   "Tencent Secret Key"},
 };
 
 } // namespace

@@ -3,6 +3,7 @@
 #include "datahub/DataHub.h"
 #include "services/geopolitics/GeopoliticsTypes.h"
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -33,7 +34,7 @@ QString format_relative(const QString& iso) {
 } // namespace
 
 GeopoliticsEventsWidget::GeopoliticsEventsWidget(const QJsonObject& cfg, QWidget* parent)
-    : BaseWidget("GEOPOLITICS EVENTS", parent, ui::colors::NEGATIVE()) {
+    : BaseWidget(QCoreApplication::translate("GeopoliticsEventsWidget", "GEOPOLITICS EVENTS"), parent, ui::colors::NEGATIVE()) {
     auto* vl = content_layout();
     vl->setContentsMargins(0, 0, 0, 0);
     vl->setSpacing(0);
@@ -49,11 +50,11 @@ GeopoliticsEventsWidget::GeopoliticsEventsWidget(const QJsonObject& cfg, QWidget
         header_labels_.append(lbl);
         hl->addWidget(lbl, stretch);
     };
-    make_hdr("CAT", 1);
-    make_hdr("EVENT", 5);
-    make_hdr("LOCATION", 2);
-    make_hdr("SRC", 1);
-    make_hdr("AGE", 1, Qt::AlignRight);
+    make_hdr(QCoreApplication::translate("GeopoliticsEventsWidget", "CAT"), 1);
+    make_hdr(QCoreApplication::translate("GeopoliticsEventsWidget", "EVENT"), 5);
+    make_hdr(QCoreApplication::translate("GeopoliticsEventsWidget", "LOCATION"), 2);
+    make_hdr(QCoreApplication::translate("GeopoliticsEventsWidget", "SRC"), 1);
+    make_hdr(QCoreApplication::translate("GeopoliticsEventsWidget", "AGE"), 1, Qt::AlignRight);
     vl->addWidget(header_widget_);
 
     header_sep_ = new QFrame;
@@ -70,7 +71,7 @@ GeopoliticsEventsWidget::GeopoliticsEventsWidget(const QJsonObject& cfg, QWidget
     list_layout_->setContentsMargins(0, 0, 0, 0);
     list_layout_->setSpacing(0);
 
-    status_label_ = new QLabel("Loading…");
+    status_label_ = new QLabel(QCoreApplication::translate("GeopoliticsEventsWidget", "Loading…"));
     status_label_->setAlignment(Qt::AlignCenter);
     list_layout_->addWidget(status_label_);
     list_layout_->addStretch();
@@ -146,7 +147,7 @@ void GeopoliticsEventsWidget::populate(const QVariant& payload) {
     using fincept::services::geo::EventsPage;
     if (!payload.canConvert<EventsPage>()) {
         clear_rows();
-        status_label_ = new QLabel("Awaiting events…");
+        status_label_ = new QLabel(QCoreApplication::translate("GeopoliticsEventsWidget", "Awaiting events…"));
         status_label_->setAlignment(Qt::AlignCenter);
         status_label_->setStyleSheet(QString("color:%1;font-size:10px;padding:16px;background:transparent;")
                                          .arg(ui::colors::TEXT_TERTIARY()));
@@ -159,7 +160,7 @@ void GeopoliticsEventsWidget::populate(const QVariant& payload) {
     clear_rows();
 
     if (page.events.isEmpty()) {
-        status_label_ = new QLabel("No events available");
+        status_label_ = new QLabel(QCoreApplication::translate("GeopoliticsEventsWidget", "No events available"));
         status_label_->setAlignment(Qt::AlignCenter);
         status_label_->setStyleSheet(QString("color:%1;font-size:10px;padding:16px;background:transparent;")
                                          .arg(ui::colors::TEXT_TERTIARY()));
@@ -252,13 +253,13 @@ void GeopoliticsEventsWidget::populate(const QVariant& payload) {
 
 QDialog* GeopoliticsEventsWidget::make_config_dialog(QWidget* parent) {
     auto* dlg = new QDialog(parent);
-    dlg->setWindowTitle("Configure — Geopolitics Events");
+    dlg->setWindowTitle(QCoreApplication::translate("GeopoliticsEventsWidget", "Configure — Geopolitics Events"));
     auto* form = new QFormLayout(dlg);
 
     auto* spin = new QSpinBox(dlg);
     spin->setRange(5, 100);
     spin->setValue(max_rows_);
-    form->addRow("Max rows", spin);
+    form->addRow(QCoreApplication::translate("GeopoliticsEventsWidget", "Max rows"), spin);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, dlg);
     form->addRow(buttons);

@@ -320,6 +320,11 @@ QString LlmService::get_endpoint_url() const {
             base.chop(1);
         if (p == "anthropic")
             return base + "/v1/messages";
+        if (p == "openai_compatible") {
+            if (base.endsWith("/chat/completions"))
+                return base;
+            return base + "/chat/completions";
+        }
         return base + "/v1/chat/completions";
     }
 
@@ -408,6 +413,11 @@ LlmResponse LlmService::do_request(const QString& user_message, const std::vecto
     }
 
     LOG_DEBUG(kLlmSvcTag, QString("POST %1 provider=%2 model=%3").arg(url, provider_, model_));
+    if (api_key_.isEmpty())
+        LOG_WARN(kLlmSvcTag, "API key is empty — request will likely fail with auth error");
+    else
+        LOG_DEBUG(kLlmSvcTag, QString("API key present (len=%1, prefix=%2)")
+            .arg(api_key_.length()).arg(api_key_.left(qMin(8, api_key_.length())) + "..."));
 
     auto http = blocking_post(url, req_body, hdr);
 

@@ -36,14 +36,6 @@ LoadingOverlay::LoadingOverlay(QWidget* parent) : QWidget(parent) {
     setAttribute(Qt::WA_NoSystemBackground, true);
     setAttribute(Qt::WA_TranslucentBackground, true);
     setFocusPolicy(Qt::NoFocus);
-    setVisible(false);
-
-    // QGraphicsOpacityEffect was previously used here. Removed: on Qt6 the
-    // effect forces an offscreen render pass + composite on every paint even
-    // when opacity is 1.0, which adds ~ms per frame per overlay. With ~30
-    // dashboard widgets each owning an overlay this dominated paint time on
-    // low-end GPUs. We now apply opacity directly via QPainter::setOpacity
-    // in paintEvent and drive it through the `fadeOpacity` Q_PROPERTY.
 
     shimmer_anim_ = new QPropertyAnimation(this, "shimmerPhase", this);
     shimmer_anim_->setDuration(kShimmerPeriodMs);
@@ -58,7 +50,6 @@ LoadingOverlay::LoadingOverlay(QWidget* parent) : QWidget(parent) {
     fade_anim_ = new QPropertyAnimation(this, "fadeOpacity", this);
     fade_anim_->setDuration(kFadeMs);
     connect(fade_anim_, &QPropertyAnimation::finished, this, [this]() {
-        // If we faded out, actually hide so we stop drawing on top.
         if (fade_opacity_ <= 0.001) {
             setVisible(false);
             stop_shimmer();
@@ -67,6 +58,9 @@ LoadingOverlay::LoadingOverlay(QWidget* parent) : QWidget(parent) {
 
     connect(&ui::ThemeManager::instance(), &ui::ThemeManager::theme_changed, this,
             [this](const ui::ThemeTokens&) { update(); });
+
+    constructed_ = true;
+    QWidget::hide();
 }
 
 void LoadingOverlay::attach_to(QWidget* target) {
@@ -183,10 +177,13 @@ void LoadingOverlay::start_shimmer() {
 }
 
 void LoadingOverlay::stop_shimmer() {
-    shimmer_anim_->stop();
+    if (shimmer_anim_)
+        shimmer_anim_->stop();
 }
 
 void LoadingOverlay::fade_in() {
+    if (!fade_anim_)
+        return;
     fade_anim_->stop();
     fade_anim_->setStartValue(fade_opacity_);
     fade_anim_->setEndValue(1.0);
@@ -194,6 +191,8 @@ void LoadingOverlay::fade_in() {
 }
 
 void LoadingOverlay::fade_out_and_hide() {
+    if (!fade_anim_)
+        return;
     fade_anim_->stop();
     fade_anim_->setStartValue(fade_opacity_);
     fade_anim_->setEndValue(0.0);
@@ -213,7 +212,8 @@ void LoadingOverlay::showEvent(QShowEvent* e) {
 
 void LoadingOverlay::hideEvent(QHideEvent* e) {
     QWidget::hideEvent(e);
-    stop_shimmer();
+    if (constructed_)
+        stop_shimmer();
 }
 
 void LoadingOverlay::sync_geometry() {

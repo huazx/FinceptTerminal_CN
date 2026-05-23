@@ -79,9 +79,9 @@ void CustomIndexView::build_ui() {
                              .arg(ui::colors::BG_BASE(), ui::colors::BG_SURFACE(), ui::colors::TEXT_SECONDARY(),
                                   ui::colors::AMBER(), ui::colors::TEXT_PRIMARY()));
 
-    tabs_->addTab(build_create_panel(), "CREATE INDEX");
-    tabs_->addTab(build_index_list_panel(), "MY INDICES");
-    tabs_->addTab(build_performance_panel(), "PERFORMANCE");
+    tabs_->addTab(build_create_panel(), tr("CREATE INDEX"));
+    tabs_->addTab(build_index_list_panel(), tr("MY INDICES"));
+    tabs_->addTab(build_performance_panel(), tr("PERFORMANCE"));
 
     layout->addWidget(tabs_);
 }
@@ -92,7 +92,7 @@ QWidget* CustomIndexView::build_create_panel() {
     layout->setContentsMargins(16, 12, 16, 12);
     layout->setSpacing(10);
 
-    auto* title = new QLabel("CREATE CUSTOM INDEX");
+    auto* title = new QLabel(tr("CREATE CUSTOM INDEX"));
     title->setStyleSheet(
         QString("color:%1; font-size:12px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     layout->addWidget(title);
@@ -109,7 +109,7 @@ QWidget* CustomIndexView::build_create_panel() {
     };
 
     name_edit_ = new QLineEdit;
-    name_edit_->setPlaceholderText("My Custom Index");
+    name_edit_->setPlaceholderText(tr("My Custom Index"));
     name_edit_->setFixedSize(160, 24);
     name_edit_->setStyleSheet(input_style());
     add_field("NAME:", name_edit_);
@@ -131,7 +131,7 @@ QWidget* CustomIndexView::build_create_panel() {
 
     config->addStretch();
 
-    create_btn_ = new QPushButton("CREATE INDEX");
+    create_btn_ = new QPushButton(tr("CREATE INDEX"));
     create_btn_->setFixedHeight(26);
     create_btn_->setCursor(Qt::PointingHandCursor);
     create_btn_->setStyleSheet(QString("QPushButton { background:%1; color:%3; border:none;"
@@ -159,14 +159,14 @@ QWidget* CustomIndexView::build_create_panel() {
     layout->addWidget(create_status_);
 
     // Constituents table header
-    auto* const_title = new QLabel("CONSTITUENTS (from portfolio holdings)");
+    auto* const_title = new QLabel(tr("CONSTITUENTS (from portfolio holdings)"));
     const_title->setStyleSheet(
         QString("color:%1; font-size:10px; font-weight:700; letter-spacing:0.5px;").arg(ui::colors::TEXT_SECONDARY()));
     layout->addWidget(const_title);
 
     const_table_ = new QTableWidget;
     const_table_->setColumnCount(5);
-    const_table_->setHorizontalHeaderLabels({"INCLUDE", "SYMBOL", "PRICE", "WEIGHT", "MKT VALUE"});
+    const_table_->setHorizontalHeaderLabels({tr("INCLUDE"), tr("SYMBOL"), tr("PRICE"), tr("WEIGHT"), tr("MKT VALUE")});
     const_table_->setSelectionMode(QAbstractItemView::NoSelection);
     const_table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     const_table_->setShowGrid(false);
@@ -186,13 +186,13 @@ QWidget* CustomIndexView::build_index_list_panel() {
 
     // Header row
     auto* header_row = new QHBoxLayout;
-    auto* title = new QLabel("MY CUSTOM INDICES");
+    auto* title = new QLabel(tr("MY CUSTOM INDICES"));
     title->setStyleSheet(
         QString("color:%1; font-size:12px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     header_row->addWidget(title);
     header_row->addStretch();
 
-    delete_btn_ = new QPushButton("DELETE SELECTED");
+    delete_btn_ = new QPushButton(tr("DELETE SELECTED"));
     delete_btn_->setFixedHeight(26);
     delete_btn_->setCursor(Qt::PointingHandCursor);
     delete_btn_->setStyleSheet(QString("QPushButton { background:%1; color:%2; border:none;"
@@ -205,7 +205,7 @@ QWidget* CustomIndexView::build_index_list_panel() {
 
     index_list_table_ = new QTableWidget;
     index_list_table_->setColumnCount(6);
-    index_list_table_->setHorizontalHeaderLabels({"NAME", "METHOD", "BASE", "CURRENT VALUE", "CHANGE", "CREATED"});
+    index_list_table_->setHorizontalHeaderLabels({tr("NAME"), tr("METHOD"), tr("BASE"), tr("CURRENT VALUE"), tr("CHANGE"), tr("CREATED")});
     index_list_table_->setSelectionMode(QAbstractItemView::SingleSelection);
     index_list_table_->setSelectionBehavior(QAbstractItemView::SelectRows);
     index_list_table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -226,7 +226,7 @@ QWidget* CustomIndexView::build_index_list_panel() {
     layout->addWidget(index_list_table_, 1);
 
     list_empty_msg_ =
-        new QLabel("No custom indices created yet.\nGo to CREATE INDEX tab to build one from your portfolio.");
+        new QLabel(tr("No custom indices created yet.\nGo to CREATE INDEX tab to build one from your portfolio."));
     list_empty_msg_->setAlignment(Qt::AlignCenter);
     list_empty_msg_->setStyleSheet(QString("color:%1; font-size:11px; padding:40px;").arg(ui::colors::TEXT_TERTIARY()));
     layout->addWidget(list_empty_msg_);
@@ -240,7 +240,7 @@ QWidget* CustomIndexView::build_performance_panel() {
     layout->setContentsMargins(16, 12, 16, 12);
     layout->setSpacing(8);
 
-    perf_title_ = new QLabel("INDEX PERFORMANCE");
+    perf_title_ = new QLabel(tr("INDEX PERFORMANCE"));
     perf_title_->setStyleSheet(
         QString("color:%1; font-size:12px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     layout->addWidget(perf_title_);
@@ -248,7 +248,7 @@ QWidget* CustomIndexView::build_performance_panel() {
     perf_stack_ = new QStackedWidget;
 
     // Page 0 — placeholder
-    auto* placeholder = new QLabel("Select an index from MY INDICES to see its performance.");
+    auto* placeholder = new QLabel(tr("Select an index from MY INDICES to see its performance."));
     placeholder->setAlignment(Qt::AlignCenter);
     placeholder->setStyleSheet(QString("color:%1; font-size:11px; padding:40px;").arg(ui::colors::TEXT_TERTIARY()));
     perf_stack_->addWidget(placeholder);
@@ -324,7 +324,7 @@ void CustomIndexView::create_index() {
 
     const double base = base_edit_->text().toDouble();
     if (base <= 0.0) {
-        create_status_->setText("Base value must be positive.");
+        create_status_->setText(tr("Base value must be positive."));
         create_status_->setStyleSheet(QString("color:%1; font-size:9px;").arg(ui::colors::NEGATIVE()));
         create_status_->show();
         return;
@@ -355,7 +355,7 @@ void CustomIndexView::create_index() {
     }
 
     if (constituents.isEmpty()) {
-        create_status_->setText("Select at least one constituent.");
+        create_status_->setText(tr("Select at least one constituent."));
         create_status_->setStyleSheet(QString("color:%1; font-size:9px;").arg(ui::colors::NEGATIVE()));
         create_status_->show();
         return;
@@ -387,7 +387,7 @@ void CustomIndexView::create_index() {
     const QString today = QDateTime::currentDateTime().toString("yyyy-MM-dd");
     CustomIndexRepository::instance().save_value(index_id, today, current_val);
 
-    create_status_->setText(QString("Index '%1' created successfully.").arg(name));
+        create_status_->setText(tr("Index '%1' created successfully.").arg(name));
     create_status_->setStyleSheet(QString("color:%1; font-size:9px;").arg(ui::colors::POSITIVE()));
     create_status_->show();
     name_edit_->clear();
@@ -464,7 +464,7 @@ void CustomIndexView::show_index_performance(const QString& index_id, const QStr
     auto result = CustomIndexRepository::instance().get_values(index_id, 365);
 
     if (result.is_err() || result.value().isEmpty()) {
-        perf_title_->setText(QString("PERFORMANCE — %1  (no data)").arg(name));
+        perf_title_->setText(tr("PERFORMANCE — %1  (no data)").arg(name));
         perf_stack_->setCurrentIndex(0);
         return;
     }
@@ -509,7 +509,7 @@ void CustomIndexView::show_index_performance(const QString& index_id, const QStr
     chart->addAxis(y_axis, Qt::AlignLeft);
     series->attachAxis(y_axis);
 
-    perf_title_->setText(QString("PERFORMANCE — %1").arg(name));
+    perf_title_->setText(tr("PERFORMANCE — %1").arg(name));
     perf_stack_->setCurrentIndex(1);
 }
 

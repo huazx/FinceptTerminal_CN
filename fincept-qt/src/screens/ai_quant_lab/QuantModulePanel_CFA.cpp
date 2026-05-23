@@ -63,7 +63,7 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
     vl->setSpacing(12);
 
     // ── Section header ──────────────────────────────────────────────────────
-    auto* data_lbl = new QLabel("DATA INPUT", w);
+    auto* data_lbl = new QLabel(tr("DATA INPUT"), w);
     data_lbl->setStyleSheet(QString("color:%1; font-weight:700; font-family:%2;"
                                     "letter-spacing:1px;")
                                 .arg(module_.color.name())
@@ -72,11 +72,11 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
 
     // ── Symbol / data input ─────────────────────────────────────────────────
     auto* symbol = new QLineEdit(w);
-    symbol->setPlaceholderText("Ticker (AAPL, ^GSPC, BTC-USD) or comma-separated values");
+    symbol->setPlaceholderText(tr("Ticker (AAPL, ^GSPC, BTC-USD) or comma-separated values"));
     symbol->setStyleSheet(input_ss());
     symbol->setText("AAPL");
     text_inputs_["cfa_symbol"] = symbol;
-    vl->addWidget(build_input_row("Symbol / Data", symbol, w));
+    vl->addWidget(build_input_row(tr("Symbol / Data"), symbol, w));
 
     // Period / interval / column for ticker fetches
     auto* period = new QComboBox(w);
@@ -84,13 +84,13 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
     period->setCurrentText("1y");
     period->setStyleSheet(combo_ss());
     combo_inputs_["cfa_period"] = period;
-    vl->addWidget(build_input_row("Period (ticker only)", period, w));
+    vl->addWidget(build_input_row(tr("Period (ticker only)"), period, w));
 
     auto* interval = new QComboBox(w);
     interval->addItems({"1d", "1wk", "1mo"});
     interval->setStyleSheet(combo_ss());
     combo_inputs_["cfa_interval"] = interval;
-    vl->addWidget(build_input_row("Interval (ticker only)", interval, w));
+    vl->addWidget(build_input_row(tr("Interval (ticker only)"), interval, w));
 
     // ── Analysis selector ───────────────────────────────────────────────────
     auto* analysis_type = new QComboBox(w);
@@ -103,10 +103,10 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
     analysis_type->addItems(analyses);
     analysis_type->setStyleSheet(combo_ss());
     combo_inputs_["cfa_analysis"] = analysis_type;
-    vl->addWidget(build_input_row("Analysis Type", analysis_type, w));
+    vl->addWidget(build_input_row(tr("Analysis Type"), analysis_type, w));
 
     // ── Per-analysis parameter stack ────────────────────────────────────────
-    auto* params_lbl = new QLabel("ANALYSIS PARAMETERS", w);
+    auto* params_lbl = new QLabel(tr("ANALYSIS PARAMETERS"), w);
     params_lbl->setStyleSheet(QString("color:%1; font-weight:700; font-family:%2;"
                                       "letter-spacing:1px; margin-top:8px;")
                                   .arg(module_.color.name())
@@ -133,7 +133,7 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
         t->addItems({"linear", "log_linear"});
         t->setStyleSheet(combo_ss());
         combo_inputs_["cfa_trend_type"] = t;
-        add_page({build_input_row("Trend Type", t, stack)});
+        add_page({build_input_row(tr("Trend Type"), t, stack)});
     }
     // 1: stationarity_test — test_type
     {
@@ -141,7 +141,7 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
         t->addItems({"adf", "kpss"});
         t->setStyleSheet(combo_ss());
         combo_inputs_["cfa_stationarity_test"] = t;
-        add_page({build_input_row("Test Type", t, stack)});
+        add_page({build_input_row(tr("Test Type"), t, stack)});
     }
     // 2: arima_model — order p,d,q + optional seasonal
     {
@@ -161,9 +161,9 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
         q->setStyleSheet(spinbox_ss());
         int_inputs_["cfa_arima_q"] = q;
         add_page({
-            build_input_row("AR order (p)", p, stack),
-            build_input_row("Differencing (d)", d, stack),
-            build_input_row("MA order (q)", q, stack),
+            build_input_row(tr("AR order (p)"), p, stack),
+            build_input_row(tr("Differencing (d)"), d, stack),
+            build_input_row(tr("MA order (q)"), q, stack),
         });
     }
     // 3: forecasting — horizon, method, train_size
@@ -180,9 +180,9 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
         auto* ts = make_double_spin(0.5, 0.95, 0.8, 2, "", stack);
         double_inputs_["cfa_forecast_train_size"] = ts;
         add_page({
-            build_input_row("Horizon (steps)", h, stack),
-            build_input_row("Method", m, stack),
-            build_input_row("Train Size", ts, stack),
+            build_input_row(tr("Horizon (steps)"), h, stack),
+            build_input_row(tr("Method"), m, stack),
+            build_input_row(tr("Train Size"), ts, stack),
         });
     }
     // 4: supervised_learning — n_lags, problem_type, algorithms
@@ -198,13 +198,13 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
         combo_inputs_["cfa_sup_problem"] = pt;
         auto* algos = new QLineEdit(stack);
         algos->setText("ridge,random_forest");
-        algos->setPlaceholderText("comma-separated: ridge,lasso,random_forest,svr,knn");
+        algos->setPlaceholderText(tr("comma-separated: ridge,lasso,random_forest,svr,knn"));
         algos->setStyleSheet(input_ss());
         text_inputs_["cfa_sup_algorithms"] = algos;
         add_page({
-            build_input_row("Lag features (n_lags)", lags, stack),
-            build_input_row("Problem Type", pt, stack),
-            build_input_row("Algorithms", algos, stack),
+            build_input_row(tr("Lag features (n_lags)"), lags, stack),
+            build_input_row(tr("Problem Type"), pt, stack),
+            build_input_row(tr("Algorithms"), algos, stack),
         });
     }
     // 5: unsupervised_learning — n_lags, methods
@@ -216,12 +216,12 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
         int_inputs_["cfa_unsup_lags"] = lags;
         auto* methods = new QLineEdit(stack);
         methods->setText("pca,kmeans");
-        methods->setPlaceholderText("comma-separated: pca,kmeans,agglomerative");
+        methods->setPlaceholderText(tr("comma-separated: pca,kmeans,agglomerative"));
         methods->setStyleSheet(input_ss());
         text_inputs_["cfa_unsup_methods"] = methods;
         add_page({
-            build_input_row("Lag features (n_lags)", lags, stack),
-            build_input_row("Methods", methods, stack),
+            build_input_row(tr("Lag features (n_lags)"), lags, stack),
+            build_input_row(tr("Methods"), methods, stack),
         });
     }
     // 6: model_evaluation — n_lags, model_type, cv_folds
@@ -241,16 +241,16 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
         cv->setStyleSheet(spinbox_ss());
         int_inputs_["cfa_eval_cv"] = cv;
         add_page({
-            build_input_row("Lag features (n_lags)", lags, stack),
-            build_input_row("Model Type", mt, stack),
-            build_input_row("CV Folds", cv, stack),
+            build_input_row(tr("Lag features (n_lags)"), lags, stack),
+            build_input_row(tr("Model Type"), mt, stack),
+            build_input_row(tr("CV Folds"), cv, stack),
         });
     }
     // 7: resampling_methods — methods, n_resamples
     {
         auto* m = new QLineEdit(stack);
         m->setText("bootstrap,jackknife");
-        m->setPlaceholderText("comma-separated: bootstrap,jackknife,permutation");
+        m->setPlaceholderText(tr("comma-separated: bootstrap,jackknife,permutation"));
         m->setStyleSheet(input_ss());
         text_inputs_["cfa_resample_methods"] = m;
         auto* n = new QSpinBox(stack);
@@ -259,8 +259,8 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
         n->setStyleSheet(spinbox_ss());
         int_inputs_["cfa_resample_n"] = n;
         add_page({
-            build_input_row("Methods", m, stack),
-            build_input_row("Resamples", n, stack),
+            build_input_row(tr("Methods"), m, stack),
+            build_input_row(tr("Resamples"), n, stack),
         });
     }
     // 8: sampling_techniques — sample_size, methods (population uses Symbol/Data)
@@ -275,8 +275,8 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
         m->setStyleSheet(input_ss());
         text_inputs_["cfa_sampling_methods"] = m;
         add_page({
-            build_input_row("Sample Size", size, stack),
-            build_input_row("Methods", m, stack),
+            build_input_row(tr("Sample Size"), size, stack),
+            build_input_row(tr("Methods"), m, stack),
         });
     }
     // 9: central_limit_theorem — distribution, sample_sizes, n_samples
@@ -295,9 +295,9 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
         n->setStyleSheet(spinbox_ss());
         int_inputs_["cfa_clt_n"] = n;
         add_page({
-            build_input_row("Distribution", dist, stack),
-            build_input_row("Sample Sizes", sizes, stack),
-            build_input_row("Samples per size", n, stack),
+            build_input_row(tr("Distribution"), dist, stack),
+            build_input_row(tr("Sample Sizes"), sizes, stack),
+            build_input_row(tr("Samples per size"), n, stack),
         });
     }
     // 10: sampling_error_analysis — pop_mean, pop_std, sample_sizes, conf, n_sims
@@ -318,11 +318,11 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
         sims->setStyleSheet(spinbox_ss());
         int_inputs_["cfa_serr_sims"] = sims;
         add_page({
-            build_input_row("Population Mean", mean, stack),
-            build_input_row("Population Std", sd, stack),
-            build_input_row("Sample Sizes", sizes, stack),
-            build_input_row("Confidence Level", conf, stack),
-            build_input_row("Simulations", sims, stack),
+            build_input_row(tr("Population Mean"), mean, stack),
+            build_input_row(tr("Population Std"), sd, stack),
+            build_input_row(tr("Sample Sizes"), sizes, stack),
+            build_input_row(tr("Confidence Level"), conf, stack),
+            build_input_row(tr("Simulations"), sims, stack),
         });
     }
     // 11: validate_data — data_type, data_name
@@ -336,8 +336,8 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
         dn->setStyleSheet(input_ss());
         text_inputs_["cfa_validate_name"] = dn;
         add_page({
-            build_input_row("Data Type", dt, stack),
-            build_input_row("Data Name", dn, stack),
+            build_input_row(tr("Data Type"), dt, stack),
+            build_input_row(tr("Data Name"), dn, stack),
         });
     }
 
@@ -348,9 +348,9 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
             &QStackedWidget::setCurrentIndex);
 
     // ── Run button ──────────────────────────────────────────────────────────
-    auto* run = make_run_button("RUN ANALYSIS", w);
+    auto* run = make_run_button(tr("RUN ANALYSIS"), w);
     connect(run, &QPushButton::clicked, this, [this]() {
-        status_label_->setText("Running...");
+        status_label_->setText(tr("Running..."));
         const QString cmd = combo_inputs_["cfa_analysis"]->currentText();
         const QString raw = text_inputs_["cfa_symbol"]->text().trimmed();
 
@@ -363,8 +363,8 @@ QWidget* QuantModulePanel::build_cfa_quant_panel() {
         const bool needs_data = (cmd != "sampling_error_analysis" &&
                                  cmd != "central_limit_theorem");
         if (needs_data && raw.isEmpty()) {
-            display_error("Please enter a ticker symbol or comma-separated values");
-            status_label_->setText("Error");
+            display_error(tr("Please enter a ticker symbol or comma-separated values"));
+            status_label_->setText(tr("Error"));
             return;
         }
         if (cmd == "sampling_techniques")
@@ -547,10 +547,10 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         };
 
         QList<QWidget*> top = {
-            gs_make_card("DIRECTION", direction.isEmpty() ? "—" : direction, this, dir_color()),
-            gs_make_card("SLOPE", gs_fmt_num(slope, 6), this, gs_pos_neg_color(slope)),
-            gs_make_card("INTERCEPT", gs_fmt_num(intercept, 4), this),
-            gs_make_card("R²", gs_fmt_num(r2, 4), this,
+            gs_make_card(tr("DIRECTION"), direction.isEmpty() ? "—" : direction, this, dir_color()),
+            gs_make_card(tr("SLOPE"), gs_fmt_num(slope, 6), this, gs_pos_neg_color(slope)),
+            gs_make_card(tr("INTERCEPT"), gs_fmt_num(intercept, 4), this),
+            gs_make_card(tr("R²"), gs_fmt_num(r2, 4), this,
                          r2 >= 0.7 ? ui::colors::POSITIVE()
                                    : r2 >= 0.3 ? ui::colors::WARNING()
                                                : ui::colors::NEGATIVE()),
@@ -558,12 +558,12 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         results_layout_->addWidget(gs_card_row(top, this));
 
         QList<QWidget*> stats = {
-            gs_make_card("t-STATISTIC", gs_fmt_num(tstat, 3), this),
-            gs_make_card("p-VALUE", gs_fmt_num(pval, 4), this,
+            gs_make_card(tr("t-STATISTIC"), gs_fmt_num(tstat, 3), this),
+            gs_make_card(tr("p-VALUE"), gs_fmt_num(pval, 4), this,
                          pval < 0.05 ? ui::colors::POSITIVE() : ui::colors::WARNING()),
-            gs_make_card("SIGNIFICANT", significant ? "YES" : "NO", this,
+            gs_make_card(tr("SIGNIFICANT"), significant ? tr("YES") : tr("NO"), this,
                          significant ? ui::colors::POSITIVE() : ui::colors::WARNING()),
-            gs_make_card("OBSERVATIONS",
+            gs_make_card(tr("OBSERVATIONS"),
                          QString::number(result.value("parameters").toObject()
                                              .value("data").toArray().size()),
                          this),
@@ -584,11 +584,11 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         const QString h0 = value_obj.value("null_hypothesis").toString();
 
         QList<QWidget*> top = {
-            gs_make_card("TEST", test.isEmpty() ? "ADF" : test, this),
-            gs_make_card("TEST STAT", gs_fmt_num(tstat, 4), this),
-            gs_make_card("p-VALUE", gs_fmt_num(pval, 4), this,
+            gs_make_card(tr("TEST"), test.isEmpty() ? "ADF" : test, this),
+            gs_make_card(tr("TEST STAT"), gs_fmt_num(tstat, 4), this),
+            gs_make_card(tr("p-VALUE"), gs_fmt_num(pval, 4), this,
                          pval < 0.05 ? ui::colors::POSITIVE() : ui::colors::WARNING()),
-            gs_make_card("STATIONARY", stationary ? "YES" : "NO", this,
+            gs_make_card(tr("STATIONARY"), stationary ? tr("YES") : tr("NO"), this,
                          stationary ? ui::colors::POSITIVE() : ui::colors::NEGATIVE()),
         };
         results_layout_->addWidget(gs_card_row(top, this));
@@ -604,7 +604,7 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         }
 
         if (!h0.isEmpty()) {
-            auto* note = new QLabel("H₀: " + h0);
+            auto* note = new QLabel(tr("H₀: ") + h0);
             note->setStyleSheet(QString("color:%1; font-size:10px; padding:6px 10px; background:%2; border-left:3px solid %3;")
                                     .arg(ui::colors::TEXT_SECONDARY(), ui::colors::BG_SURFACE(), accent));
             note->setWordWrap(true);
@@ -629,21 +629,21 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         const bool autocorr = meta.value("residuals_autocorrelated").toBool();
 
         QList<QWidget*> top = {
-            gs_make_card("ORDER (p,d,q)", order_str, this),
-            gs_make_card("AIC", gs_fmt_num(aic, 2), this),
-            gs_make_card("BIC", gs_fmt_num(bic, 2), this),
-            gs_make_card("LOG-LIKELIHOOD", gs_fmt_num(llf, 2), this),
+            gs_make_card(tr("ORDER (p,d,q)"), order_str, this),
+            gs_make_card(tr("AIC"), gs_fmt_num(aic, 2), this),
+            gs_make_card(tr("BIC"), gs_fmt_num(bic, 2), this),
+            gs_make_card(tr("LOG-LIKELIHOOD"), gs_fmt_num(llf, 2), this),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
         QList<QWidget*> diag = {
-            gs_make_card("LJUNG-BOX p", gs_fmt_num(lb_p, 4), this,
+            gs_make_card(tr("LJUNG-BOX p"), gs_fmt_num(lb_p, 4), this,
                          lb_p > 0.05 ? ui::colors::POSITIVE() : ui::colors::WARNING()),
-            gs_make_card("RESID. AUTOCORR.", autocorr ? "YES" : "NO", this,
+            gs_make_card(tr("RESID. AUTOCORR."), autocorr ? tr("YES") : tr("NO"), this,
                          autocorr ? ui::colors::WARNING() : ui::colors::POSITIVE()),
-            gs_make_card("FITTED POINTS",
+            gs_make_card(tr("FITTED POINTS"),
                          QString::number(value_obj.value("fitted_values").toArray().size()), this),
-            gs_make_card("RESIDUALS",
+            gs_make_card(tr("RESIDUALS"),
                          QString::number(value_obj.value("residuals").toArray().size()), this),
         };
         results_layout_->addWidget(gs_card_row(diag, this));
@@ -661,7 +661,7 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
                 coef_lines << QString("%1 = %2").arg(it.key()).arg(it.value().toDouble(), 0, 'f', 6);
         }
         if (!coef_lines.isEmpty()) {
-            auto* coef_lbl = new QLabel("Coefficients: " + coef_lines.join("   "));
+            auto* coef_lbl = new QLabel(tr("Coefficients: ") + coef_lines.join("   "));
             coef_lbl->setWordWrap(true);
             coef_lbl->setStyleSheet(QString("color:%1; font-family:'Courier New'; font-size:10px;"
                                             "padding:6px 10px; background:%2; border-left:3px solid %3;")
@@ -685,21 +685,21 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         const QJsonValue mape = meta.value("mape");
 
         QList<QWidget*> top = {
-            gs_make_card("METHOD", fmethod.isEmpty() ? "—" : fmethod, this),
-            gs_make_card("HORIZON", QString::number(horizon), this),
-            gs_make_card("TRAIN", QString::number(train_n) + " obs", this),
-            gs_make_card("TEST", QString::number(test_n) + " obs", this),
+            gs_make_card(tr("METHOD"), fmethod.isEmpty() ? "—" : fmethod, this),
+            gs_make_card(tr("HORIZON"), QString::number(horizon), this),
+            gs_make_card(tr("TRAIN"), QString::number(train_n) + tr(" obs"), this),
+            gs_make_card(tr("TEST"), QString::number(test_n) + tr(" obs"), this),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
         QList<QWidget*> err = {
-            gs_make_card("MAE", fmt_num_safe(mae, 4), this,
+            gs_make_card(tr("MAE"), fmt_num_safe(mae, 4), this,
                          mae.isNull() ? ui::colors::TEXT_TERTIARY() : ui::colors::WARNING()),
-            gs_make_card("RMSE", fmt_num_safe(rmse, 4), this,
+            gs_make_card(tr("RMSE"), fmt_num_safe(rmse, 4), this,
                          rmse.isNull() ? ui::colors::TEXT_TERTIARY() : ui::colors::WARNING()),
-            gs_make_card("MAPE", mape.isNull() ? QStringLiteral("—")
+            gs_make_card(tr("MAPE"), mape.isNull() ? QStringLiteral("—")
                                                : QString::number(mape.toDouble(), 'f', 2) + "%", this),
-            gs_make_card("FCST POINTS",
+            gs_make_card(tr("FCST POINTS"),
                          QString::number(value_raw.toArray().size()), this),
         };
         results_layout_->addWidget(gs_card_row(err, this));
@@ -708,7 +708,7 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         if (value_raw.isArray()) {
             const auto arr = value_raw.toArray();
             auto* table = new QTableWidget(arr.size(), 2, this);
-            table->setHorizontalHeaderLabels({"Step", "Forecast"});
+            table->setHorizontalHeaderLabels({tr("Step"), tr("Forecast")});
             table->verticalHeader()->setVisible(false);
             table->setEditTriggers(QAbstractItemView::NoEditTriggers);
             table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -739,18 +739,18 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         const int n_feat = meta.value("n_features").toInt();
 
         QList<QWidget*> top = {
-            gs_make_card("PROBLEM", problem.toUpper(), this),
-            gs_make_card("BEST ALGORITHM", best.isEmpty() ? "—" : best, this, ui::colors::POSITIVE()),
-            gs_make_card("FEATURES", QString::number(n_feat), this),
-            gs_make_card("TRAIN / TEST",
+            gs_make_card(tr("PROBLEM"), problem.toUpper(), this),
+            gs_make_card(tr("BEST ALGORITHM"), best.isEmpty() ? "—" : best, this, ui::colors::POSITIVE()),
+            gs_make_card(tr("FEATURES"), QString::number(n_feat), this),
+            gs_make_card(tr("TRAIN / TEST"),
                          QString("%1 / %2").arg(train_n).arg(test_n), this),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
         // Per-algorithm metrics table
         QStringList headers = is_reg
-            ? QStringList{"Algorithm", "MSE", "RMSE", "R²"}
-            : QStringList{"Algorithm", "Accuracy", "Precision", "Recall"};
+            ? QStringList{tr("Algorithm"), tr("MSE"), tr("RMSE"), tr("R²")}
+            : QStringList{tr("Algorithm"), tr("Accuracy"), tr("Precision"), tr("Recall")};
         QStringList score_keys = is_reg
             ? QStringList{"mse", "rmse", "r2_score"}
             : QStringList{"accuracy", "precision", "recall"};
@@ -778,7 +778,7 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
                 table->setItem(r, 0, name_it);
 
                 if (metrics.contains("error")) {
-                    auto* err_it = new QTableWidgetItem("ERR: " + metrics.value("error").toString());
+                    auto* err_it = new QTableWidgetItem(tr("ERR: ") + metrics.value("error").toString());
                     err_it->setForeground(QColor(ui::colors::NEGATIVE()));
                     table->setItem(r, 1, err_it);
                     table->setSpan(r, 1, 1, headers.size() - 1);
@@ -810,35 +810,35 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         const int n_feat = meta.value("n_features").toInt();
 
         QList<QWidget*> top = {
-            gs_make_card("SAMPLES", QString::number(n_samples), this),
-            gs_make_card("FEATURES", QString::number(n_feat), this),
-            gs_make_card("METHODS", QString::number(value_obj.size()), this),
-            gs_make_card("DATA SCALED", meta.value("data_scaled").toBool() ? "YES" : "NO", this),
+            gs_make_card(tr("SAMPLES"), QString::number(n_samples), this),
+            gs_make_card(tr("FEATURES"), QString::number(n_feat), this),
+            gs_make_card(tr("METHODS"), QString::number(value_obj.size()), this),
+            gs_make_card(tr("DATA SCALED"), meta.value("data_scaled").toBool() ? tr("YES") : tr("NO"), this),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
         // PCA section
         if (value_obj.contains("pca") && value_obj.value("pca").isObject()) {
             const QJsonObject pca = value_obj.value("pca").toObject();
-            results_layout_->addWidget(gs_section_header("PCA", accent));
+            results_layout_->addWidget(gs_section_header(tr("PCA"), accent));
             const QJsonArray evr = pca.value("explained_variance_ratio").toArray();
             const QJsonArray cum = pca.value("cumulative_variance").toArray();
             const int n95 = pca.value("components_for_95_variance").toInt();
             const double total = evr.isEmpty() ? 0.0 : cum[cum.size() - 1].toDouble();
 
             QList<QWidget*> pca_cards = {
-                gs_make_card("COMPONENTS", QString::number(evr.size()), this),
-                gs_make_card("FOR 95% VAR", QString::number(n95), this, ui::colors::POSITIVE()),
-                gs_make_card("TOP COMPONENT", evr.isEmpty() ? "—"
+                gs_make_card(tr("COMPONENTS"), QString::number(evr.size()), this),
+                gs_make_card(tr("FOR 95% VAR"), QString::number(n95), this, ui::colors::POSITIVE()),
+                gs_make_card(tr("TOP COMPONENT"), evr.isEmpty() ? "—"
                                                 : QString::number(evr[0].toDouble() * 100, 'f', 2) + "%", this),
-                gs_make_card("CUM. EXPLAINED", QString::number(total * 100, 'f', 2) + "%", this),
+                gs_make_card(tr("CUM. EXPLAINED"), QString::number(total * 100, 'f', 2) + "%", this),
             };
             results_layout_->addWidget(gs_card_row(pca_cards, this));
 
             if (!evr.isEmpty()) {
                 const int rows = std::min<int>(10, evr.size());
                 auto* table = new QTableWidget(rows, 3, this);
-                table->setHorizontalHeaderLabels({"PC", "Explained Var", "Cumulative"});
+                table->setHorizontalHeaderLabels({tr("PC"), tr("Explained Var"), tr("Cumulative")});
                 table->verticalHeader()->setVisible(false);
                 table->setEditTriggers(QAbstractItemView::NoEditTriggers);
                 table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -861,7 +861,7 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         // K-Means section
         if (value_obj.contains("kmeans") && value_obj.value("kmeans").isObject()) {
             const QJsonObject km = value_obj.value("kmeans").toObject();
-            results_layout_->addWidget(gs_section_header("K-MEANS", accent));
+            results_layout_->addWidget(gs_section_header(tr("K-MEANS"), accent));
             const int opt_k = km.value("optimal_k").toInt();
             const QJsonArray sil = km.value("silhouette_by_k").toArray();
             const QJsonArray ine = km.value("inertia_by_k").toArray();
@@ -873,17 +873,17 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
             const QJsonArray labels = km.value("cluster_labels").toArray();
 
             QList<QWidget*> km_cards = {
-                gs_make_card("OPTIMAL k", QString::number(opt_k), this, ui::colors::POSITIVE()),
-                gs_make_card("BEST SILHOUETTE", gs_fmt_num(best_sil, 4), this,
+                gs_make_card(tr("OPTIMAL k"), QString::number(opt_k), this, ui::colors::POSITIVE()),
+                gs_make_card(tr("BEST SILHOUETTE"), gs_fmt_num(best_sil, 4), this,
                              best_sil >= 0.5 ? ui::colors::POSITIVE() : ui::colors::WARNING()),
-                gs_make_card("k RANGE", QString::number(sil.size()), this),
-                gs_make_card("OBSERVATIONS", QString::number(labels.size()), this),
+                gs_make_card(tr("k RANGE"), QString::number(sil.size()), this),
+                gs_make_card(tr("OBSERVATIONS"), QString::number(labels.size()), this),
             };
             results_layout_->addWidget(gs_card_row(km_cards, this));
 
             if (!sil.isEmpty()) {
                 auto* table = new QTableWidget(sil.size(), 3, this);
-                table->setHorizontalHeaderLabels({"k", "Silhouette", "Inertia"});
+                table->setHorizontalHeaderLabels({tr("k"), tr("Silhouette"), tr("Inertia")});
                 table->verticalHeader()->setVisible(false);
                 table->setEditTriggers(QAbstractItemView::NoEditTriggers);
                 table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -916,8 +916,8 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         if (value_obj.contains("hierarchical") && value_obj.value("hierarchical").isObject()) {
             const QJsonObject h = value_obj.value("hierarchical").toObject();
             QList<QWidget*> h_cards = {
-                gs_make_card("HIERARCHICAL k", QString::number(h.value("n_clusters").toInt()), this),
-                gs_make_card("LABELS",
+                gs_make_card(tr("HIERARCHICAL k"), QString::number(h.value("n_clusters").toInt()), this),
+                gs_make_card(tr("LABELS"),
                              QString::number(h.value("cluster_labels").toArray().size()), this),
             };
             results_layout_->addWidget(gs_card_row(h_cards, this));
@@ -941,10 +941,10 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         const double final_val = meta.value("final_val_score").toDouble();
 
         QList<QWidget*> top = {
-            gs_make_card("MODEL", model.isEmpty() ? "—" : model, this),
-            gs_make_card("PROBLEM", problem, this),
-            gs_make_card("CV FOLDS", QString::number(folds), this),
-            gs_make_card("MEAN CV ± σ",
+            gs_make_card(tr("MODEL"), model.isEmpty() ? "—" : model, this),
+            gs_make_card(tr("PROBLEM"), problem, this),
+            gs_make_card(tr("CV FOLDS"), QString::number(folds), this),
+            gs_make_card(tr("MEAN CV ± σ"),
                          QString("%1 ± %2").arg(mean_cv, 0, 'f', 4).arg(std_cv, 0, 'f', 4), this,
                          mean_cv > 0.5 ? ui::colors::POSITIVE()
                                        : mean_cv > 0  ? ui::colors::WARNING()
@@ -953,12 +953,12 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         results_layout_->addWidget(gs_card_row(top, this));
 
         QList<QWidget*> overfit_cards = {
-            gs_make_card("FINAL TRAIN", gs_fmt_num(final_train, 4), this),
-            gs_make_card("FINAL VAL", gs_fmt_num(final_val, 4), this,
+            gs_make_card(tr("FINAL TRAIN"), gs_fmt_num(final_train, 4), this),
+            gs_make_card(tr("FINAL VAL"), gs_fmt_num(final_val, 4), this,
                          final_val > 0.5 ? ui::colors::POSITIVE() : ui::colors::WARNING()),
-            gs_make_card("OVERFIT GAP", gs_fmt_num(overfit, 4), this,
+            gs_make_card(tr("OVERFIT GAP"), gs_fmt_num(overfit, 4), this,
                          overfit > 0.1 ? ui::colors::NEGATIVE() : ui::colors::POSITIVE()),
-            gs_make_card("OVERFITTING", is_overfit ? "YES" : "NO", this,
+            gs_make_card(tr("OVERFITTING"), is_overfit ? tr("YES") : tr("NO"), this,
                          is_overfit ? ui::colors::NEGATIVE() : ui::colors::POSITIVE()),
         };
         results_layout_->addWidget(gs_card_row(overfit_cards, this));
@@ -969,7 +969,7 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         const QJsonArray val_s = value_obj.value("val_scores").toArray();
         if (!cv.isEmpty() || !train_s.isEmpty()) {
             auto* table = new QTableWidget(std::max(cv.size(), train_s.size()), 3, this);
-            table->setHorizontalHeaderLabels({"Idx", "CV / Train Score", "Val Score"});
+            table->setHorizontalHeaderLabels({tr("Idx"), tr("CV / Train Score"), tr("Val Score")});
             table->verticalHeader()->setVisible(false);
             table->setEditTriggers(QAbstractItemView::NoEditTriggers);
             table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -1012,27 +1012,27 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         const QString stat_name = meta.value("statistic_name").toString();
 
         QList<QWidget*> top = {
-            gs_make_card("STATISTIC", stat_name.isEmpty() ? "mean" : stat_name, this),
-            gs_make_card("ORIGINAL VALUE", gs_fmt_num(orig, 6), this, gs_pos_neg_color(orig)),
-            gs_make_card("DATA SIZE", QString::number(data_n), this),
-            gs_make_card("METHODS", QString::number(value_obj.size()), this),
+            gs_make_card(tr("STATISTIC"), stat_name.isEmpty() ? "mean" : stat_name, this),
+            gs_make_card(tr("ORIGINAL VALUE"), gs_fmt_num(orig, 6), this, gs_pos_neg_color(orig)),
+            gs_make_card(tr("DATA SIZE"), QString::number(data_n), this),
+            gs_make_card(tr("METHODS"), QString::number(value_obj.size()), this),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
         // Bootstrap
         if (value_obj.contains("bootstrap") && value_obj.value("bootstrap").isObject()) {
             const QJsonObject b = value_obj.value("bootstrap").toObject();
-            results_layout_->addWidget(gs_section_header("BOOTSTRAP", accent));
+            results_layout_->addWidget(gs_section_header(tr("BOOTSTRAP"), accent));
             const auto ci = b.value("confidence_interval").toArray();
             const QString ci_str = ci.size() == 2
                 ? QString("[%1, %2]").arg(ci[0].toDouble(), 0, 'f', 4).arg(ci[1].toDouble(), 0, 'f', 4)
                 : QStringLiteral("—");
             QList<QWidget*> b_cards = {
-                gs_make_card("MEAN", gs_fmt_num(b.value("mean").toDouble(), 6), this),
-                gs_make_card("STD", gs_fmt_num(b.value("std").toDouble(), 6), this),
-                gs_make_card("BIAS", gs_fmt_num(b.value("bias").toDouble(), 6), this,
+                gs_make_card(tr("MEAN"), gs_fmt_num(b.value("mean").toDouble(), 6), this),
+                gs_make_card(tr("STD"), gs_fmt_num(b.value("std").toDouble(), 6), this),
+                gs_make_card(tr("BIAS"), gs_fmt_num(b.value("bias").toDouble(), 6), this,
                              gs_pos_neg_color(b.value("bias").toDouble())),
-                gs_make_card("95% CI", ci_str, this, ui::colors::INFO()),
+                gs_make_card(tr("95% CI"), ci_str, this, ui::colors::INFO()),
             };
             results_layout_->addWidget(gs_card_row(b_cards, this));
         }
@@ -1040,13 +1040,13 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         // Jackknife
         if (value_obj.contains("jackknife") && value_obj.value("jackknife").isObject()) {
             const QJsonObject j = value_obj.value("jackknife").toObject();
-            results_layout_->addWidget(gs_section_header("JACKKNIFE", accent));
+            results_layout_->addWidget(gs_section_header(tr("JACKKNIFE"), accent));
             QList<QWidget*> j_cards = {
-                gs_make_card("BIAS", gs_fmt_num(j.value("bias").toDouble(), 6), this,
+                gs_make_card(tr("BIAS"), gs_fmt_num(j.value("bias").toDouble(), 6), this,
                              gs_pos_neg_color(j.value("bias").toDouble())),
-                gs_make_card("BIAS-CORRECTED", gs_fmt_num(j.value("bias_corrected_estimate").toDouble(), 6), this),
-                gs_make_card("VARIANCE", gs_fmt_num(j.value("variance_estimate").toDouble(), 6), this),
-                gs_make_card("STD ERROR", gs_fmt_num(j.value("std_error").toDouble(), 6), this),
+                gs_make_card(tr("BIAS-CORRECTED"), gs_fmt_num(j.value("bias_corrected_estimate").toDouble(), 6), this),
+                gs_make_card(tr("VARIANCE"), gs_fmt_num(j.value("variance_estimate").toDouble(), 6), this),
+                gs_make_card(tr("STD ERROR"), gs_fmt_num(j.value("std_error").toDouble(), 6), this),
             };
             results_layout_->addWidget(gs_card_row(j_cards, this));
         }
@@ -1054,17 +1054,17 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         // Permutation
         if (value_obj.contains("permutation") && value_obj.value("permutation").isObject()) {
             const QJsonObject p = value_obj.value("permutation").toObject();
-            results_layout_->addWidget(gs_section_header("PERMUTATION", accent));
+            results_layout_->addWidget(gs_section_header(tr("PERMUTATION"), accent));
             const double pv = p.value("p_value").toDouble();
             const bool sig = p.value("significant").toBool();
             QList<QWidget*> p_cards = {
-                gs_make_card("p-VALUE", gs_fmt_num(pv, 4), this,
+                gs_make_card(tr("p-VALUE"), gs_fmt_num(pv, 4), this,
                              pv < 0.05 ? ui::colors::POSITIVE() : ui::colors::WARNING()),
-                gs_make_card("SIGNIFICANT", sig ? "YES" : "NO", this,
+                gs_make_card(tr("SIGNIFICANT"), sig ? tr("YES") : tr("NO"), this,
                              sig ? ui::colors::POSITIVE() : ui::colors::WARNING()),
-                gs_make_card("RESAMPLES",
+                gs_make_card(tr("RESAMPLES"),
                              QString::number(p.value("resampled_statistics").toArray().size()), this),
-                gs_make_card("ORIGINAL", gs_fmt_num(orig, 6), this),
+                gs_make_card(tr("ORIGINAL"), gs_fmt_num(orig, 6), this),
             };
             results_layout_->addWidget(gs_card_row(p_cards, this));
         }
@@ -1081,10 +1081,10 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         const double frac = meta.value("sampling_fraction").toDouble();
 
         QList<QWidget*> top = {
-            gs_make_card("POPULATION", QString::number(pop_n), this),
-            gs_make_card("SAMPLE SIZE", QString::number(sample_n), this),
-            gs_make_card("SAMPLING FRAC", QString::number(frac * 100, 'f', 2) + "%", this),
-            gs_make_card("METHODS", QString::number(value_obj.size()), this),
+            gs_make_card(tr("POPULATION"), QString::number(pop_n), this),
+            gs_make_card(tr("SAMPLE SIZE"), QString::number(sample_n), this),
+            gs_make_card(tr("SAMPLING FRAC"), QString::number(frac * 100, 'f', 2) + "%", this),
+            gs_make_card(tr("METHODS"), QString::number(value_obj.size()), this),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
@@ -1095,7 +1095,7 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
                 if (it.value().isObject()) methods.append({it.key(), it.value().toObject()});
 
             auto* table = new QTableWidget(methods.size(), 5, this);
-            table->setHorizontalHeaderLabels({"Method", "Sample N", "Sample Mean", "Pop Mean", "Bias"});
+            table->setHorizontalHeaderLabels({tr("Method"), tr("Sample N"), tr("Sample Mean"), tr("Pop Mean"), tr("Bias")});
             table->verticalHeader()->setVisible(false);
             table->setEditTriggers(QAbstractItemView::NoEditTriggers);
             table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -1106,7 +1106,7 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
                 const auto& m = methods[r].second;
                 table->setItem(r, 0, new QTableWidgetItem(name.toUpper()));
                 if (m.contains("error")) {
-                    auto* e = new QTableWidgetItem("ERR: " + m.value("error").toString());
+                    auto* e = new QTableWidgetItem(tr("ERR: ") + m.value("error").toString());
                     e->setForeground(QColor(ui::colors::NEGATIVE()));
                     table->setItem(r, 1, e);
                     table->setSpan(r, 1, 1, 4);
@@ -1148,10 +1148,10 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         const int pop_n = meta.value("population_size").toInt();
 
         QList<QWidget*> top = {
-            gs_make_card("DISTRIBUTION", dist.isEmpty() ? "—" : dist, this),
-            gs_make_card("POP MEAN", gs_fmt_num(pmean, 4), this),
-            gs_make_card("POP STD", gs_fmt_num(pstd, 4), this),
-            gs_make_card("POP SIZE", QString::number(pop_n), this),
+            gs_make_card(tr("DISTRIBUTION"), dist.isEmpty() ? "—" : dist, this),
+            gs_make_card(tr("POP MEAN"), gs_fmt_num(pmean, 4), this),
+            gs_make_card(tr("POP STD"), gs_fmt_num(pstd, 4), this),
+            gs_make_card(tr("POP SIZE"), QString::number(pop_n), this),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
@@ -1169,7 +1169,7 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         if (!rows.isEmpty()) {
             auto* table = new QTableWidget(rows.size(), 7, this);
             table->setHorizontalHeaderLabels(
-                {"n", "Theor. Mean", "Theor. SE", "Empir. Mean", "Empir. SE", "Mean Bias", "Normal?"});
+                {tr("n"), tr("Theor. Mean"), tr("Theor. SE"), tr("Empir. Mean"), tr("Empir. SE"), tr("Mean Bias"), tr("Normal?")});
             table->verticalHeader()->setVisible(false);
             table->setEditTriggers(QAbstractItemView::NoEditTriggers);
             table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -1193,7 +1193,7 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
                 mbi->setForeground(QColor(gs_pos_neg_color(mb)));
                 table->setItem(r, 5, mbi);
                 const QJsonValue norm = o.value("appears_normal");
-                QString norm_str = norm.isNull() ? "—" : (norm.toBool() ? "YES" : "NO");
+                QString norm_str = norm.isNull() ? "—" : (norm.toBool() ? tr("YES") : tr("NO"));
                 auto* ni = new QTableWidgetItem(norm_str);
                 ni->setTextAlignment(Qt::AlignCenter);
                 if (!norm.isNull())
@@ -1216,10 +1216,10 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         const double conf = meta.value("coverage_target").toDouble();
 
         QList<QWidget*> top = {
-            gs_make_card("RECOMMENDED n", QString::number(rec_n), this, ui::colors::POSITIVE()),
-            gs_make_card("TARGET MoE", gs_fmt_num(tgt_moe, 4), this),
-            gs_make_card("Z CRITICAL", gs_fmt_num(zc, 4), this),
-            gs_make_card("CONFIDENCE", QString::number(conf * 100, 'f', 1) + "%", this, ui::colors::INFO()),
+            gs_make_card(tr("RECOMMENDED n"), QString::number(rec_n), this, ui::colors::POSITIVE()),
+            gs_make_card(tr("TARGET MoE"), gs_fmt_num(tgt_moe, 4), this),
+            gs_make_card(tr("Z CRITICAL"), gs_fmt_num(zc, 4), this),
+            gs_make_card(tr("CONFIDENCE"), QString::number(conf * 100, 'f', 1) + "%", this, ui::colors::INFO()),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
@@ -1235,7 +1235,7 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         if (!rows.isEmpty()) {
             auto* table = new QTableWidget(rows.size(), 6, this);
             table->setHorizontalHeaderLabels(
-                {"n", "Theor. SE", "Empir. SE", "MoE", "Coverage", "MSE"});
+                {tr("n"), tr("Theor. SE"), tr("Empir. SE"), tr("MoE"), tr("Coverage"), tr("MSE")});
             table->verticalHeader()->setVisible(false);
             table->setEditTriggers(QAbstractItemView::NoEditTriggers);
             table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -1277,14 +1277,14 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         const auto stats_obj = result.value("statistics").toObject();
 
         QList<QWidget*> top = {
-            gs_make_card("QUALITY SCORE", QString::number(score, 'f', 1) + " / 100", this,
+            gs_make_card(tr("QUALITY SCORE"), QString::number(score, 'f', 1) + tr(" / 100"), this,
                          score >= 80 ? ui::colors::POSITIVE()
                                     : score >= 50 ? ui::colors::WARNING()
                                                   : ui::colors::NEGATIVE()),
-            gs_make_card("DATA NAME", name.isEmpty() ? "data" : name, this),
-            gs_make_card("ISSUES", QString::number(issues.size()), this,
+            gs_make_card(tr("DATA NAME"), name.isEmpty() ? tr("data") : name, this),
+            gs_make_card(tr("ISSUES"), QString::number(issues.size()), this,
                          issues.isEmpty() ? ui::colors::POSITIVE() : ui::colors::NEGATIVE()),
-            gs_make_card("WARNINGS", QString::number(warnings.size()), this,
+            gs_make_card(tr("WARNINGS"), QString::number(warnings.size()), this,
                          warnings.isEmpty() ? ui::colors::POSITIVE() : ui::colors::WARNING()),
         };
         results_layout_->addWidget(gs_card_row(top, this));
@@ -1300,9 +1300,9 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
                 }
             }
             if (!sk.isEmpty()) {
-                results_layout_->addWidget(gs_section_header("STATISTICS", accent));
+                results_layout_->addWidget(gs_section_header(tr("STATISTICS"), accent));
                 auto* table = new QTableWidget(sk.size(), 2, this);
-                table->setHorizontalHeaderLabels({"Statistic", "Value"});
+                table->setHorizontalHeaderLabels({tr("Statistic"), tr("Value")});
                 table->verticalHeader()->setVisible(false);
                 table->setEditTriggers(QAbstractItemView::NoEditTriggers);
                 table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -1351,9 +1351,9 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
                 results_layout_->addWidget(item);
             }
         };
-        add_section("ISSUES", issues, true, ui::colors::NEGATIVE());
-        add_section("WARNINGS", warnings, true, ui::colors::WARNING());
-        add_section("RECOMMENDATIONS", recs, false, ui::colors::INFO());
+        add_section(tr("ISSUES"), issues, true, ui::colors::NEGATIVE());
+        add_section(tr("WARNINGS"), warnings, true, ui::colors::WARNING());
+        add_section(tr("RECOMMENDATIONS"), recs, false, ui::colors::INFO());
 
         status_label_->setText(QString("Validate %1: score=%2  issues=%3  warnings=%4")
                                    .arg(name).arg(score, 0, 'f', 1).arg(issues.size()).arg(warnings.size()));
@@ -1373,7 +1373,7 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
         cfa_flatten_scalars(meta, "metadata", keys, kv);
         if (!keys.isEmpty()) {
             auto* table = new QTableWidget(keys.size(), 2, this);
-            table->setHorizontalHeaderLabels({"Metric", "Value"});
+            table->setHorizontalHeaderLabels({tr("Metric"), tr("Value")});
             table->setEditTriggers(QAbstractItemView::NoEditTriggers);
             table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
             table->verticalHeader()->setVisible(false);
@@ -1392,7 +1392,7 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
     }
 
     // ── Raw JSON viewer (collapsed by default — capped height) ──────────────
-    auto* raw_hdr = new QLabel("RAW JSON");
+    auto* raw_hdr = new QLabel(tr("RAW JSON"));
     raw_hdr->setStyleSheet(QString("color:%1; font-size:9px; font-weight:700; letter-spacing:1px; margin-top:4px;")
                                .arg(ui::colors::TEXT_TERTIARY()));
     results_layout_->addWidget(raw_hdr);
@@ -1405,7 +1405,7 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
     results_layout_->addWidget(raw);
 
     // ── Export button ───────────────────────────────────────────────────────
-    auto* export_btn = new QPushButton("EXPORT RESULTS");
+    auto* export_btn = new QPushButton(tr("EXPORT RESULTS"));
     export_btn->setCursor(Qt::PointingHandCursor);
     export_btn->setFixedHeight(28);
     export_btn->setStyleSheet(QString("QPushButton { background:transparent; color:%1; border:1px solid %2; "
@@ -1432,8 +1432,8 @@ void QuantModulePanel::display_cfa_result(const QString& command, const QJsonObj
     });
     results_layout_->addWidget(export_btn);
 
-    if (status_label_->text() == "Running...")
-        status_label_->setText("Done");
+    if (status_label_->text() == tr("Running..."))
+        status_label_->setText(tr("Done"));
 }
 
 } // namespace fincept::screens

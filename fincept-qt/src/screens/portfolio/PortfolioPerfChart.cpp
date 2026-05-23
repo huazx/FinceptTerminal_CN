@@ -132,7 +132,7 @@ void PortfolioPerfChart::build_ui() {
 
     // Unified panel header — PERFORMANCE title + period buttons + benchmark/% toggles
     // packed into the right-side controls slot.
-    auto header = make_panel_header("PERFORMANCE", this);
+    auto header = make_panel_header(tr("PERFORMANCE"), this);
     auto* slot = header.controls_slot->layout();
 
     for (const auto& p : kPeriods) {
@@ -163,7 +163,7 @@ void PortfolioPerfChart::build_ui() {
     benchmark_btn_->setFixedSize(60, 22);
     benchmark_btn_->setCheckable(true);
     benchmark_btn_->setCursor(Qt::PointingHandCursor);
-    benchmark_btn_->setToolTip("Overlay benchmark index (auto-selected by portfolio currency)");
+    benchmark_btn_->setToolTip(tr("Overlay benchmark index (auto-selected by portfolio currency)"));
     benchmark_btn_->setStyleSheet(
         QString("QPushButton { background:transparent; color:%1; border:1px solid %1;"
                 "  font-size:11px; font-weight:700; }"
@@ -184,8 +184,8 @@ void PortfolioPerfChart::build_ui() {
     indexed_btn_->setFixedSize(28, 22);
     indexed_btn_->setCheckable(true);
     indexed_btn_->setCursor(Qt::PointingHandCursor);
-    indexed_btn_->setToolTip("Indexed view: rebase portfolio and benchmark to 100 at the start of\n"
-                             "the selected period. Use when comparing different currencies.");
+    indexed_btn_->setToolTip(tr("Indexed view: rebase portfolio and benchmark to 100 at the start of\n"
+                             "the selected period. Use when comparing different currencies."));
     indexed_btn_->setStyleSheet(
         QString("QPushButton { background:transparent; color:%1; border:1px solid %1;"
                 "  font-size:11px; font-weight:700; }"
@@ -235,7 +235,7 @@ void PortfolioPerfChart::build_ui() {
     cost_basis_label_ = new QLabel;
     cost_basis_label_->setStyleSheet(
         QString("color:%1; font-size:11px;").arg(ui::colors::TEXT_TERTIARY()));
-    cost_basis_label_->setToolTip("Total cost basis — the dashed horizontal line on the chart.");
+    cost_basis_label_->setToolTip(tr("Total cost basis — the dashed horizontal line on the chart."));
     info_bar->addWidget(cost_basis_label_);
 
     info_bar->addStretch();
@@ -335,8 +335,8 @@ void PortfolioPerfChart::update_period_buttons_enabled() {
             feasible = span_days >= 5;
         // Other periods are always allowed: backfill kicks in when clicked.
         btn->setEnabled(feasible);
-        btn->setToolTip(feasible ? QString()
-                                 : QStringLiteral("Needs intraday data — daily snapshots only."));
+            btn->setToolTip(feasible ? QString()
+                                     : tr("Needs intraday data — daily snapshots only."));
     }
 }
 
@@ -355,7 +355,7 @@ void PortfolioPerfChart::update_chart() {
     }
 
     if (summary_.holdings.isEmpty()) {
-        period_change_label_->setText("No data");
+        period_change_label_->setText(tr("No data"));
         total_return_label_->clear();
         nav_label_->clear();
         if (cost_basis_label_)
@@ -553,8 +553,8 @@ void PortfolioPerfChart::update_chart() {
     // ── Benchmark overlay ─────────────────────────────────────────────────────
     if (show_benchmark_ && nav_line->count() >= 2) {
         if (spy_dates_.isEmpty() || spy_closes_.isEmpty()) {
-            nav_label_->setText(nav_label_->text() +
-                                QString("  |  %1: loading…").arg(benchmark_symbol_));
+                nav_label_->setText(nav_label_->text() +
+                                    tr("  |  %1: loading…").arg(benchmark_symbol_));
         } else {
             const QDate start_date = QDateTime::fromMSecsSinceEpoch(
                 static_cast<qint64>(nav_line->at(0).x()), QTimeZone::UTC).date();

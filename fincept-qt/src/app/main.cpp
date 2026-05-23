@@ -1,4 +1,4 @@
-﻿#include "ai_chat/LlmService.h"
+#include "ai_chat/LlmService.h"
 #include "app/WindowFrame.h"
 #include "app/TerminalShell.h"
 #include "auth/AuthManager.h"
@@ -80,6 +80,7 @@
 #include <QSslSocket>
 #include <QStandardPaths>
 #include <QTimer>
+#include <QTranslator>
 #include <QUuid>
 
 #include <memory>
@@ -230,6 +231,58 @@ int main(int argc, char* argv[]) {
     // explicit one in LaunchpadScreen::closeEvent.
     app.setQuitOnLastWindowClosed(false);
 
+    // ── Load translations ────────────────────────────────────────────────────
+    {
+        QTranslator* translator = new QTranslator(&app);
+        const QString file_prefix = QStringLiteral("fincept_");
+        QStringList search_dirs = {
+            QCoreApplication::applicationDirPath() + "/translations",
+            QCoreApplication::applicationDirPath() + "/../translations",
+            ":/translations",
+        };
+
+        // Build a prioritized list of locale candidates to try:
+        //   1. Exact system locale (e.g. "zh_CN")
+        //   2. Language-only fallback (e.g. "zh")
+        //   3. If the system country is China/Taiwan/Hong Kong/Macau but the
+        //      language is English (common on developer machines: en_CN, en_TW),
+        //      also try zh_<country> as a sensible default for this app.
+        QStringList candidates;
+        const QString sys_locale = QLocale::system().name(); // e.g. "en_CN"
+        const QString sys_lang = sys_locale.left(sys_locale.indexOf('_'));
+        const QString sys_country = sys_locale.mid(sys_locale.indexOf('_') + 1);
+
+        // Always try Chinese first for this Chinese terminal
+        candidates << "zh_CN" << "zh";
+        
+        candidates << sys_locale;
+        if (!sys_lang.isEmpty())
+            candidates << sys_lang;
+
+        // en_CN / en_TW / en_HK / en_MO → also try zh_CN / zh_TW / zh_HK / zh_MO
+        static const QHash<QString, QString> country_to_zh = {
+            {"CN", "zh_CN"}, {"TW", "zh_TW"}, {"HK", "zh_HK"}, {"MO", "zh_MO"},
+        };
+        if (sys_lang == "en" && country_to_zh.contains(sys_country)) {
+            candidates << country_to_zh.value(sys_country);
+            candidates << "zh";
+        }
+
+        bool loaded = false;
+        for (const auto& loc : candidates) {
+            for (const auto& dir : search_dirs) {
+                QString qm_file = dir + "/" + file_prefix + loc + ".qm";
+                if (translator->load(qm_file)) {
+                    app.installTranslator(translator);
+                    loaded = true;
+                    break;
+                }
+            }
+            if (loaded)
+                break;
+        }
+    }
+
     // Belt-and-braces: if QT_TLS_BACKEND wasn't honoured for some reason
     // (e.g. plugin load order on a particular platform), retry the switch
     // explicitly. This is a no-op if openssl is already active.
@@ -295,6 +348,29 @@ int main(int argc, char* argv[]) {
         "resources/component_catalog.json",
     });
     FT_MARK(20);
+    
+    // Initialize market data source from saved settings
+    LOG_INFO("App", "Initializing market data source from settings...");
+    const auto market_source_result = fincept::SettingsRepository::instance().get(
+        QStringLiteral("general.market_data_source"), QStringLiteral("akshare"));
+    
+    if (market_source_result.is_ok()) {
+        LOG_INFO("App", QString("Settings query successful: %1").arg(market_source_result.value()));
+    } else {
+        LOG_WARN("App", "Settings query failed, using default akshare");
+    }
+    
+    const QString market_source_value = market_source_result.is_ok() 
+        ? market_source_result.value() 
+        : QStringLiteral("akshare");
+    const auto market_source = (market_source_value == QStringLiteral("akshare"))
+        ? fincept::services::MarketDataSource::AkShare
+        : fincept::services::MarketDataSource::YFinance;
+    
+    LOG_INFO("App", QString("Setting data source to: %1").arg(market_source_value));
+    fincept::services::MarketDataService::instance().set_data_source(market_source);
+    LOG_INFO("App", "Data source initialization complete");
+    
     fincept::services::MarketDataService::instance().ensure_registered_with_hub();
     FT_MARK(21);
 
@@ -733,7 +809,7 @@ int main(int argc, char* argv[]) {
         // (e.g. user somehow triggers it twice before the window is hidden).
         auto* setup_screen = new fincept::screens::SetupScreen;
         QPointer<fincept::screens::SetupScreen> screen_guard(setup_screen);
-        setup_screen->setWindowTitle("Fincept Terminal — First-Time Setup");
+        setup_screen->setWindowTitle(QCoreApplication::translate("main", "Fincept Terminal — First-Time Setup"));
         setup_screen->resize(800, 600);
         setup_screen->show();
 
@@ -760,6 +836,8 @@ int main(int argc, char* argv[]) {
                 fincept::screens::CrashRecoveryDialog dlg(
                     recovery, fincept::TerminalShell::instance().snapshot_ring());
                 dlg.exec();
+                if (dlg.was_restored())
+                    dlg.restore_selected();
                 recovered = dlg.was_restored();
             }
 
@@ -823,6 +901,8 @@ int main(int argc, char* argv[]) {
         fincept::screens::CrashRecoveryDialog dlg(
             recovery, fincept::TerminalShell::instance().snapshot_ring());
         dlg.exec();
+        if (dlg.was_restored())
+            dlg.restore_selected();
         recovered = dlg.was_restored();
     }
 

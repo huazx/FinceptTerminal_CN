@@ -1,9 +1,11 @@
 #include "screens/dashboard/widgets/PerformanceWidget.h"
 
 #include "ui/theme/Theme.h"
+#include <QDebug>
+#include <QCoreApplication>
 
-#    include "datahub/DataHub.h"
-#    include "datahub/DataHubMetaTypes.h"
+#include "datahub/DataHub.h"
+#include "datahub/DataHubMetaTypes.h"
 
 #include <QFrame>
 
@@ -16,12 +18,12 @@ inline const QStringList kPerfSymbols = {"^GSPC", "^IXIC", "^DJI", "^RUT", "^VIX
 namespace fincept::screens::widgets {
 
 PerformanceWidget::PerformanceWidget(QWidget* parent)
-    : BaseWidget("PERFORMANCE TRACKER", parent, ui::colors::POSITIVE()) {
+    : BaseWidget(QCoreApplication::translate("PerformanceWidget", "PERFORMANCE TRACKER"), parent, ui::colors::POSITIVE()) {
     auto* vl = content_layout();
 
     // We'll show metrics derived from real benchmark ETF data
-    QStringList labels = {"S&P 500 Daily",         "NASDAQ Daily",         "DOW Daily", "Russell 2000 Daily",
-                          "S&P 500 vs DOW Spread", "NASDAQ vs S&P Spread", "VIX Level", "Gold Daily"};
+    QStringList labels = {QCoreApplication::translate("PerformanceWidget", "S&P 500 Daily"),         QCoreApplication::translate("PerformanceWidget", "NASDAQ Daily"),         QCoreApplication::translate("PerformanceWidget", "DOW Daily"), QCoreApplication::translate("PerformanceWidget", "Russell 2000 Daily"),
+                          QCoreApplication::translate("PerformanceWidget", "S&P 500 vs DOW Spread"), QCoreApplication::translate("PerformanceWidget", "NASDAQ vs S&P Spread"), QCoreApplication::translate("PerformanceWidget", "VIX Level"), QCoreApplication::translate("PerformanceWidget", "Gold Daily")};
 
     for (const auto& label : labels) {
         auto* row = new QWidget(this);
@@ -34,7 +36,7 @@ PerformanceWidget::PerformanceWidget(QWidget* parent)
         rl->addWidget(mr.label);
         rl->addStretch();
 
-        mr.period = new QLabel("TODAY");
+        mr.period = new QLabel(QCoreApplication::translate("PerformanceWidget", "TODAY"));
         rl->addWidget(mr.period);
 
         mr.value = new QLabel("--");
@@ -48,8 +50,6 @@ PerformanceWidget::PerformanceWidget(QWidget* parent)
     connect(this, &BaseWidget::refresh_requested, this, &PerformanceWidget::refresh_data);
 
     apply_styles();
-    set_loading(true);
-
 }
 
 void PerformanceWidget::apply_styles() {
@@ -96,8 +96,9 @@ void PerformanceWidget::hub_subscribe_all() {
     for (const auto& sym : kPerfSymbols) {
         const QString topic = QStringLiteral("market:quote:") + sym;
         hub.subscribe(this, topic, [this, sym](const QVariant& v) {
-            if (!v.canConvert<services::QuoteData>())
+            if (!v.canConvert<services::QuoteData>()) {
                 return;
+            }
             row_cache_.insert(sym, v.value<services::QuoteData>());
             set_loading_progress(row_cache_.size(), kPerfSymbols.size());
             rebuild_from_cache();

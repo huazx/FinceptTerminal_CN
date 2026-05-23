@@ -1,4 +1,5 @@
 #include "screens/chat_mode/ChatModeScreen.h"
+#include "auth/AuthManager.h"
 
 #include "core/logging/Logger.h"
 #include "core/session/ScreenStateManager.h"
@@ -70,7 +71,7 @@ void ChatModeScreen::wire_signals() {
     connect(&svc, &ChatModeService::stream_finish, message_panel_, &ChatMessagePanel::on_stream_finish);
     connect(&svc, &ChatModeService::stream_error, message_panel_, &ChatMessagePanel::on_stream_error);
     connect(&svc, &ChatModeService::stream_heartbeat, message_panel_, &ChatMessagePanel::on_stream_heartbeat);
-    connect(&svc, &ChatModeService::insufficient_credits, message_panel_, &ChatMessagePanel::on_insufficient_credits);
+    connect(&svc, &ChatModeService::insufficient_credits, this, &ChatModeScreen::on_insufficient_credits);
 
     // SSE session-meta -> refresh sidebar
     connect(&svc, &ChatModeService::stream_session_meta, this, [this](const QString&, const QString& new_title) {
@@ -235,8 +236,44 @@ void ChatModeScreen::on_rename_session(const QString& uuid, const QString& title
 void ChatModeScreen::on_send_requested(const QString& message, StreamMode mode) {
     LOG_INFO("ChatModeScreen",
              QString("Send [%1]: \"%2\"").arg(mode == StreamMode::Deep ? "deep" : "lite").arg(message.left(60)));
+    last_message_ = message;
+    last_mode_ = mode;
     ensure_active_session([message, mode](const QString& uuid) {
         ChatModeService::instance().stream_message(message, uuid, mode);
+    });
+}
+
+void ChatModeScreen::on_insufficient_credits() {
+    if (retrying_after_credit_refresh_) {
+        retrying_after_credit_refresh_ = false;
+        message_panel_->on_insufficient_credits();
+        return;
+    }
+
+    LOG_INFO("ChatModeScreen", "402 received — refreshing credits before showing error");
+    retrying_after_credit_refresh_ = true;
+
+    auth::AuthManager::instance().refresh_user_data();
+
+    QPointer<ChatModeScreen> self = this;
+    QTimer::singleShot(2000, this, [self]() {
+        if (!self)
+            return;
+        ChatModeService::instance().get_credits([self](bool ok, int credits, QString) {
+            if (!self)
+                return;
+            if (ok && credits > 0) {
+                self->retrying_after_credit_refresh_ = false;
+                LOG_INFO("ChatModeScreen", QString("Credits refreshed to %1 — retrying last message").arg(credits));
+                self->message_panel_->set_credits(credits);
+                if (!self->last_message_.isEmpty()) {
+                    ChatModeService::instance().stream_message(
+                        self->last_message_, self->active_session_uuid_, self->last_mode_);
+                }
+            } else {
+                self->message_panel_->on_insufficient_credits();
+            }
+        });
     });
 }
 

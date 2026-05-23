@@ -115,7 +115,7 @@ void StrategyBuilderPanel::connect_service() {
     auto& svc = AlgoTradingService::instance();
     connect(&svc, &AlgoTradingService::strategy_saved, this, [this](const QString& id) {
         if (status_label_)
-            status_label_->setText(QString("Strategy saved: %1").arg(id));
+            status_label_->setText(tr("Strategy saved: %1").arg(id));
         status_label_->setStyleSheet(
             QString("color: %1; font-size: %2px; %3 background: transparent; border: none;")
                 .arg(fincept::ui::colors::POSITIVE())
@@ -231,29 +231,29 @@ QWidget* StrategyBuilderPanel::build_left_pane() {
     vl->setSpacing(8);
 
     // ── Strategy Definition ─────────────────────────────────────────────────
-    auto* id_sec = new QLabel("STRATEGY DEFINITION", content);
+    auto* id_sec = new QLabel(tr("STRATEGY DEFINITION"), content);
     id_sec->setStyleSheet(kSectionLabel());
     vl->addWidget(id_sec);
 
-    auto* name_lbl = new QLabel("NAME", content);
+    auto* name_lbl = new QLabel(tr("NAME"), content);
     name_lbl->setStyleSheet(kLabelStyle());
     vl->addWidget(name_lbl);
     name_edit_ = new QLineEdit(content);
-    name_edit_->setPlaceholderText("My Strategy");
+    name_edit_->setPlaceholderText(tr("My Strategy"));
     name_edit_->setStyleSheet(kInputStyle());
     name_edit_->setFixedHeight(30);
     vl->addWidget(name_edit_);
 
-    auto* desc_lbl = new QLabel("DESCRIPTION", content);
+    auto* desc_lbl = new QLabel(tr("DESCRIPTION"), content);
     desc_lbl->setStyleSheet(kLabelStyle());
     vl->addWidget(desc_lbl);
     desc_edit_ = new QLineEdit(content);
-    desc_edit_->setPlaceholderText("Strategy description...");
+    desc_edit_->setPlaceholderText(tr("Strategy description..."));
     desc_edit_->setStyleSheet(kInputStyle());
     desc_edit_->setFixedHeight(30);
     vl->addWidget(desc_edit_);
 
-    auto* tf_lbl = new QLabel("TIMEFRAME", content);
+    auto* tf_lbl = new QLabel(tr("TIMEFRAME"), content);
     tf_lbl->setStyleSheet(kLabelStyle());
     vl->addWidget(tf_lbl);
     timeframe_combo_ = new QComboBox(content);
@@ -267,10 +267,10 @@ QWidget* StrategyBuilderPanel::build_left_pane() {
     auto* entry_hdr_hl = new QHBoxLayout(entry_hdr);
     entry_hdr_hl->setContentsMargins(0, 8, 0, 0);
     entry_hdr_hl->setSpacing(8);
-    auto* entry_lbl = new QLabel("ENTRY CONDITIONS", entry_hdr);
+    auto* entry_lbl = new QLabel(tr("ENTRY CONDITIONS"), entry_hdr);
     entry_lbl->setStyleSheet(kSectionLabel());
     entry_hdr_hl->addWidget(entry_lbl);
-    auto* entry_logic_lbl = new QLabel("Logic:", entry_hdr);
+    auto* entry_logic_lbl = new QLabel(tr("Logic:"), entry_hdr);
     entry_logic_lbl->setStyleSheet(kLabelStyle());
     entry_hdr_hl->addWidget(entry_logic_lbl);
     entry_logic_combo_ = new QComboBox(entry_hdr);
@@ -288,7 +288,7 @@ QWidget* StrategyBuilderPanel::build_left_pane() {
     entry_conditions_layout_->setSpacing(4);
     vl->addWidget(entry_container);
 
-    auto* add_entry_btn = new QPushButton("+ ADD ENTRY CONDITION", content);
+    auto* add_entry_btn = new QPushButton(tr("+ ADD ENTRY CONDITION"), content);
     add_entry_btn->setCursor(Qt::PointingHandCursor);
     add_entry_btn->setFixedHeight(28);
     add_entry_btn->setStyleSheet(
@@ -309,10 +309,10 @@ QWidget* StrategyBuilderPanel::build_left_pane() {
     auto* exit_hdr_hl = new QHBoxLayout(exit_hdr);
     exit_hdr_hl->setContentsMargins(0, 8, 0, 0);
     exit_hdr_hl->setSpacing(8);
-    auto* exit_lbl = new QLabel("EXIT CONDITIONS", exit_hdr);
+    auto* exit_lbl = new QLabel(tr("EXIT CONDITIONS"), exit_hdr);
     exit_lbl->setStyleSheet(kSectionLabel());
     exit_hdr_hl->addWidget(exit_lbl);
-    auto* exit_logic_lbl = new QLabel("Logic:", exit_hdr);
+    auto* exit_logic_lbl = new QLabel(tr("Logic:"), exit_hdr);
     exit_logic_lbl->setStyleSheet(kLabelStyle());
     exit_hdr_hl->addWidget(exit_logic_lbl);
     exit_logic_combo_ = new QComboBox(exit_hdr);
@@ -330,7 +330,7 @@ QWidget* StrategyBuilderPanel::build_left_pane() {
     exit_conditions_layout_->setSpacing(4);
     vl->addWidget(exit_container);
 
-    auto* add_exit_btn = new QPushButton("+ ADD EXIT CONDITION", content);
+    auto* add_exit_btn = new QPushButton(tr("+ ADD EXIT CONDITION"), content);
     add_exit_btn->setCursor(Qt::PointingHandCursor);
     add_exit_btn->setFixedHeight(28);
     add_exit_btn->setStyleSheet(add_entry_btn->styleSheet());
@@ -340,7 +340,7 @@ QWidget* StrategyBuilderPanel::build_left_pane() {
     vl->addWidget(add_exit_btn);
 
     // ── Risk Management ─────────────────────────────────────────────────────
-    auto* risk_lbl = new QLabel("RISK MANAGEMENT", content);
+    auto* risk_lbl = new QLabel(tr("RISK MANAGEMENT"), content);
     risk_lbl->setStyleSheet(kSectionLabel());
     vl->addWidget(risk_lbl);
 
@@ -364,21 +364,21 @@ QWidget* StrategyBuilderPanel::build_left_pane() {
         spin->setDecimals(2);
         spin->setSuffix(" %");
         spin->setValue(def_val);
-        spin->setSpecialValueText("DISABLED");
+        spin->setSpecialValueText(tr("DISABLED"));
         cvl->addWidget(spin);
         rgl->addWidget(col);
         return spin;
     };
 
-    stop_loss_spin_     = make_risk_field("STOP LOSS %",     0.0);
-    take_profit_spin_   = make_risk_field("TAKE PROFIT %",   0.0);
-    trailing_stop_spin_ = make_risk_field("TRAILING STOP %", 0.0);
+    stop_loss_spin_     = make_risk_field(tr("STOP LOSS %"),     0.0);
+    take_profit_spin_   = make_risk_field(tr("TAKE PROFIT %"),   0.0);
+    trailing_stop_spin_ = make_risk_field(tr("TRAILING STOP %"), 0.0);
     vl->addWidget(risk_grid);
 
     vl->addStretch();
 
     // ── Save button ─────────────────────────────────────────────────────────
-    auto* save_btn = new QPushButton("SAVE STRATEGY", content);
+    auto* save_btn = new QPushButton(tr("SAVE STRATEGY"), content);
     save_btn->setCursor(Qt::PointingHandCursor);
     save_btn->setFixedHeight(36);
     save_btn->setStyleSheet(
@@ -424,7 +424,7 @@ QWidget* StrategyBuilderPanel::build_right_pane() {
     vl->setSpacing(8);
 
     // ── Backtest Parameters ─────────────────────────────────────────────────
-    auto* bt_sec = new QLabel("BACKTEST PARAMETERS", content);
+    auto* bt_sec = new QLabel(tr("BACKTEST PARAMETERS"), content);
     bt_sec->setStyleSheet(kSectionLabel());
     vl->addWidget(bt_sec);
 
@@ -451,7 +451,7 @@ QWidget* StrategyBuilderPanel::build_right_pane() {
     bt_symbol_->setPlaceholderText("RELIANCE");
     bt_symbol_->setStyleSheet(kInputStyle());
     bt_symbol_->setFixedHeight(30);
-    params_gl->addWidget(make_param_col("SYMBOL", bt_symbol_), 0, 0);
+    params_gl->addWidget(make_param_col(tr("SYMBOL"), bt_symbol_), 0, 0);
 
     bt_capital_ = new QDoubleSpinBox;
     bt_capital_->setStyleSheet(kSpinStyle());
@@ -460,26 +460,26 @@ QWidget* StrategyBuilderPanel::build_right_pane() {
     bt_capital_->setDecimals(0);
     bt_capital_->setPrefix("$ ");
     bt_capital_->setValue(100000);
-    params_gl->addWidget(make_param_col("CAPITAL ($)", bt_capital_), 0, 1);
+    params_gl->addWidget(make_param_col(tr("CAPITAL ($)"), bt_capital_), 0, 1);
 
     bt_start_date_ = new QLineEdit;
     bt_start_date_->setPlaceholderText("YYYY-MM-DD");
     bt_start_date_->setText("2024-01-01");
     bt_start_date_->setStyleSheet(kInputStyle());
     bt_start_date_->setFixedHeight(30);
-    params_gl->addWidget(make_param_col("START DATE", bt_start_date_), 1, 0);
+    params_gl->addWidget(make_param_col(tr("START DATE"), bt_start_date_), 1, 0);
 
     bt_end_date_ = new QLineEdit;
     bt_end_date_->setPlaceholderText("YYYY-MM-DD");
     bt_end_date_->setText("2025-01-01");
     bt_end_date_->setStyleSheet(kInputStyle());
     bt_end_date_->setFixedHeight(30);
-    params_gl->addWidget(make_param_col("END DATE", bt_end_date_), 1, 1);
+    params_gl->addWidget(make_param_col(tr("END DATE"), bt_end_date_), 1, 1);
 
     vl->addWidget(params_grid);
 
     // RUN BACKTEST button
-    auto* bt_btn = new QPushButton("RUN BACKTEST", content);
+    auto* bt_btn = new QPushButton(tr("RUN BACKTEST"), content);
     bt_btn->setCursor(Qt::PointingHandCursor);
     bt_btn->setFixedHeight(36);
     bt_btn->setStyleSheet(
@@ -510,7 +510,7 @@ QWidget* StrategyBuilderPanel::build_right_pane() {
     results_layout_->setSpacing(8);
 
     // Empty state
-    bt_empty_label_ = new QLabel("Run a backtest to see results", results_container);
+    bt_empty_label_ = new QLabel(tr("Run a backtest to see results"), results_container);
     bt_empty_label_->setAlignment(Qt::AlignCenter);
     bt_empty_label_->setStyleSheet(
         QString("color: %1; font-size: %2px; %3 background: transparent; border: none; padding: 24px;")
@@ -535,12 +535,12 @@ QWidget* StrategyBuilderPanel::build_right_pane() {
     };
 
     QList<KpiDef> kpi_defs = {
-        {"TOTAL RETURN",  &kpi_total_return_val_,  &kpi_total_return_sub_},
-        {"SHARPE RATIO",  &kpi_sharpe_val_,        &kpi_sharpe_sub_},
-        {"MAX DRAWDOWN",  &kpi_max_dd_val_,        &kpi_max_dd_sub_},
-        {"WIN RATE",      &kpi_win_rate_val_,      &kpi_win_rate_sub_},
-        {"TOTAL TRADES",  &kpi_trades_val_,        &kpi_trades_sub_},
-        {"PROFIT FACTOR", &kpi_profit_factor_val_, &kpi_profit_factor_sub_},
+        {tr("TOTAL RETURN"),  &kpi_total_return_val_,  &kpi_total_return_sub_},
+        {tr("SHARPE RATIO"),  &kpi_sharpe_val_,        &kpi_sharpe_sub_},
+        {tr("MAX DRAWDOWN"),  &kpi_max_dd_val_,        &kpi_max_dd_sub_},
+        {tr("WIN RATE"),      &kpi_win_rate_val_,      &kpi_win_rate_sub_},
+        {tr("TOTAL TRADES"),  &kpi_trades_val_,        &kpi_trades_sub_},
+        {tr("PROFIT FACTOR"), &kpi_profit_factor_val_, &kpi_profit_factor_sub_},
     };
 
     for (int i = 0; i < kpi_defs.size(); ++i) {
@@ -658,34 +658,34 @@ void StrategyBuilderPanel::display_backtest_result(const QJsonObject& payload) {
     // SHARPE
     set_kpi(kpi_sharpe_val_, QString::number(sharpe, 'f', 3),
             sharpe >= 0.5 ? fincept::ui::colors::POSITIVE : fincept::ui::colors::NEGATIVE);
-    kpi_sharpe_sub_->setText(sharpe >= 1.0 ? "Excellent" : sharpe >= 0.5 ? "Good" : "Weak");
+    kpi_sharpe_sub_->setText(sharpe >= 1.0 ? tr("Excellent") : sharpe >= 0.5 ? tr("Good") : tr("Weak"));
 
     // MAX DRAWDOWN (always red)
     set_kpi(kpi_max_dd_val_,
             QString("-%1%").arg(qAbs(max_dd), 0, 'f', 2),
             fincept::ui::colors::NEGATIVE);
-    kpi_max_dd_sub_->setText("Max Drawdown");
+    kpi_max_dd_sub_->setText(tr("Max Drawdown"));
 
     // WIN RATE
     set_kpi(kpi_win_rate_val_,
             QString("%1%").arg(win_rate, 0, 'f', 1),
             win_rate >= 50.0 ? fincept::ui::colors::POSITIVE : fincept::ui::colors::NEGATIVE);
-    kpi_win_rate_sub_->setText(win_rate >= 50.0 ? "Above average" : "Below average");
+    kpi_win_rate_sub_->setText(win_rate >= 50.0 ? tr("Above average") : tr("Below average"));
 
     // TOTAL TRADES
     set_kpi(kpi_trades_val_, QString::number(total_trades), fincept::ui::colors::TEXT_PRIMARY);
-    kpi_trades_sub_->setText("Total trades");
+    kpi_trades_sub_->setText(tr("Total trades"));
 
     // PROFIT FACTOR
     set_kpi(kpi_profit_factor_val_, QString::number(profit_factor, 'f', 2),
             profit_factor >= 1.0 ? fincept::ui::colors::POSITIVE : fincept::ui::colors::NEGATIVE);
-    kpi_profit_factor_sub_->setText(profit_factor >= 1.5 ? "Strong" : profit_factor >= 1.0 ? "Profitable" : "Losing");
+    kpi_profit_factor_sub_->setText(profit_factor >= 1.5 ? tr("Strong") : profit_factor >= 1.0 ? tr("Profitable") : tr("Losing"));
 }
 
 // ── on_backtest_result ───────────────────────────────────────────────────────
 
 void StrategyBuilderPanel::on_backtest_result(const QJsonObject& payload) {
-    status_label_->setText("Backtest complete.");
+    status_label_->setText(tr("Backtest complete."));
     status_label_->setStyleSheet(
         QString("color: %1; font-size: %2px; %3 background: transparent; border: none;")
             .arg(fincept::ui::colors::POSITIVE())
@@ -699,7 +699,7 @@ void StrategyBuilderPanel::on_backtest_result(const QJsonObject& payload) {
 
 void StrategyBuilderPanel::on_save() {
     if (name_edit_->text().trimmed().isEmpty()) {
-        status_label_->setText("Strategy name is required.");
+        status_label_->setText(tr("Strategy name is required."));
         status_label_->setStyleSheet(
             QString("color: %1; font-size: %2px; %3 background: transparent; border: none;")
                 .arg(fincept::ui::colors::NEGATIVE())
@@ -721,7 +721,7 @@ void StrategyBuilderPanel::on_save() {
     strategy.take_profit      = take_profit_spin_->value();
     strategy.trailing_stop    = trailing_stop_spin_->value();
 
-    status_label_->setText("Saving...");
+    status_label_->setText(tr("Saving..."));
     status_label_->setStyleSheet(
         QString("color: %1; font-size: %2px; %3 background: transparent; border: none;")
             .arg(fincept::ui::colors::TEXT_SECONDARY())
@@ -773,7 +773,7 @@ void StrategyBuilderPanel::on_save() {
 void StrategyBuilderPanel::on_backtest() {
     QString symbol = bt_symbol_->text().trimmed();
     if (symbol.isEmpty()) {
-        status_label_->setText("Enter a symbol for backtesting.");
+        status_label_->setText(tr("Enter a symbol for backtesting."));
         status_label_->setStyleSheet(
             QString("color: %1; font-size: %2px; %3 background: transparent; border: none;")
                 .arg(fincept::ui::colors::NEGATIVE())
@@ -782,7 +782,7 @@ void StrategyBuilderPanel::on_backtest() {
         return;
     }
 
-    status_label_->setText("Running backtest...");
+    status_label_->setText(tr("Running backtest..."));
     status_label_->setStyleSheet(
         QString("color: %1; font-size: %2px; %3 background: transparent; border: none;")
             .arg(fincept::ui::colors::CYAN())
@@ -805,7 +805,7 @@ void StrategyBuilderPanel::on_backtest() {
 
 void StrategyBuilderPanel::on_error(const QString& context, const QString& msg) {
     if (status_label_) {
-        status_label_->setText(QString("Error [%1]: %2").arg(context, msg));
+        status_label_->setText(tr("Error [%1]: %2").arg(context, msg));
         status_label_->setStyleSheet(
             QString("color: %1; font-size: %2px; %3 background: transparent; border: none;")
                 .arg(fincept::ui::colors::NEGATIVE())

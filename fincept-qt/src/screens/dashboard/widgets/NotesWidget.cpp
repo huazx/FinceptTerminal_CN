@@ -2,6 +2,7 @@
 
 #include "storage/repositories/NotesRepository.h"
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #include <QComboBox>
 #include <QDateTime>
@@ -59,7 +60,7 @@ QString sentiment_color(const QString& s) {
 } // namespace
 
 NotesWidget::NotesWidget(const QJsonObject& cfg, QWidget* parent)
-    : BaseWidget("NOTES", parent, ui::colors::AMBER()) {
+    : BaseWidget(QCoreApplication::translate("NotesWidget", "NOTES"), parent, ui::colors::AMBER()) {
     auto* vl = content_layout();
     vl->setContentsMargins(0, 0, 0, 0);
     vl->setSpacing(0);
@@ -186,7 +187,7 @@ void NotesWidget::refresh_data() {
 
     if (notes.isEmpty()) {
         const QString msg = (filter_ == QStringLiteral("favorites"))
-                                ? QStringLiteral("No favorite notes")
+                                ? QCoreApplication::translate("NotesWidget", "No favorite notes")
                                 : QStringLiteral("No notes yet — open Notes screen to add one");
         auto* empty = new QLabel(msg);
         empty->setAlignment(Qt::AlignCenter);
@@ -316,21 +317,21 @@ bool NotesWidget::eventFilter(QObject* obj, QEvent* event) {
 
 QDialog* NotesWidget::make_config_dialog(QWidget* parent) {
     auto* dlg = new QDialog(parent);
-    dlg->setWindowTitle("Configure — Notes");
+    dlg->setWindowTitle(QCoreApplication::translate("NotesWidget", "Configure — Notes"));
     auto* form = new QFormLayout(dlg);
 
     auto* filter_box = new QComboBox(dlg);
-    filter_box->addItem("Recent", "recent");
-    filter_box->addItem("Favorites only", "favorites");
+    filter_box->addItem(QCoreApplication::translate("NotesWidget", "Recent"), "recent");
+    filter_box->addItem(QCoreApplication::translate("NotesWidget", "Favorites only"), "favorites");
     const int idx = filter_box->findData(filter_);
     if (idx >= 0)
         filter_box->setCurrentIndex(idx);
-    form->addRow("Filter", filter_box);
+    form->addRow(QCoreApplication::translate("NotesWidget", "Filter"), filter_box);
 
     auto* spin = new QSpinBox(dlg);
     spin->setRange(3, 50);
     spin->setValue(max_rows_);
-    form->addRow("Max rows", spin);
+    form->addRow(QCoreApplication::translate("NotesWidget", "Max rows"), spin);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, dlg);
     form->addRow(buttons);

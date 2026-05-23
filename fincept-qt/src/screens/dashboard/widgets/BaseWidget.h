@@ -77,6 +77,17 @@ class BaseWidget : public QFrame {
     /// so the gear icon appears. Also hides the icon if set to false later.
     void set_configurable(bool configurable);
 
+    /// Returns true if the widget has completed its first data load.
+    /// Subclasses should check this before calling set_loading_progress()
+    /// to avoid showing the LOADING overlay on subsequent refreshes.
+    bool initial_load_done() const { return initial_load_done_; }
+
+    /// Mark the first data load as complete. After this, set_loading_progress()
+    /// becomes a no-op, preventing the LOADING overlay from reappearing on
+    /// DataHub refresh cycles. Called automatically when all items arrive or
+    /// when the watchdog fires with partial data.
+    void mark_initial_load_done();
+
   private:
     void refresh_base_theme();
     void on_config_clicked();
@@ -97,6 +108,7 @@ class BaseWidget : public QFrame {
     QTimer* loading_watchdog_ = nullptr;
     int last_progress_loaded_ = 0;
     QString accent_color_;
+    bool initial_load_done_ = false;
 };
 
 } // namespace fincept::screens::widgets

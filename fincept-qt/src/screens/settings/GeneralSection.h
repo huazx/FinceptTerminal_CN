@@ -23,6 +23,7 @@ class GeneralSection : public QWidget {
     void build_ui();
 
     QComboBox* on_close_combo_ = nullptr;
+    QComboBox* market_data_source_combo_ = nullptr;
 };
 
 } // namespace fincept::screens

@@ -1,6 +1,7 @@
 #include "screens/dashboard/widgets/QuickTradeWidget.h"
 
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #    include "datahub/DataHub.h"
 #    include "datahub/DataHubMetaTypes.h"
@@ -32,7 +33,7 @@ static QString combo_style() {
         .arg(ui::colors::BORDER_MED());
 }
 
-QuickTradeWidget::QuickTradeWidget(QWidget* parent) : BaseWidget("QUICK TRADE", parent, ui::colors::AMBER()) {
+QuickTradeWidget::QuickTradeWidget(QWidget* parent) : BaseWidget(QCoreApplication::translate("QuickTradeWidget", "QUICK TRADE"), parent, ui::colors::AMBER()) {
     auto* vl = content_layout();
     vl->setContentsMargins(10, 10, 10, 10);
     vl->setSpacing(8);
@@ -44,11 +45,11 @@ QuickTradeWidget::QuickTradeWidget(QWidget* parent) : BaseWidget("QUICK TRADE", 
     srl->setSpacing(6);
 
     symbol_input_ = new QLineEdit;
-    symbol_input_->setPlaceholderText("Symbol (e.g. AAPL)");
+    symbol_input_->setPlaceholderText(QCoreApplication::translate("QuickTradeWidget", "Symbol (e.g. AAPL)"));
     symbol_input_->setText("AAPL");
     srl->addWidget(symbol_input_, 1);
 
-    lookup_btn_ = new QPushButton("LOOKUP");
+    lookup_btn_ = new QPushButton(QCoreApplication::translate("QuickTradeWidget", "LOOKUP"));
     srl->addWidget(lookup_btn_);
     vl->addWidget(search_row);
 
@@ -74,10 +75,10 @@ QuickTradeWidget::QuickTradeWidget(QWidget* parent) : BaseWidget("QUICK TRADE", 
     price_col->addWidget(price_label_);
 
     auto* bid_ask_row = new QHBoxLayout;
-    bid_label_ = new QLabel("BID --");
+    bid_label_ = new QLabel(QCoreApplication::translate("QuickTradeWidget", "BID --"));
     bid_ask_row->addWidget(bid_label_);
     bid_ask_row->addSpacing(8);
-    ask_label_ = new QLabel("ASK --");
+    ask_label_ = new QLabel(QCoreApplication::translate("QuickTradeWidget", "ASK --"));
     bid_ask_row->addWidget(ask_label_);
     price_col->addLayout(bid_ask_row);
     qcl->addLayout(price_col);
@@ -95,11 +96,11 @@ QuickTradeWidget::QuickTradeWidget(QWidget* parent) : BaseWidget("QUICK TRADE", 
     st_row->setSpacing(6);
 
     side_combo_ = new QComboBox;
-    side_combo_->addItems({"BUY", "SELL", "SHORT"});
+    side_combo_->addItems({QCoreApplication::translate("QuickTradeWidget", "BUY"), QCoreApplication::translate("QuickTradeWidget", "SELL"), QCoreApplication::translate("QuickTradeWidget", "SHORT")});
     st_row->addWidget(side_combo_, 1);
 
     order_type_ = new QComboBox;
-    order_type_->addItems({"MARKET", "LIMIT", "STOP"});
+    order_type_->addItems({QCoreApplication::translate("QuickTradeWidget", "MARKET"), QCoreApplication::translate("QuickTradeWidget", "LIMIT"), QCoreApplication::translate("QuickTradeWidget", "STOP")});
     st_row->addWidget(order_type_, 1);
     vl->addLayout(st_row);
 
@@ -107,27 +108,27 @@ QuickTradeWidget::QuickTradeWidget(QWidget* parent) : BaseWidget("QUICK TRADE", 
     auto* qp_row = new QHBoxLayout;
     qp_row->setSpacing(6);
 
-    qty_lbl_ = new QLabel("QTY");
+    qty_lbl_ = new QLabel(QCoreApplication::translate("QuickTradeWidget", "QTY"));
     qp_row->addWidget(qty_lbl_);
 
     qty_input_ = new QLineEdit("10");
     qty_input_->setValidator(new QDoubleValidator(0, 1e9, 4, qty_input_));
     qp_row->addWidget(qty_input_, 1);
 
-    price_lbl_ = new QLabel("PRICE");
+    price_lbl_ = new QLabel(QCoreApplication::translate("QuickTradeWidget", "PRICE"));
     qp_row->addWidget(price_lbl_);
 
     price_input_ = new QLineEdit;
-    price_input_->setPlaceholderText("market");
+    price_input_->setPlaceholderText(QCoreApplication::translate("QuickTradeWidget", "market"));
     qp_row->addWidget(price_input_, 1);
     vl->addLayout(qp_row);
 
     // Estimated total
-    est_total_ = new QLabel("EST. TOTAL  --");
+    est_total_ = new QLabel(QCoreApplication::translate("QuickTradeWidget", "EST. TOTAL  --"));
     vl->addWidget(est_total_);
 
     // Submit button
-    submit_btn_ = new QPushButton("PLACE ORDER");
+    submit_btn_ = new QPushButton(QCoreApplication::translate("QuickTradeWidget", "PLACE ORDER"));
     submit_btn_->setFixedHeight(32);
     vl->addWidget(submit_btn_);
 
@@ -138,13 +139,13 @@ QuickTradeWidget::QuickTradeWidget(QWidget* parent) : BaseWidget("QUICK TRADE", 
     connect(submit_btn_, &QPushButton::clicked, this, &QuickTradeWidget::submit_order);
     connect(order_type_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
         price_input_->setEnabled(idx != 0); // disable for MARKET
-        price_input_->setPlaceholderText(idx == 0 ? "market" : "0.00");
+        price_input_->setPlaceholderText(idx == 0 ? QCoreApplication::translate("QuickTradeWidget", "market") : QStringLiteral("0.00"));
     });
     connect(qty_input_, &QLineEdit::textChanged, this, [this](const QString&) {
         if (current_price_ > 0) {
             double qty = qty_input_->text().toDouble();
             double total = qty * current_price_;
-            est_total_->setText(QString("EST. TOTAL  $%1").arg(total, 0, 'f', 2));
+            est_total_->setText(QCoreApplication::translate("QuickTradeWidget", "EST. TOTAL  $%1").arg(total, 0, 'f', 2));
         }
     });
     connect(this, &BaseWidget::refresh_requested, this, &QuickTradeWidget::lookup_symbol);
@@ -259,12 +260,12 @@ void QuickTradeWidget::apply_quote(const services::QuoteData& q) {
     // misleading on a trade-entry widget). Real bid/ask must come from a
     // broker quote stream (`broker:<id>:<account>:quote:<sym>`) which the
     // user wires up via the gear-icon config — wiring deferred.
-    bid_label_->setText(QStringLiteral("BID  —"));
-    ask_label_->setText(QStringLiteral("ASK  —"));
+    bid_label_->setText(QCoreApplication::translate("QuickTradeWidget", "BID  —"));
+    ask_label_->setText(QCoreApplication::translate("QuickTradeWidget", "ASK  —"));
 
     double qty = qty_input_->text().toDouble();
     if (qty > 0)
-        est_total_->setText(QString("EST. TOTAL  $%1").arg(qty * q.price, 0, 'f', 2));
+        est_total_->setText(QCoreApplication::translate("QuickTradeWidget", "EST. TOTAL  $%1").arg(qty * q.price, 0, 'f', 2));
 }
 
 void QuickTradeWidget::hub_unsubscribe_all() {
@@ -276,7 +277,7 @@ void QuickTradeWidget::hub_unsubscribe_all() {
 void QuickTradeWidget::on_side_changed(int idx) {
     // BUY = green, SELL/SHORT = red
     QString color = (idx == 0) ? ui::colors::POSITIVE() : ui::colors::NEGATIVE();
-    submit_btn_->setText(idx == 0 ? "PLACE BUY ORDER" : idx == 1 ? "PLACE SELL ORDER" : "PLACE SHORT ORDER");
+    submit_btn_->setText(idx == 0 ? QCoreApplication::translate("QuickTradeWidget", "PLACE BUY ORDER") : idx == 1 ? QCoreApplication::translate("QuickTradeWidget", "PLACE SELL ORDER") : QCoreApplication::translate("QuickTradeWidget", "PLACE SHORT ORDER"));
     submit_btn_->setStyleSheet(QString("QPushButton { background: %1; color: %3; border: none; "
                                        "font-size: 11px; font-weight: bold; }"
                                        "QPushButton:hover { background: %2; }")
@@ -290,16 +291,16 @@ void QuickTradeWidget::submit_order() {
     QString type = order_type_->currentText();
 
     if (sym.isEmpty() || qty <= 0) {
-        QMessageBox::warning(this, "Quick Trade", "Please enter a valid symbol and quantity.");
+        QMessageBox::warning(this, QCoreApplication::translate("QuickTradeWidget", "Quick Trade"), QCoreApplication::translate("QuickTradeWidget", "Please enter a valid symbol and quantity."));
         return;
     }
 
-    QString price_str = type == "MARKET" ? QString("market price ($%1)").arg(current_price_, 0, 'f', 2)
+    QString price_str = type == QCoreApplication::translate("QuickTradeWidget", "MARKET") ? QCoreApplication::translate("QuickTradeWidget", "market price ($%1)").arg(current_price_, 0, 'f', 2)
                                          : QString("$%1").arg(price_input_->text());
 
     QMessageBox::information(
-        this, "Order Submitted",
-        QString("%1 %2 %3 @ %4\nOrder sent to trading engine.").arg(side).arg(qty, 0, 'f', 0).arg(sym).arg(price_str));
+        this, QCoreApplication::translate("QuickTradeWidget", "Order Submitted"),
+        QCoreApplication::translate("QuickTradeWidget", "%1 %2 %3 @ %4\nOrder sent to trading engine.").arg(side).arg(qty, 0, 'f', 0).arg(sym).arg(price_str));
 }
 
 } // namespace fincept::screens::widgets

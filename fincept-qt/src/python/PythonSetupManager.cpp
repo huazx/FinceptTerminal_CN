@@ -417,9 +417,10 @@ void PythonSetupManager::run_setup() {
         // ── Step 1: Download UV standalone binary (~13MB) ────────────────────
         if (!status.uv_installed) {
             self->emit_progress("uv", 0, "Downloading UV package manager...");
-            if (!self->download_uv()) {
+            QString uv_err;
+            if (!self->download_uv(&uv_err)) {
                 self->emit_progress("uv", 0, "Failed to download UV", true);
-                fail("UV download failed");
+                fail(uv_err.isEmpty() ? "UV download failed" : uv_err);
                 return;
             }
             self->emit_progress("uv", 100, "UV ready");
@@ -430,9 +431,10 @@ void PythonSetupManager::run_setup() {
         // ── Step 2: Install Python via UV ────────────────────────────────────
         if (!status.python_installed) {
             self->emit_progress("python", 0, "Installing Python 3.11 via UV...");
-            if (!self->install_python_via_uv()) {
+            QString py_err;
+            if (!self->install_python_via_uv(&py_err)) {
                 self->emit_progress("python", 0, "Failed to install Python", true);
-                fail("Python installation failed");
+                fail(py_err.isEmpty() ? "Python installation failed" : py_err);
                 return;
             }
             self->emit_progress("python", 100, "Python 3.11 installed");
@@ -451,13 +453,14 @@ void PythonSetupManager::run_setup() {
 
             std::atomic<bool> v1_ok{!need_venv1}; // already OK if not needed
             std::atomic<bool> v2_ok{!need_venv2};
+            QString v1_err, v2_err;
 
             QFuture<void> f1, f2;
             if (need_venv1) {
-                f1 = QtConcurrent::run([self, &v1_ok]() { v1_ok = self && self->create_venv("venv-numpy1"); });
+                f1 = QtConcurrent::run([self, &v1_ok, &v1_err]() { v1_ok = self && self->create_venv("venv-numpy1", &v1_err); });
             }
             if (need_venv2) {
-                f2 = QtConcurrent::run([self, &v2_ok]() { v2_ok = self && self->create_venv("venv-numpy2"); });
+                f2 = QtConcurrent::run([self, &v2_ok, &v2_err]() { v2_ok = self && self->create_venv("venv-numpy2", &v2_err); });
             }
 
             if (need_venv1)
@@ -467,7 +470,14 @@ void PythonSetupManager::run_setup() {
 
             if (!v1_ok || !v2_ok) {
                 self->emit_progress("venv", 0, "Failed to create virtual environments", true);
-                fail("Venv creation failed");
+                QString detail;
+                if (!v1_ok && !v2_ok)
+                    detail = v1_err + "; " + v2_err;
+                else if (!v1_ok)
+                    detail = v1_err;
+                else
+                    detail = v2_err;
+                fail(detail.isEmpty() ? "Venv creation failed" : detail);
                 return;
             }
             self->emit_progress("venv", 100, "Virtual environments created");
@@ -497,10 +507,11 @@ void PythonSetupManager::run_setup() {
         }
 
         // Run both package installations in parallel
+        QString pkg1_err, pkg2_err;
         QFuture<void> pf1, pf2;
         if (need_pkg1) {
-            pf1 = QtConcurrent::run([self, &p1_ok]() {
-                p1_ok = self && self->install_packages("venv-numpy1", "requirements-numpy1.txt");
+            pf1 = QtConcurrent::run([self, &p1_ok, &pkg1_err]() {
+                p1_ok = self && self->install_packages("venv-numpy1", "requirements-numpy1.txt", &pkg1_err);
                 if (self) {
                     self->emit_progress("packages-numpy1", p1_ok ? 100 : 0,
                                         p1_ok ? "NumPy 1.x packages installed" : "NumPy 1.x package install failed",
@@ -509,8 +520,8 @@ void PythonSetupManager::run_setup() {
             });
         }
         if (need_pkg2) {
-            pf2 = QtConcurrent::run([self, &p2_ok]() {
-                p2_ok = self && self->install_packages("venv-numpy2", "requirements-numpy2.txt");
+            pf2 = QtConcurrent::run([self, &p2_ok, &pkg2_err]() {
+                p2_ok = self && self->install_packages("venv-numpy2", "requirements-numpy2.txt", &pkg2_err);
                 if (self) {
                     self->emit_progress("packages-numpy2", p2_ok ? 100 : 0,
                                         p2_ok ? "NumPy 2.x packages installed" : "NumPy 2.x package install failed",
@@ -525,7 +536,14 @@ void PythonSetupManager::run_setup() {
             pf2.waitForFinished();
 
         if (!p1_ok || !p2_ok) {
-            fail("Package installation failed");
+            QString detail;
+            if (!p1_ok && !p2_ok)
+                detail = pkg1_err + "; " + pkg2_err;
+            else if (!p1_ok)
+                detail = pkg1_err;
+            else
+                detail = pkg2_err;
+            fail(detail.isEmpty() ? "Package installation failed" : detail);
             return;
         }
 
@@ -551,7 +569,7 @@ void PythonSetupManager::run_setup() {
     });
 }
 
-bool PythonSetupManager::download_uv() {
+bool PythonSetupManager::download_uv(QString* error_detail) {
     QString dir = install_dir() + "/uv";
     QDir().mkpath(dir);
 
@@ -581,6 +599,8 @@ bool PythonSetupManager::download_uv() {
     QString err = download_file(url, archive_path);
     if (!err.isEmpty()) {
         LOG_ERROR("PythonSetup", "UV download failed: " + err);
+        if (error_detail)
+            *error_detail = "UV download failed: " + err;
         return false;
     }
 
@@ -605,6 +625,8 @@ bool PythonSetupManager::download_uv() {
         }
         if (!extracted) {
             LOG_ERROR("PythonSetup", "Failed to extract UV archive");
+            if (error_detail)
+                *error_detail = "Failed to extract UV archive";
             return false;
         }
     }
@@ -621,6 +643,8 @@ bool PythonSetupManager::download_uv() {
 #else
     if (!run_command("tar", {"xzf", archive_path, "-C", dir, "--strip-components=1"})) {
         LOG_ERROR("PythonSetup", "Failed to extract UV");
+        if (error_detail)
+            *error_detail = "Failed to extract UV archive (tar failed)";
         return false;
     }
     // Make executable
@@ -631,6 +655,8 @@ bool PythonSetupManager::download_uv() {
 
     if (!QFileInfo::exists(uv_path())) {
         LOG_ERROR("PythonSetup", "UV binary not found after extraction: " + uv_path());
+        if (error_detail)
+            *error_detail = "UV binary not found after extraction";
         return false;
     }
 
@@ -638,6 +664,8 @@ bool PythonSetupManager::download_uv() {
     emit_progress("uv", 80, "Verifying UV...");
     if (!run_command(uv_path(), {"--version"})) {
         LOG_ERROR("PythonSetup", "UV verification failed");
+        if (error_detail)
+            *error_detail = "UV installed but verification failed";
         return false;
     }
 
@@ -645,14 +673,18 @@ bool PythonSetupManager::download_uv() {
     return true;
 }
 
-bool PythonSetupManager::install_python_via_uv() {
+bool PythonSetupManager::install_python_via_uv(QString* error_detail) {
     emit_progress("python", 20, "UV is downloading Python 3.11...");
 
     // Shared UV env (cache dir, hardlinks, bytecode compile, concurrency, timeout).
     QStringList env = uv_env_extra();
 
-    if (!run_command(uv_path(), {"python", "install", kPythonVersion}, env)) {
-        LOG_ERROR("PythonSetup", "uv python install failed");
+    QString stderr_out;
+    if (!run_command_capture(uv_path(), {"python", "install", kPythonVersion}, env, stderr_out)) {
+        const QString detail = stderr_out.left(300).trimmed();
+        LOG_ERROR("PythonSetup", "uv python install failed: " + detail);
+        if (error_detail)
+            *error_detail = "Python installation failed: " + detail;
         return false;
     }
 
@@ -666,6 +698,8 @@ bool PythonSetupManager::install_python_via_uv() {
     QString py = base_python_path();
     if (py.isEmpty() || !QFileInfo::exists(py)) {
         LOG_ERROR("PythonSetup", "Python not found after UV install");
+        if (error_detail)
+            *error_detail = "Python not found after installation — path: " + (py.isEmpty() ? "(empty)" : py);
         return false;
     }
 
@@ -673,7 +707,7 @@ bool PythonSetupManager::install_python_via_uv() {
     return true;
 }
 
-bool PythonSetupManager::create_venv(const QString& venv_name) {
+bool PythonSetupManager::create_venv(const QString& venv_name, QString* error_detail) {
     QString venv_path = install_dir() + "/" + venv_name;
 
     // If the directory exists but is not a valid venv (no pyvenv.cfg), remove it.
@@ -686,16 +720,21 @@ bool PythonSetupManager::create_venv(const QString& venv_name) {
 
     QStringList env = uv_env_extra();
 
-    if (run_command(uv_path(), {"venv", venv_path, "--python", kPythonVersion}, env)) {
+    QString stderr_out;
+    if (run_command_capture(uv_path(), {"venv", venv_path, "--python", kPythonVersion}, env, stderr_out)) {
         LOG_INFO("PythonSetup", "Created venv: " + venv_name);
         return true;
     }
 
-    LOG_ERROR("PythonSetup", "Failed to create venv: " + venv_name);
+    const QString detail = stderr_out.left(300).trimmed();
+    LOG_ERROR("PythonSetup", "Failed to create venv: " + venv_name + " — " + detail);
+    if (error_detail)
+        *error_detail = "Venv creation failed (" + venv_name + "): " + detail;
     return false;
 }
 
-bool PythonSetupManager::install_packages(const QString& venv_name, const QString& requirements_file) {
+bool PythonSetupManager::install_packages(const QString& venv_name, const QString& requirements_file,
+                                          QString* error_detail) {
     // step_key is needed for early-return progress events.
     const QString step_key = venv_name.contains("numpy1") ? "packages-numpy1" : "packages-numpy2";
 
@@ -735,7 +774,7 @@ bool PythonSetupManager::install_packages(const QString& venv_name, const QStrin
 
     QString bulk_stderr;
     bool bulk_ok =
-        run_command_capture(uv_path(), {"pip", "install", "--python", venv_python, "-r", req_path}, env, bulk_stderr);
+        run_command_capture(uv_path(), {"pip", "install", "-i", "https://pypi.tuna.tsinghua.edu.cn/simple", "--python", venv_python, "-r", req_path}, env, bulk_stderr);
 
     if (bulk_ok) {
         LOG_INFO("PythonSetup", QString("[%1] Bulk install succeeded").arg(venv_name));
@@ -757,6 +796,8 @@ bool PythonSetupManager::install_packages(const QString& venv_name, const QStrin
     QStringList packages = read_packages_from_file(req_path);
     if (packages.isEmpty()) {
         LOG_ERROR("PythonSetup", "No packages parsed from: " + req_path);
+        if (error_detail)
+            *error_detail = "No packages found in: " + requirements_file;
         return false;
     }
 
@@ -774,18 +815,45 @@ bool PythonSetupManager::install_packages(const QString& venv_name, const QStrin
                                 .arg(venv_name)
                                 .arg(failed.size())
                                 .arg(failed.join(", ").left(300)));
-    // Do NOT write the marker when any packages failed — the stale/absent
-    // marker ensures check_status() returns needs_setup=true on the next
-    // launch so the failed packages are retried automatically.
+
+    // Packages that require system-level C libraries (e.g. PortAudio for PyAudio)
+    // or have heavy native compilation deps (e.g. stable-baselines3) often fail
+    // in the embedded Python.  They are non-critical — the terminal works without
+    // them.  Separate failed packages into optional (known-hard) vs critical so
+    // that optional failures do NOT block setup completion.
+    static const QSet<QString> kOptionalPkgs = {
+        "PyAudio",          // requires system PortAudio C library
+        "stable-baselines3", // requires compilation, heavy deps
+    };
+
+    QStringList critical_failed;
+    QStringList optional_failed;
+    for (const auto& f : failed) {
+        QString name = f.split(">=").first().split("==").first().split("<").first().trimmed();
+        if (kOptionalPkgs.contains(name))
+            optional_failed << f;
+        else
+            critical_failed << f;
+    }
+
+    if (critical_failed.isEmpty()) {
+        // Only optional packages failed — write the marker and succeed.
+        // Optional packages will be retried on the next sync cycle, but the
+        // sentinel/marker flow is not blocked.
+        LOG_INFO("PythonSetup", QString("[%1] Only optional packages failed: %2 — proceeding")
+                                    .arg(venv_name, optional_failed.join(", ").left(300)));
+        write_marker_hash(venv_name, compute_requirements_hash(requirements_file));
+        emit_progress(step_key, 100,
+                      QString("Installed — %1 optional package(s) skipped").arg(optional_failed.size()));
+        return true;
+    }
+
+    // Critical packages failed — do NOT write the marker.
     emit_progress(step_key, 100,
-                  QString("Done — %1 package(s) failed (will retry on next launch)").arg(failed.size()),
+                  QString("Done — %1 package(s) failed").arg(critical_failed.size()),
                   /*is_error=*/true);
-    // Returning false here prevents run_setup() from writing the .setup_complete
-    // sentinel. Without this, the sentinel would be written even though one or
-    // more packages are missing, and the user would be stuck looping on the
-    // setup screen forever (every launch detects the absent marker, every
-    // re-run hits the same package failure, every successful-looking finish
-    // re-writes the sentinel without writing the marker).
+    if (error_detail)
+        *error_detail = QString("%1 package(s) failed: %2").arg(critical_failed.size()).arg(critical_failed.join(", ").left(200));
     return false;
 }
 

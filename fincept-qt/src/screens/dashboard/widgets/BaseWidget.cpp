@@ -4,6 +4,7 @@
 #include "ui/theme/Theme.h"
 #include "ui/theme/ThemeManager.h"
 
+#include <QCoreApplication>
 #include <QPalette>
 #include <QSize>
 #include <QStyle>
@@ -65,7 +66,7 @@ BaseWidget::BaseWidget(const QString& title, QWidget* parent, const QString& acc
     config_btn_->setText("");
     config_btn_->setIcon(style()->standardIcon(QStyle::SP_FileDialogDetailedView));
     config_btn_->setIconSize(QSize(12, 12));
-    config_btn_->setToolTip("Configure widget");
+    config_btn_->setToolTip(QCoreApplication::translate("BaseWidget", "Configure widget"));
     config_btn_->setCursor(Qt::PointingHandCursor);
     config_btn_->setVisible(false);
     config_btn_->setStyleSheet(
@@ -83,7 +84,7 @@ BaseWidget::BaseWidget(const QString& title, QWidget* parent, const QString& acc
     refresh_btn_->setText("");
     refresh_btn_->setIcon(style()->standardIcon(QStyle::SP_BrowserReload));
     refresh_btn_->setIconSize(QSize(12, 12));
-    refresh_btn_->setToolTip("Refresh widget data");
+    refresh_btn_->setToolTip(QCoreApplication::translate("BaseWidget", "Refresh widget data"));
     refresh_btn_->setCursor(Qt::PointingHandCursor);
     refresh_btn_->setStyleSheet(
         QString("QPushButton { color: %1; background: %2; border: 1px solid %3; border-radius: 2px; "
@@ -100,7 +101,7 @@ BaseWidget::BaseWidget(const QString& title, QWidget* parent, const QString& acc
     close_btn->setText("");
     close_btn->setIcon(style()->standardIcon(QStyle::SP_TitleBarCloseButton));
     close_btn->setIconSize(QSize(11, 11));
-    close_btn->setToolTip("Close widget");
+    close_btn->setToolTip(QCoreApplication::translate("BaseWidget", "Close widget"));
     close_btn->setCursor(Qt::PointingHandCursor);
     close_btn->setStyleSheet(
         QString("QPushButton { color: %1; background: %2; border: 1px solid %3; border-radius: 2px; "
@@ -173,6 +174,8 @@ void BaseWidget::refresh_base_theme() {
 }
 
 void BaseWidget::set_loading(bool loading) {
+    if (initial_load_done_ && loading)
+        return;
     loading_label_->setVisible(loading);
     loading_label_->setText(loading ? "LOADING..." : "");
     if (!loading_overlay_)
@@ -182,6 +185,7 @@ void BaseWidget::set_loading(bool loading) {
         last_progress_loaded_ = 0;
         arm_watchdog();
     } else {
+        initial_load_done_ = true;
         loading_overlay_->finish();
         disarm_watchdog();
     }
@@ -190,15 +194,39 @@ void BaseWidget::set_loading(bool loading) {
 void BaseWidget::set_loading_progress(int loaded, int expected) {
     if (!loading_overlay_)
         return;
+    if (initial_load_done_) {
+        if (loading_overlay_->is_active())
+            loading_overlay_->finish();
+        if (loading_label_ && loading_label_->isVisible()) {
+            loading_label_->setVisible(false);
+            loading_label_->setText(QString());
+        }
+        return;
+    }
     const bool active = (expected > 0) && (loaded < expected);
     loading_label_->setVisible(active);
     loading_label_->setText(active ? QStringLiteral("LOADING...") : QString());
     loading_overlay_->set_progress(loaded, expected);
     last_progress_loaded_ = loaded;
-    if (active)
+    if (active) {
         arm_watchdog();
-    else
+    } else {
+        initial_load_done_ = true;
         disarm_watchdog();
+    }
+}
+
+void BaseWidget::mark_initial_load_done() {
+    if (initial_load_done_)
+        return;
+    initial_load_done_ = true;
+    if (loading_overlay_ && loading_overlay_->is_active())
+        loading_overlay_->finish();
+    if (loading_label_) {
+        loading_label_->setVisible(false);
+        loading_label_->setText(QString());
+    }
+    disarm_watchdog();
 }
 
 void BaseWidget::set_error(const QString& error) {
@@ -268,15 +296,13 @@ void BaseWidget::on_watchdog_fired() {
         loading_label_->setVisible(false);
         loading_label_->setText(QString());
     }
-    // If some data trickled in before the timeout, just hide the spinner so
-    // the partial content becomes visible. Otherwise surface a soft error so
-    // the user knows the widget hasn't simply hung.
     if (last_progress_loaded_ > 0) {
         loading_overlay_->finish();
     } else {
         loading_overlay_->set_error(
-            QStringLiteral("No data yet — click refresh to retry"));
+            QCoreApplication::translate("BaseWidget", "No data yet — click refresh to retry"));
     }
+    initial_load_done_ = true;
 }
 
 } // namespace fincept::screens::widgets

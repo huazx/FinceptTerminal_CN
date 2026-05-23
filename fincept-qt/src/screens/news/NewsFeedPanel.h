@@ -59,6 +59,7 @@ class NewsFeedPanel : public QWidget {
     QLabel* banner_headline_ = nullptr;
     QLabel* banner_source_ = nullptr;
     QTimer* banner_dismiss_timer_ = nullptr;
+    QString banner_original_headline_;
 
     struct BreakingEntry {
         QString headline_key;

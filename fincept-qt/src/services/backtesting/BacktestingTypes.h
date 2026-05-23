@@ -10,8 +10,10 @@
 // together to surface it.
 #pragma once
 #include <QColor>
+#include <QCoreApplication>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QPair>
 #include <QString>
 #include <QStringList>
 #include <QVector>
@@ -59,22 +61,18 @@ struct CommandDef {
 };
 
 inline QVector<CommandDef> all_commands() {
-    // New commands MUST be appended at the end. BacktestingScreen persists
-    // the active command as an integer index in save_state(), and the
-    // cmd_config_stack_ pages are looked up by the same index — reordering
-    // would break saved-state restore for existing users.
     return {
-        {"backtest", "Run Backtest", QColor("#FF6B35")},
-        {"optimize", "Optimize", QColor("#00D66F")},
-        {"walk_forward", "Walk-Forward", QColor("#0088FF")},
-        {"indicator", "Indicators", QColor("#9D4EDD")},
-        {"indicator_signals", "Indicator Signals", QColor("#FFC400")},
-        {"labels", "ML Labels", QColor("#00E5FF")},
-        {"splits", "CV Splits", QColor("#0088FF")},
-        {"returns", "Returns Analysis", QColor("#00D66F")},
-        {"signals", "Signal Generators", QColor("#FFC400")},
-        {"labels_to_signals", "Labels -> Signals", QColor("#9D4EDD")},
-        {"indicator_sweep", "Indicator Sweep", QColor("#00E5FF")},
+        {"backtest", QCoreApplication::translate("BacktestingTypes", "Run Backtest"), QColor("#FF6B35")},
+        {"optimize", QCoreApplication::translate("BacktestingTypes", "Optimize"), QColor("#00D66F")},
+        {"walk_forward", QCoreApplication::translate("BacktestingTypes", "Walk-Forward"), QColor("#0088FF")},
+        {"indicator", QCoreApplication::translate("BacktestingTypes", "Indicators"), QColor("#9D4EDD")},
+        {"indicator_signals", QCoreApplication::translate("BacktestingTypes", "Indicator Signals"), QColor("#FFC400")},
+        {"labels", QCoreApplication::translate("BacktestingTypes", "ML Labels"), QColor("#00E5FF")},
+        {"splits", QCoreApplication::translate("BacktestingTypes", "CV Splits"), QColor("#0088FF")},
+        {"returns", QCoreApplication::translate("BacktestingTypes", "Returns Analysis"), QColor("#00D66F")},
+        {"signals", QCoreApplication::translate("BacktestingTypes", "Signal Generators"), QColor("#FFC400")},
+        {"labels_to_signals", QCoreApplication::translate("BacktestingTypes", "Labels -> Signals"), QColor("#9D4EDD")},
+        {"indicator_sweep", QCoreApplication::translate("BacktestingTypes", "Indicator Sweep"), QColor("#00E5FF")},
     };
 }
 
@@ -196,36 +194,80 @@ inline QVector<Indicator> all_indicators() {
 // runtime via BacktestingService::execute(provider, "get_command_options", {})
 // → result_ready → BacktestingScreen::on_command_options_loaded().
 
-inline QStringList position_sizing_methods() {
-    return {"percent", "fixed", "kelly", "vol_target", "risk"};
+using ComboItem = QPair<QString, QString>;
+
+inline QVector<ComboItem> position_sizing_methods() {
+    return {
+        {QCoreApplication::translate("BacktestingTypes", "Percent"), "percent"},
+        {QCoreApplication::translate("BacktestingTypes", "Fixed"), "fixed"},
+        {QCoreApplication::translate("BacktestingTypes", "Kelly"), "kelly"},
+        {QCoreApplication::translate("BacktestingTypes", "Vol Target"), "vol_target"},
+        {QCoreApplication::translate("BacktestingTypes", "Risk"), "risk"},
+    };
 }
 
-inline QStringList optimize_objectives() {
-    return {"sharpe", "sortino", "calmar", "return"};
+inline QVector<ComboItem> optimize_objectives() {
+    return {
+        {QCoreApplication::translate("BacktestingTypes", "Sharpe"), "sharpe"},
+        {QCoreApplication::translate("BacktestingTypes", "Sortino"), "sortino"},
+        {QCoreApplication::translate("BacktestingTypes", "Calmar"), "calmar"},
+        {QCoreApplication::translate("BacktestingTypes", "Return"), "return"},
+    };
 }
 
-inline QStringList optimize_methods() {
-    return {"grid", "random"};
+inline QVector<ComboItem> optimize_methods() {
+    return {
+        {QCoreApplication::translate("BacktestingTypes", "Grid"), "grid"},
+        {QCoreApplication::translate("BacktestingTypes", "Random"), "random"},
+    };
 }
 
-inline QStringList label_types() {
-    return {"FIXLB", "MEANLB", "LEXLB", "TRENDLB", "BOLB"};
+inline QVector<ComboItem> label_types() {
+    return {
+        {QCoreApplication::translate("BacktestingTypes", "FIXLB"), "FIXLB"},
+        {QCoreApplication::translate("BacktestingTypes", "MEANLB"), "MEANLB"},
+        {QCoreApplication::translate("BacktestingTypes", "LEXLB"), "LEXLB"},
+        {QCoreApplication::translate("BacktestingTypes", "TRENDLB"), "TRENDLB"},
+        {QCoreApplication::translate("BacktestingTypes", "BOLB"), "BOLB"},
+    };
 }
 
-inline QStringList splitter_types() {
-    return {"RollingSplitter", "ExpandingSplitter", "PurgedKFold"};
+inline QVector<ComboItem> splitter_types() {
+    return {
+        {QCoreApplication::translate("BacktestingTypes", "Rolling Splitter"), "RollingSplitter"},
+        {QCoreApplication::translate("BacktestingTypes", "Expanding Splitter"), "ExpandingSplitter"},
+        {QCoreApplication::translate("BacktestingTypes", "Purged K-Fold"), "PurgedKFold"},
+    };
 }
 
-inline QStringList signal_generators() {
-    return {"RAND", "RANDX", "RANDNX", "RPROB", "RPROBX"};
+inline QVector<ComboItem> signal_generators() {
+    return {
+        {QCoreApplication::translate("BacktestingTypes", "RAND"), "RAND"},
+        {QCoreApplication::translate("BacktestingTypes", "RANDX"), "RANDX"},
+        {QCoreApplication::translate("BacktestingTypes", "RANDNX"), "RANDNX"},
+        {QCoreApplication::translate("BacktestingTypes", "RPROB"), "RPROB"},
+        {QCoreApplication::translate("BacktestingTypes", "RPROBX"), "RPROBX"},
+    };
 }
 
-inline QStringList indicator_signal_modes() {
-    return {"crossover", "threshold", "breakout", "mean_reversion", "filter"};
+inline QVector<ComboItem> indicator_signal_modes() {
+    return {
+        {QCoreApplication::translate("BacktestingTypes", "Crossover"), "crossover"},
+        {QCoreApplication::translate("BacktestingTypes", "Threshold"), "threshold"},
+        {QCoreApplication::translate("BacktestingTypes", "Breakout"), "breakout"},
+        {QCoreApplication::translate("BacktestingTypes", "Mean Reversion"), "mean_reversion"},
+        {QCoreApplication::translate("BacktestingTypes", "Filter"), "filter"},
+    };
 }
 
-inline QStringList returns_analysis_types() {
-    return {"cumulative", "rolling", "drawdown", "distribution", "benchmark_comparison"};
+inline QVector<ComboItem> returns_analysis_types() {
+    return {
+        {QCoreApplication::translate("BacktestingTypes", "Cumulative"), "cumulative"},
+        {QCoreApplication::translate("BacktestingTypes", "Rolling"), "rolling"},
+        {QCoreApplication::translate("BacktestingTypes", "Drawdown"), "drawdown"},
+        {QCoreApplication::translate("BacktestingTypes", "Distribution"), "distribution"},
+        {QCoreApplication::translate("BacktestingTypes", "Benchmark Comparison"), "benchmark_comparison"},
+    };
 }
 
 // ── Metric display helpers ──────────────────────────────────────────────────

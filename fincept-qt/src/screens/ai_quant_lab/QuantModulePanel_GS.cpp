@@ -60,7 +60,7 @@ QWidget* QuantModulePanel::build_gs_quant_panel() {
     // Helper: small "load sample" link button next to a CSV input
     auto add_sample_btn = [this](QLineEdit* edit, QWidget* parent, unsigned seed,
                                   const QString& tip) -> QPushButton* {
-        auto* btn = new QPushButton("LOAD SAMPLE", parent);
+        auto* btn = new QPushButton(tr("LOAD SAMPLE"), parent);
         btn->setCursor(Qt::PointingHandCursor);
         btn->setFixedHeight(22);
         btn->setToolTip(tip);
@@ -81,32 +81,32 @@ QWidget* QuantModulePanel::build_gs_quant_panel() {
     rvl->setContentsMargins(12, 12, 12, 12);
     rvl->setSpacing(8);
     auto* risk_returns = new QLineEdit(risk);
-    risk_returns->setPlaceholderText("Daily returns: comma-, space-, or newline-separated. Need at least 5 values.");
+    risk_returns->setPlaceholderText(tr("Daily returns: comma-, space-, or newline-separated. Need at least 5 values."));
     risk_returns->setStyleSheet(input_ss());
     text_inputs_["gs_risk_returns"] = risk_returns;
-    rvl->addWidget(build_input_row("Daily Returns", risk_returns, risk));
+    rvl->addWidget(build_input_row(tr("Daily Returns"), risk_returns, risk));
     rvl->addWidget(add_sample_btn(risk_returns, risk, 11,
-                                   "Inserts 252 synthetic daily returns (mu=0.05%, sigma=1.2%)"));
+                                   tr("Inserts 252 synthetic daily returns (mu=0.05%, sigma=1.2%)")));
     auto* risk_rf = make_double_spin(0, 20, 4.5, 2, "%", risk);
     double_inputs_["gs_risk_rf"] = risk_rf;
-    rvl->addWidget(build_input_row("Risk-Free Rate", risk_rf, risk));
-    auto* risk_run = make_run_button("CALCULATE RISK METRICS", risk);
+    rvl->addWidget(build_input_row(tr("Risk-Free Rate"), risk_rf, risk));
+    auto* risk_run = make_run_button(tr("CALCULATE RISK METRICS"), risk);
     connect(risk_run, &QPushButton::clicked, this, [this]() {
         QJsonArray rets;
         QString bad;
         if (!parse_doubles(text_inputs_["gs_risk_returns"]->text(), rets, &bad)) {
-            display_error(QString("Daily Returns: '%1' is not a number. "
-                                  "Use comma-, space-, or newline-separated decimals (e.g. 0.01, -0.02, 0.005).")
+            display_error(tr("Daily Returns: '%1' is not a number. "
+                             "Use comma-, space-, or newline-separated decimals (e.g. 0.01, -0.02, 0.005).")
                               .arg(bad));
             return;
         }
         if (rets.size() < 5) {
-            display_error(QString("Need at least 5 daily returns; you provided %1. "
-                                  "Click LOAD SAMPLE to insert 252 synthetic values.")
+            display_error(tr("Need at least 5 daily returns; you provided %1. "
+                             "Click LOAD SAMPLE to insert 252 synthetic values.")
                               .arg(rets.size()));
             return;
         }
-        show_loading(QString("Calculating risk metrics on %1 observations...").arg(rets.size()));
+        show_loading(tr("Calculating risk metrics on %1 observations...").arg(rets.size()));
         QJsonObject params;
         params["returns"] = rets;
         params["risk_free_rate"] = double_inputs_["gs_risk_rf"]->value() / 100.0;
@@ -114,7 +114,7 @@ QWidget* QuantModulePanel::build_gs_quant_panel() {
     });
     rvl->addWidget(risk_run);
     rvl->addStretch();
-    tabs->addTab(risk, "Risk Metrics");
+    tabs->addTab(risk, tr("Risk Metrics"));
 
     // ── Portfolio Analytics ──
     auto* port = new QWidget(this);
@@ -122,44 +122,44 @@ QWidget* QuantModulePanel::build_gs_quant_panel() {
     pvl->setContentsMargins(12, 12, 12, 12);
     pvl->setSpacing(8);
     auto* port_ret = new QLineEdit(port);
-    port_ret->setPlaceholderText("Portfolio daily returns (decimals, same length as benchmark)");
+    port_ret->setPlaceholderText(tr("Portfolio daily returns (decimals, same length as benchmark)"));
     port_ret->setStyleSheet(input_ss());
     text_inputs_["gs_port_returns"] = port_ret;
-    pvl->addWidget(build_input_row("Portfolio Returns", port_ret, port));
+    pvl->addWidget(build_input_row(tr("Portfolio Returns"), port_ret, port));
     pvl->addWidget(add_sample_btn(port_ret, port, 21,
-                                   "Inserts 252 synthetic portfolio returns (slight outperformance)"));
+                                   tr("Inserts 252 synthetic portfolio returns (slight outperformance)")));
     auto* bench_ret = new QLineEdit(port);
-    bench_ret->setPlaceholderText("Benchmark daily returns (decimals)");
+    bench_ret->setPlaceholderText(tr("Benchmark daily returns (decimals)"));
     bench_ret->setStyleSheet(input_ss());
     text_inputs_["gs_bench_returns"] = bench_ret;
-    pvl->addWidget(build_input_row("Benchmark Returns", bench_ret, port));
+    pvl->addWidget(build_input_row(tr("Benchmark Returns"), bench_ret, port));
     pvl->addWidget(add_sample_btn(bench_ret, port, 22,
-                                   "Inserts 252 synthetic benchmark returns"));
+                                   tr("Inserts 252 synthetic benchmark returns")));
     auto* port_rf = make_double_spin(0, 20, 4.5, 2, "%", port);
     double_inputs_["gs_port_rf"] = port_rf;
-    pvl->addWidget(build_input_row("Risk-Free Rate", port_rf, port));
-    auto* port_run = make_run_button("ANALYZE PORTFOLIO", port);
+    pvl->addWidget(build_input_row(tr("Risk-Free Rate"), port_rf, port));
+    auto* port_run = make_run_button(tr("ANALYZE PORTFOLIO"), port);
     connect(port_run, &QPushButton::clicked, this, [this]() {
         QJsonArray prets, brets;
         QString bad;
         if (!parse_doubles(text_inputs_["gs_port_returns"]->text(), prets, &bad)) {
-            display_error(QString("Portfolio Returns: '%1' is not numeric.").arg(bad));
+            display_error(tr("Portfolio Returns: '%1' is not numeric.").arg(bad));
             return;
         }
         if (!parse_doubles(text_inputs_["gs_bench_returns"]->text(), brets, &bad)) {
-            display_error(QString("Benchmark Returns: '%1' is not numeric.").arg(bad));
+            display_error(tr("Benchmark Returns: '%1' is not numeric.").arg(bad));
             return;
         }
         if (prets.size() < 5 || brets.size() < 5) {
-            display_error("Need at least 5 observations for both portfolio and benchmark returns.");
+            display_error(tr("Need at least 5 observations for both portfolio and benchmark returns."));
             return;
         }
         if (prets.size() != brets.size()) {
-            display_error(QString("Portfolio (%1) and benchmark (%2) must have the same length.")
+            display_error(tr("Portfolio (%1) and benchmark (%2) must have the same length.")
                               .arg(prets.size()).arg(brets.size()));
             return;
         }
-        show_loading(QString("Analyzing portfolio vs benchmark on %1 observations...").arg(prets.size()));
+        show_loading(tr("Analyzing portfolio vs benchmark on %1 observations...").arg(prets.size()));
         QJsonObject params;
         params["returns"] = prets;
         params["benchmark_returns"] = brets;
@@ -168,7 +168,7 @@ QWidget* QuantModulePanel::build_gs_quant_panel() {
     });
     pvl->addWidget(port_run);
     pvl->addStretch();
-    tabs->addTab(port, "Portfolio");
+    tabs->addTab(port, tr("Portfolio"));
 
     // ── Options Greeks ──
     auto* greeks = new QWidget(this);
@@ -177,27 +177,27 @@ QWidget* QuantModulePanel::build_gs_quant_panel() {
     gvl->setSpacing(8);
     auto* g_spot = make_double_spin(0.01, 1e6, 100, 2, "", greeks);
     double_inputs_["gs_spot"] = g_spot;
-    gvl->addWidget(build_input_row("Spot Price ($)", g_spot, greeks));
+    gvl->addWidget(build_input_row(tr("Spot Price ($)"), g_spot, greeks));
     auto* g_strike = make_double_spin(0.01, 1e6, 100, 2, "", greeks);
     double_inputs_["gs_strike"] = g_strike;
-    gvl->addWidget(build_input_row("Strike Price ($)", g_strike, greeks));
+    gvl->addWidget(build_input_row(tr("Strike Price ($)"), g_strike, greeks));
     auto* g_expiry = make_double_spin(0.1, 120, 6, 1, " mo", greeks);
     double_inputs_["gs_expiry"] = g_expiry;
-    gvl->addWidget(build_input_row("Expiry (months)", g_expiry, greeks));
+    gvl->addWidget(build_input_row(tr("Expiry (months)"), g_expiry, greeks));
     auto* g_rate = make_double_spin(0, 30, 5, 2, "%", greeks);
     double_inputs_["gs_rate"] = g_rate;
-    gvl->addWidget(build_input_row("Risk-Free Rate", g_rate, greeks));
+    gvl->addWidget(build_input_row(tr("Risk-Free Rate"), g_rate, greeks));
     auto* g_vol = make_double_spin(0.1, 200, 25, 1, "%", greeks);
     double_inputs_["gs_vol"] = g_vol;
-    gvl->addWidget(build_input_row("Volatility", g_vol, greeks));
+    gvl->addWidget(build_input_row(tr("Volatility"), g_vol, greeks));
     auto* g_type = new QComboBox(greeks);
     g_type->addItems({"call", "put"});
     g_type->setStyleSheet(combo_ss());
     combo_inputs_["gs_option_type"] = g_type;
-    gvl->addWidget(build_input_row("Option Type", g_type, greeks));
-    auto* greeks_run = make_run_button("CALCULATE GREEKS", greeks);
+    gvl->addWidget(build_input_row(tr("Option Type"), g_type, greeks));
+    auto* greeks_run = make_run_button(tr("CALCULATE GREEKS"), greeks);
     connect(greeks_run, &QPushButton::clicked, this, [this]() {
-        show_loading("Calculating Black-Scholes Greeks...");
+        show_loading(tr("Calculating Black-Scholes Greeks..."));
         QJsonObject params;
         params["spot"] = double_inputs_["gs_spot"]->value();
         params["strike"] = double_inputs_["gs_strike"]->value();
@@ -209,7 +209,7 @@ QWidget* QuantModulePanel::build_gs_quant_panel() {
     });
     gvl->addWidget(greeks_run);
     gvl->addStretch();
-    tabs->addTab(greeks, "Greeks");
+    tabs->addTab(greeks, tr("Greeks"));
 
     // ── VaR Analysis ──
     auto* var = new QWidget(this);
@@ -217,31 +217,31 @@ QWidget* QuantModulePanel::build_gs_quant_panel() {
     vvl->setContentsMargins(12, 12, 12, 12);
     vvl->setSpacing(8);
     auto* var_ret = new QLineEdit(var);
-    var_ret->setPlaceholderText("Daily returns (decimals). Need at least 30 values for stable VaR.");
+    var_ret->setPlaceholderText(tr("Daily returns (decimals). Need at least 30 values for stable VaR."));
     var_ret->setStyleSheet(input_ss());
     text_inputs_["gs_var_returns"] = var_ret;
-    vvl->addWidget(build_input_row("Daily Returns", var_ret, var));
-    vvl->addWidget(add_sample_btn(var_ret, var, 31, "Inserts 252 synthetic daily returns"));
+    vvl->addWidget(build_input_row(tr("Daily Returns"), var_ret, var));
+    vvl->addWidget(add_sample_btn(var_ret, var, 31, tr("Inserts 252 synthetic daily returns")));
     auto* var_pos = make_double_spin(1, 1e12, 1e6, 0, "", var);
     double_inputs_["gs_var_position"] = var_pos;
-    vvl->addWidget(build_input_row("Position Value ($)", var_pos, var));
+    vvl->addWidget(build_input_row(tr("Position Value ($)"), var_pos, var));
     auto* var_conf = make_double_spin(0.80, 0.999, 0.95, 3, "", var);
     double_inputs_["gs_var_confidence"] = var_conf;
-    vvl->addWidget(build_input_row("Confidence Level", var_conf, var));
-    auto* var_run = make_run_button("CALCULATE VaR", var);
+    vvl->addWidget(build_input_row(tr("Confidence Level"), var_conf, var));
+    auto* var_run = make_run_button(tr("CALCULATE VaR"), var);
     connect(var_run, &QPushButton::clicked, this, [this]() {
         QJsonArray rets;
         QString bad;
         if (!parse_doubles(text_inputs_["gs_var_returns"]->text(), rets, &bad)) {
-            display_error(QString("Daily Returns: '%1' is not numeric.").arg(bad));
+            display_error(tr("Daily Returns: '%1' is not numeric.").arg(bad));
             return;
         }
         if (rets.size() < 30) {
-            display_error(QString("VaR needs at least 30 observations for a stable estimate; you provided %1.")
+            display_error(tr("VaR needs at least 30 observations for a stable estimate; you provided %1.")
                               .arg(rets.size()));
             return;
         }
-        show_loading(QString("Computing parametric, historical, MC and CVaR on %1 observations...").arg(rets.size()));
+        show_loading(tr("Computing parametric, historical, MC and CVaR on %1 observations...").arg(rets.size()));
         QJsonObject params;
         params["returns"] = rets;
         params["position_value"] = double_inputs_["gs_var_position"]->value();
@@ -250,7 +250,7 @@ QWidget* QuantModulePanel::build_gs_quant_panel() {
     });
     vvl->addWidget(var_run);
     vvl->addStretch();
-    tabs->addTab(var, "VaR");
+    tabs->addTab(var, tr("VaR"));
 
     // ── Stress Test ──
     auto* stress = new QWidget(this);
@@ -259,32 +259,32 @@ QWidget* QuantModulePanel::build_gs_quant_panel() {
     svl->setSpacing(8);
     auto* st_pos = make_double_spin(1, 1e12, 1e6, 0, "", stress);
     double_inputs_["gs_stress_position"] = st_pos;
-    svl->addWidget(build_input_row("Portfolio Value ($)", st_pos, stress));
+    svl->addWidget(build_input_row(tr("Portfolio Value ($)"), st_pos, stress));
     auto* st_eq = make_double_spin(0, 100, 60, 1, "%", stress);
     double_inputs_["gs_stress_eq"] = st_eq;
-    svl->addWidget(build_input_row("Equity Allocation", st_eq, stress));
+    svl->addWidget(build_input_row(tr("Equity Allocation"), st_eq, stress));
     auto* st_bd = make_double_spin(0, 100, 30, 1, "%", stress);
     double_inputs_["gs_stress_bd"] = st_bd;
-    svl->addWidget(build_input_row("Bond Allocation", st_bd, stress));
+    svl->addWidget(build_input_row(tr("Bond Allocation"), st_bd, stress));
     auto* st_cm = make_double_spin(0, 100, 10, 1, "%", stress);
     double_inputs_["gs_stress_cm"] = st_cm;
-    svl->addWidget(build_input_row("Commodity Allocation", st_cm, stress));
+    svl->addWidget(build_input_row(tr("Commodity Allocation"), st_cm, stress));
     auto* st_hint = new QLabel(
-        "Applies 9 historical crisis scenarios (2008, COVID-19, Dot-Com, etc.) to the "
-        "weighted portfolio. Allocations need not sum to 100% — they will be normalized.", stress);
+        tr("Applies 9 historical crisis scenarios (2008, COVID-19, Dot-Com, etc.) to the "
+           "weighted portfolio. Allocations need not sum to 100% — they will be normalized."), stress);
     st_hint->setWordWrap(true);
     st_hint->setStyleSheet(QString("color:%1; font-size:10px;").arg(ui::colors::TEXT_TERTIARY()));
     svl->addWidget(st_hint);
-    auto* stress_run = make_run_button("RUN STRESS TEST", stress);
+    auto* stress_run = make_run_button(tr("RUN STRESS TEST"), stress);
     connect(stress_run, &QPushButton::clicked, this, [this]() {
         const double eq = double_inputs_["gs_stress_eq"]->value();
         const double bd = double_inputs_["gs_stress_bd"]->value();
         const double cm = double_inputs_["gs_stress_cm"]->value();
         if (eq + bd + cm <= 0) {
-            display_error("At least one allocation must be greater than zero.");
+            display_error(tr("At least one allocation must be greater than zero."));
             return;
         }
-        show_loading("Running 9 historical crisis scenarios...");
+        show_loading(tr("Running 9 historical crisis scenarios..."));
         QJsonObject params;
         params["position_value"] = double_inputs_["gs_stress_position"]->value();
         QJsonObject mix;
@@ -296,7 +296,7 @@ QWidget* QuantModulePanel::build_gs_quant_panel() {
     });
     svl->addWidget(stress_run);
     svl->addStretch();
-    tabs->addTab(stress, "Stress Test");
+    tabs->addTab(stress, tr("Stress Test"));
 
     // ── Backtest ──
     auto* bt = new QWidget(this);
@@ -307,38 +307,38 @@ QWidget* QuantModulePanel::build_gs_quant_panel() {
     bt_strat->addItems({"buy_and_hold", "momentum", "mean_reversion", "rebalancing"});
     bt_strat->setStyleSheet(combo_ss());
     combo_inputs_["gs_bt_strategy"] = bt_strat;
-    bvl->addWidget(build_input_row("Strategy", bt_strat, bt));
+    bvl->addWidget(build_input_row(tr("Strategy"), bt_strat, bt));
     auto* bt_ticker = new QLineEdit(bt);
-    bt_ticker->setPlaceholderText("e.g. AAPL — fetched from Yahoo Finance");
+    bt_ticker->setPlaceholderText(tr("e.g. AAPL — fetched from Yahoo Finance"));
     bt_ticker->setStyleSheet(input_ss());
     text_inputs_["gs_bt_ticker"] = bt_ticker;
-    bvl->addWidget(build_input_row("Ticker", bt_ticker, bt));
+    bvl->addWidget(build_input_row(tr("Ticker"), bt_ticker, bt));
     auto* bt_period = new QComboBox(bt);
     bt_period->addItems({"1y", "2y", "3y", "5y", "10y", "max"});
     bt_period->setCurrentText("2y");
     bt_period->setStyleSheet(combo_ss());
     combo_inputs_["gs_bt_period"] = bt_period;
-    bvl->addWidget(build_input_row("History Period", bt_period, bt));
+    bvl->addWidget(build_input_row(tr("History Period"), bt_period, bt));
     auto* bt_capital = make_double_spin(1000, 1e12, 100000, 0, "", bt);
     double_inputs_["gs_bt_capital"] = bt_capital;
-    bvl->addWidget(build_input_row("Initial Capital ($)", bt_capital, bt));
+    bvl->addWidget(build_input_row(tr("Initial Capital ($)"), bt_capital, bt));
     auto* bt_lookback = new QSpinBox(bt);
     bt_lookback->setRange(5, 252);
     bt_lookback->setValue(20);
     bt_lookback->setStyleSheet(spinbox_ss());
     int_inputs_["gs_bt_lookback"] = bt_lookback;
-    bvl->addWidget(build_input_row("Lookback Period (days)", bt_lookback, bt));
+    bvl->addWidget(build_input_row(tr("Lookback Period (days)"), bt_lookback, bt));
     auto* bt_comm = make_double_spin(0, 5, 0.10, 3, "%", bt);
     double_inputs_["gs_bt_comm"] = bt_comm;
-    bvl->addWidget(build_input_row("Commission per Trade", bt_comm, bt));
-    auto* bt_run = make_run_button("RUN BACKTEST", bt);
+    bvl->addWidget(build_input_row(tr("Commission per Trade"), bt_comm, bt));
+    auto* bt_run = make_run_button(tr("RUN BACKTEST"), bt);
     connect(bt_run, &QPushButton::clicked, this, [this]() {
         const QString tk = text_inputs_["gs_bt_ticker"]->text().trimmed();
         if (tk.isEmpty()) {
-            display_error("Enter a ticker (e.g. AAPL, SPY, MSFT) to fetch price history.");
+            display_error(tr("Enter a ticker (e.g. AAPL, SPY, MSFT) to fetch price history."));
             return;
         }
-        show_loading(QString("Fetching %1 history from yfinance and running %2 backtest...")
+        show_loading(tr("Fetching %1 history from yfinance and running %2 backtest...")
                          .arg(tk, combo_inputs_["gs_bt_strategy"]->currentText()));
         QJsonObject params;
         params["strategy"] = combo_inputs_["gs_bt_strategy"]->currentText();
@@ -351,7 +351,7 @@ QWidget* QuantModulePanel::build_gs_quant_panel() {
     });
     bvl->addWidget(bt_run);
     bvl->addStretch();
-    tabs->addTab(bt, "Backtest");
+    tabs->addTab(bt, tr("Backtest"));
 
     // ── Statistics ──
     auto* stats = new QWidget(this);
@@ -359,32 +359,32 @@ QWidget* QuantModulePanel::build_gs_quant_panel() {
     stvl->setContentsMargins(12, 12, 12, 12);
     stvl->setSpacing(8);
     auto* st_vals = new QLineEdit(stats);
-    st_vals->setPlaceholderText("Numeric values (e.g. 10.5, 11.2, 9.8, 12.1, ...). Need at least 2.");
+    st_vals->setPlaceholderText(tr("Numeric values (e.g. 10.5, 11.2, 9.8, 12.1, ...). Need at least 2."));
     st_vals->setStyleSheet(input_ss());
     text_inputs_["gs_stats_values"] = st_vals;
-    stvl->addWidget(build_input_row("Values", st_vals, stats));
+    stvl->addWidget(build_input_row(tr("Values"), st_vals, stats));
     stvl->addWidget(add_sample_btn(st_vals, stats, 41,
-                                    "Inserts 100 synthetic observations (mean ~50, sd ~5)"));
-    auto* stats_run = make_run_button("CALCULATE STATISTICS", stats);
+                                    tr("Inserts 100 synthetic observations (mean ~50, sd ~5)")));
+    auto* stats_run = make_run_button(tr("CALCULATE STATISTICS"), stats);
     connect(stats_run, &QPushButton::clicked, this, [this]() {
         QJsonArray vals;
         QString bad;
         if (!parse_doubles(text_inputs_["gs_stats_values"]->text(), vals, &bad)) {
-            display_error(QString("Values: '%1' is not numeric.").arg(bad));
+            display_error(tr("Values: '%1' is not numeric.").arg(bad));
             return;
         }
         if (vals.size() < 2) {
-            display_error(QString("Need at least 2 values; you provided %1.").arg(vals.size()));
+            display_error(tr("Need at least 2 values; you provided %1.").arg(vals.size()));
             return;
         }
-        show_loading(QString("Computing descriptive statistics on %1 values...").arg(vals.size()));
+        show_loading(tr("Computing descriptive statistics on %1 values...").arg(vals.size()));
         QJsonObject params;
         params["values"] = vals;
         AIQuantLabService::instance().gs_statistics(params);
     });
     stvl->addWidget(stats_run);
     stvl->addStretch();
-    tabs->addTab(stats, "Statistics");
+    tabs->addTab(stats, tr("Statistics"));
 
     vl->addWidget(tabs);
 
@@ -469,7 +469,7 @@ void QuantModulePanel::display_gs_result(const QString& command, const QJsonObje
         const QString trough = d.value("trough_date").toString().left(10);
         const QString recov = d.value("recovery_date").toString().left(10);
         if (!peak.isEmpty() && peak != "None") {
-            auto* dd_lbl = new QLabel(QString("Drawdown: peak %1  →  trough %2  →  recovery %3")
+            auto* dd_lbl = new QLabel(tr("Drawdown: peak %1  →  trough %2  →  recovery %3")
                                           .arg(peak, trough, recov.isEmpty() || recov == "None" ? "—" : recov));
             dd_lbl->setStyleSheet(QString("color:%1; font-size:10px; font-family:'Courier New';"
                                           "padding:6px 10px; background:%2; border:1px solid %3;")
@@ -704,7 +704,7 @@ void QuantModulePanel::display_gs_result(const QString& command, const QJsonObje
         results_layout_->addWidget(alloc);
 
         if (scenarios.isEmpty()) {
-            display_error("Stress test returned no scenarios.");
+            display_error(tr("Stress test returned no scenarios."));
             return;
         }
 
@@ -730,7 +730,7 @@ void QuantModulePanel::display_gs_result(const QString& command, const QJsonObje
         results_layout_->addWidget(gs_card_row(summary_cards, this));
 
         // Worst/best name strip
-        auto* wb = new QLabel(QString("Worst:  %1   |   Best:  %2").arg(worst_name, best_name));
+        auto* wb = new QLabel(tr("Worst:  %1   |   Best:  %2").arg(worst_name, best_name));
         wb->setStyleSheet(QString("color:%1; font-size:10px; font-family:'Courier New';"
                                   "padding:6px 10px; background:%2; border-left:3px solid %3;")
                               .arg(ui::colors::TEXT_SECONDARY(), ui::colors::BG_SURFACE(),
@@ -841,9 +841,9 @@ void QuantModulePanel::display_gs_result(const QString& command, const QJsonObje
                 curve_min = std::min(curve_min, val);
                 curve_max = std::max(curve_max, val);
             }
-            auto* curve_lbl = new QLabel(
-                QString("Equity curve: %1 samples  |  Range %2 → %3")
-                    .arg(curve.size()).arg(gs_fmt_money(curve_min), gs_fmt_money(curve_max)));
+        auto* curve_lbl = new QLabel(
+            tr("Equity curve: %1 samples  |  Range %2 → %3")
+                .arg(curve.size()).arg(gs_fmt_money(curve_min), gs_fmt_money(curve_max)));
             curve_lbl->setStyleSheet(QString("color:%1; font-size:10px; font-family:'Courier New';"
                                              "padding:6px 10px; background:%2; border-left:3px solid %3;")
                                          .arg(ui::colors::TEXT_SECONDARY(), ui::colors::BG_SURFACE(),

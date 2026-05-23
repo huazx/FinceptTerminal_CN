@@ -88,7 +88,7 @@ QWidget* ChatMessagePanel::build_header() {
     hl->setContentsMargins(14, 0, 14, 0);
     hl->setSpacing(10);
 
-    hdr_title_lbl_ = new QLabel("New Conversation");
+    hdr_title_lbl_ = new QLabel(tr("New Conversation"));
     hdr_title_lbl_->setStyleSheet(QString("color:%1;font-size:14px;font-weight:600;"
                                           "font-family:%2;background:transparent;")
                                       .arg(ui::colors::TEXT_PRIMARY(), FONT));
@@ -106,9 +106,9 @@ QWidget* ChatMessagePanel::build_header() {
         QString("color:%1;font-size:12px;font-family:%2;background:transparent;").arg(ui::colors::TEXT_TERTIARY(), FONT));
     hl->addWidget(hdr_tools_lbl_);
 
-    mode_btn_ = new QPushButton("LITE");
+    mode_btn_ = new QPushButton(tr("LITE"));
     mode_btn_->setFixedHeight(22);
-    mode_btn_->setToolTip("Toggle Lite / Deep mode");
+    mode_btn_->setToolTip(tr("Toggle Lite / Deep mode"));
     mode_btn_->setStyleSheet(
         QString("QPushButton{background:%1;color:%2;border:1px solid %3;"
                 "border-radius:0px;font-size:11px;font-weight:600;padding:0 10px;"
@@ -122,7 +122,7 @@ QWidget* ChatMessagePanel::build_header() {
     });
     hl->addWidget(mode_btn_);
 
-    hdr_tokens_lbl_ = new QLabel("0 tokens");
+    hdr_tokens_lbl_ = new QLabel(tr("0 tokens"));
     hdr_tokens_lbl_->setStyleSheet(
         QString("color:%1;font-size:12px;font-family:%2;background:transparent;").arg(ui::colors::TEXT_DIM(), FONT));
     hl->addWidget(hdr_tokens_lbl_);
@@ -168,23 +168,23 @@ QWidget* ChatMessagePanel::build_welcome() {
     vl->setSpacing(14);
     vl->setAlignment(Qt::AlignCenter);
 
-    auto* logo = new QLabel("FINCEPT AGENT");
+    auto* logo = new QLabel(tr("FINCEPT AGENT"));
     logo->setAlignment(Qt::AlignCenter);
     logo->setStyleSheet(QString("color:%1;font-size:20px;font-weight:700;letter-spacing:1px;"
                                 "font-family:%2;background:transparent;")
                             .arg(ui::colors::AMBER(), FONT));
     vl->addWidget(logo);
 
-    auto* sub = new QLabel("AI-powered financial intelligence.\n"
-                           "Markets, equities, portfolio, macro insights.");
+    auto* sub = new QLabel(tr("AI-powered financial intelligence.\n"
+                            "Markets, equities, portfolio, macro insights."));
     sub->setAlignment(Qt::AlignCenter);
     sub->setWordWrap(true);
     sub->setStyleSheet(
         QString("color:%1;font-size:13px;font-family:%2;background:transparent;").arg(ui::colors::TEXT_TERTIARY(), FONT));
     vl->addWidget(sub);
 
-    const QStringList chips = {"Outlook for AAPL?", "Today's market news", "Portfolio risk analysis",
-                               "Key indicators this week"};
+    const QStringList chips = {tr("Outlook for AAPL?"), tr("Today's market news"), tr("Portfolio risk analysis"),
+                               tr("Key indicators this week")};
     auto* row = new QWidget(this);
     auto* rl = new QHBoxLayout(row);
     rl->setContentsMargins(0, 8, 0, 0);
@@ -218,7 +218,7 @@ QWidget* ChatMessagePanel::build_typing_indicator() {
     hl->setContentsMargins(14, 4, 14, 4);
     hl->setSpacing(6);
 
-    auto* lbl = new QLabel("Agent");
+    auto* lbl = new QLabel(tr("Agent"));
     lbl->setStyleSheet(QString("color:%1;font-size:12px;font-weight:600;"
                                "font-family:%2;background:transparent;")
                            .arg(ui::colors::AMBER(), FONT));
@@ -250,7 +250,7 @@ QWidget* ChatMessagePanel::build_input_area() {
     vl->setSpacing(6);
 
     input_box_ = new QPlainTextEdit;
-    input_box_->setPlaceholderText("Ask anything... (Enter to send, Shift+Enter for new line)");
+    input_box_->setPlaceholderText(tr("Ask anything... (Enter to send, Shift+Enter for new line)"));
     input_box_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     input_box_->setFixedHeight(36);
     input_box_->setStyleSheet(QString("QPlainTextEdit{background:%1;color:%2;border:1px solid %3;"
@@ -267,7 +267,7 @@ QWidget* ChatMessagePanel::build_input_area() {
     auto* bottom = new QHBoxLayout;
     bottom->setSpacing(6);
 
-    char_lbl_ = new QLabel("0 / 4000");
+    char_lbl_ = new QLabel(tr("0 / 4000"));
     char_lbl_->setStyleSheet(
         QString("color:%1;font-size:11px;font-family:%2;background:transparent;").arg(ui::colors::TEXT_DIM(), FONT));
     bottom->addWidget(char_lbl_);
@@ -290,9 +290,9 @@ QWidget* ChatMessagePanel::build_input_area() {
         emit draft_changed();
     });
 
-    optimize_btn_ = new QPushButton("Optimize");
+    optimize_btn_ = new QPushButton(tr("Optimize"));
     optimize_btn_->setFixedHeight(26);
-    optimize_btn_->setToolTip("Optimize prompt with AI");
+    optimize_btn_->setToolTip(tr("Optimize prompt with AI"));
     optimize_btn_->setStyleSheet(QString("QPushButton{background:%1;color:%2;border:1px solid %3;"
                                          "border-radius:0px;font-size:12px;padding:0 10px;font-family:%4;}"
                                          "QPushButton:hover{background:%5;color:%6;border-color:%6;}"
@@ -302,7 +302,7 @@ QWidget* ChatMessagePanel::build_input_area() {
     connect(optimize_btn_, &QPushButton::clicked, this, &ChatMessagePanel::on_optimize_clicked);
     bottom->addWidget(optimize_btn_);
 
-    stop_btn_ = new QPushButton("Stop");
+    stop_btn_ = new QPushButton(tr("Stop"));
     stop_btn_->setFixedHeight(26);
     stop_btn_->setVisible(false);
     stop_btn_->setStyleSheet(QString("QPushButton{background:rgba(50,12,12,0.7);color:%1;"
@@ -313,7 +313,7 @@ QWidget* ChatMessagePanel::build_input_area() {
     connect(stop_btn_, &QPushButton::clicked, this, []() { ChatModeService::instance().abort_stream(); });
     bottom->addWidget(stop_btn_);
 
-    send_btn_ = new QPushButton("Send");
+    send_btn_ = new QPushButton(tr("Send"));
     send_btn_->setFixedHeight(26);
     send_btn_->setStyleSheet(
         QString("QPushButton{background:%1;color:%2;border:none;"
@@ -354,17 +354,17 @@ void ChatMessagePanel::clear_messages() {
     messages_layout_->addStretch(1);
     show_welcome(true);
     total_tokens_ = 0;
-    hdr_tokens_lbl_->setText("0 tokens");
+    hdr_tokens_lbl_->setText(tr("0 tokens"));
     thinking_card_ = nullptr;
 }
 
 void ChatMessagePanel::set_session_title(const QString& title) {
-    hdr_title_lbl_->setText(title.isEmpty() ? "New Conversation" : title);
+    hdr_title_lbl_->setText(title.isEmpty() ? tr("New Conversation") : title);
 }
 
 void ChatMessagePanel::set_stream_mode(StreamMode mode) {
     current_mode_ = mode;
-    mode_btn_->setText(mode == StreamMode::Lite ? "LITE" : "DEEP");
+    mode_btn_->setText(mode == StreamMode::Lite ? tr("LITE") : tr("DEEP"));
 }
 
 // ── Bubble creation ──────────────────────────────────────────────────────────
@@ -404,7 +404,7 @@ void ChatMessagePanel::add_message_bubble(const QString& role, const QString& co
 
     auto* meta = new QHBoxLayout;
     meta->setSpacing(6);
-    auto* role_lbl = new QLabel(role == "user" ? "You" : "Agent");
+    auto* role_lbl = new QLabel(role == "user" ? tr("You") : tr("Agent"));
     role_lbl->setStyleSheet(
         QString("color:%1;font-size:11px;font-weight:600;font-family:%2;"
                 "background:transparent;letter-spacing:0.5px;")
@@ -443,7 +443,7 @@ QTextEdit* ChatMessagePanel::add_streaming_bubble() {
     auto* row_vl = new QVBoxLayout(row);
     row_vl->setContentsMargins(0, 0, 0, 0);
     row_vl->setSpacing(2);
-    auto* lbl = new QLabel("Agent");
+    auto* lbl = new QLabel(tr("Agent"));
     lbl->setStyleSheet(QString("color:%1;font-size:11px;font-weight:600;font-family:%2;"
                                "background:transparent;letter-spacing:0.5px;")
                            .arg(ui::colors::AMBER(), FONT));
@@ -539,28 +539,28 @@ void ChatMessagePanel::on_stream_text_delta(const QString& text) {
 
 void ChatMessagePanel::on_stream_tool_end(const QString& tool_name, int duration_ms) {
     pending_tools_.append({tool_name, duration_ms});
-    typing_status_lbl_->setText(QString("used %1").arg(tool_name));
+    typing_status_lbl_->setText(QString(tr("used %1")).arg(tool_name));
 }
 
 void ChatMessagePanel::on_stream_step_start(int step_number) {
-    typing_status_lbl_->setText(QString("step %1").arg(step_number));
+    typing_status_lbl_->setText(QString(tr("step %1")).arg(step_number));
 }
 
 void ChatMessagePanel::on_stream_step_finish(int tokens_used) {
     total_tokens_ += tokens_used;
-    hdr_tokens_lbl_->setText(QString("%1 tokens").arg(total_tokens_));
+    hdr_tokens_lbl_->setText(QString(tr("%1 tokens")).arg(total_tokens_));
 }
 
 void ChatMessagePanel::on_stream_thinking(const QString& content) {
     if (!content.isEmpty()) {
         pending_thinking_.append(content);
-        typing_status_lbl_->setText("thinking...");
+        typing_status_lbl_->setText(tr("thinking..."));
     }
 }
 
 void ChatMessagePanel::on_stream_finish(int total_tokens) {
     total_tokens_ += total_tokens;
-    hdr_tokens_lbl_->setText(QString("%1 tokens").arg(total_tokens_));
+    hdr_tokens_lbl_->setText(QString(tr("%1 tokens")).arg(total_tokens_));
 
     render_timer_->stop();
     if (streaming_bubble_ && !streaming_buffer_.isEmpty()) {
@@ -616,18 +616,18 @@ void ChatMessagePanel::on_stream_error(const QString& message) {
 void ChatMessagePanel::on_stream_heartbeat() {}
 
 void ChatMessagePanel::on_insufficient_credits() {
-    on_stream_error("Insufficient credits. Top up to continue.");
+    on_stream_error(tr("Insufficient credits. Free users get 350 credits/month — try again after the monthly reset, or upgrade your plan."));
 }
 
 void ChatMessagePanel::on_tools_registered(int count) {
-    hdr_tools_lbl_->setText(count > 0 ? QString("%1 tools").arg(count) : QString());
+    hdr_tools_lbl_->setText(count > 0 ? QString(tr("%1 tools")).arg(count) : QString());
 }
 
 void ChatMessagePanel::set_credits(int credits) {
     if (credits > 0)
-        hdr_credits_lbl_->setText(QString("%1 credits").arg(QLocale(QLocale::English).toString(credits)));
+        hdr_credits_lbl_->setText(QString(tr("%1 credits")).arg(QLocale(QLocale::English).toString(credits)));
     else
-        hdr_credits_lbl_->setText("0 credits");
+        hdr_credits_lbl_->setText(tr("0 credits"));
 }
 
 // ── Send / Optimize ──────────────────────────────────────────────────────────
@@ -663,7 +663,7 @@ void ChatMessagePanel::on_optimize_clicked() {
         return;
 
     optimize_btn_->setEnabled(false);
-    optimize_btn_->setText("...");
+    optimize_btn_->setText(tr("..."));
 
     QPointer<ChatMessagePanel> self = this;
     ChatModeService::instance().optimize_prompt(text, current_mode_ == StreamMode::Deep ? "deep" : "lite",
@@ -671,9 +671,9 @@ void ChatMessagePanel::on_optimize_clicked() {
                                                     if (!self)
                                                         return;
                                                     self->optimize_btn_->setEnabled(true);
-                                                    self->optimize_btn_->setText("Optimize");
+                                                     self->optimize_btn_->setText(tr("Optimize"));
                                                     if (!ok) {
-                                                        self->on_stream_error("Optimize failed: " + err);
+                                                         self->on_stream_error(tr("Optimize failed: ") + err);
                                                         return;
                                                     }
                                                     if (!result.optimized.isEmpty())

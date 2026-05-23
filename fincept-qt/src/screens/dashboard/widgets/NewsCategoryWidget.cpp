@@ -4,6 +4,7 @@
 #include "datahub/DataHubMetaTypes.h"
 #include "services/news/NewsService.h"
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -19,7 +20,7 @@
 namespace fincept::screens::widgets {
 
 NewsCategoryWidget::NewsCategoryWidget(const QJsonObject& cfg, QWidget* parent)
-    : BaseWidget("NEWS — CATEGORY", parent) {
+    : BaseWidget(QCoreApplication::translate("NewsCategoryWidget", "NEWS — CATEGORY"), parent) {
     auto* vl = content_layout();
     vl->setContentsMargins(8, 6, 8, 6);
     vl->setSpacing(4);
@@ -112,18 +113,18 @@ void NewsCategoryWidget::on_articles(const QVariant& v) {
 
 QDialog* NewsCategoryWidget::make_config_dialog(QWidget* parent) {
     auto* dlg = new QDialog(parent);
-    dlg->setWindowTitle("Configure — News Category");
+    dlg->setWindowTitle(QCoreApplication::translate("NewsCategoryWidget", "Configure — News Category"));
     auto* form = new QFormLayout(dlg);
 
     auto* edit = new QLineEdit(dlg);
     edit->setText(category_);
-    edit->setPlaceholderText("markets | geopolitics | crypto | …");
-    form->addRow("Category", edit);
+    edit->setPlaceholderText(QCoreApplication::translate("NewsCategoryWidget", "markets | geopolitics | crypto | …"));
+    form->addRow(QCoreApplication::translate("NewsCategoryWidget", "Category"), edit);
 
     auto* spin = new QSpinBox(dlg);
     spin->setRange(3, 50);
     spin->setValue(max_rows_);
-    form->addRow("Max rows", spin);
+    form->addRow(QCoreApplication::translate("NewsCategoryWidget", "Max rows"), spin);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, dlg);
     form->addRow(buttons);

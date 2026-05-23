@@ -128,7 +128,7 @@ void ForumFeedPanel::build_toolbar() {
     hash->setStyleSheet(
         QString("color:%1;font-size:22px;font-weight:700;background:transparent;%2").arg(ui::colors::AMBER(), M(22)));
 
-    header_lbl_ = new QLabel("DISCUSSIONS");
+    header_lbl_ = new QLabel(tr("DISCUSSIONS"));
     header_lbl_->setStyleSheet(QString("color:%1;font-size:15px;font-weight:700;letter-spacing:1px;"
                                        "background:transparent;%2")
                                    .arg(ui::colors::TEXT_PRIMARY(), M(15)));
@@ -138,7 +138,7 @@ void ForumFeedPanel::build_toolbar() {
         QString("color:%1;font-size:11px;background:transparent;%2").arg(ui::colors::TEXT_TERTIARY(), M(11)));
 
     // New post button
-    auto* new_btn = new QPushButton("+ NEW POST");
+    auto* new_btn = new QPushButton(tr("+ NEW POST"));
     new_btn->setFixedHeight(30);
     new_btn->setCursor(Qt::PointingHandCursor);
     new_btn->setStyleSheet(QString("QPushButton{background:rgba(217,119,6,0.1);color:%1;"
@@ -284,7 +284,7 @@ void ForumFeedPanel::rebuild_posts() {
         delete item;
     }
 
-    header_count_lbl_->setText(page_.total > 0 ? QString("%1 posts").arg(page_.total) : "");
+    header_count_lbl_->setText(page_.total > 0 ? QString("%1 %2").arg(page_.total).arg(tr("posts")) : "");
 
     if (page_.posts.isEmpty()) {
         auto* empty = new QWidget(this);
@@ -298,13 +298,13 @@ void ForumFeedPanel::rebuild_posts() {
         icon->setAlignment(Qt::AlignCenter);
         icon->setStyleSheet(QString("color:%1;font-size:32px;background:transparent;").arg(ui::colors::BORDER_DIM()));
 
-        auto* msg = new QLabel("NO DISCUSSIONS YET");
+        auto* msg = new QLabel(tr("NO DISCUSSIONS YET"));
         msg->setAlignment(Qt::AlignCenter);
         msg->setStyleSheet(QString("color:%1;font-size:14px;font-weight:700;letter-spacing:1.5px;"
                                    "background:transparent;%2")
                                .arg(ui::colors::TEXT_TERTIARY(), M(14)));
 
-        auto* sub = new QLabel("Be the first to start a conversation");
+        auto* sub = new QLabel(tr("Be the first to start a conversation"));
         sub->setAlignment(Qt::AlignCenter);
         sub->setStyleSheet(
             QString("color:%1;font-size:11px;background:transparent;%2").arg(ui::colors::TEXT_DIM(), M(11)));
@@ -456,13 +456,13 @@ void ForumFeedPanel::rebuild_posts() {
         QString rep_col = p.reply_count > 0 ? ui::colors::CYAN() : QString(ui::colors::BORDER_DIM());
 
         eng_hl->addWidget(up_btn);
-        eng_hl->addWidget(mk_eng("◆", QString("%1 replies").arg(p.reply_count), rep_col));
-        eng_hl->addWidget(mk_eng("◉", fmt_n(p.views) + " views", QString(ui::colors::BORDER_DIM())));
+        eng_hl->addWidget(mk_eng("◆", QString("%1 %2").arg(p.reply_count).arg(tr("replies")), rep_col));
+        eng_hl->addWidget(mk_eng("◉", fmt_n(p.views) + " " + tr("views"), QString(ui::colors::BORDER_DIM())));
         eng_hl->addStretch();
 
         // Badges
         if (voted_up) {
-            auto* voted = new QLabel("✓ VOTED");
+            auto* voted = new QLabel(tr("✓ VOTED"));
             voted->setStyleSheet(QString("color:%1;font-size:9px;font-weight:700;"
                                          "background:rgba(217,119,6,0.08);padding:2px 6px;"
                                          "border-radius:8px;%2")
@@ -470,14 +470,14 @@ void ForumFeedPanel::rebuild_posts() {
             eng_hl->addWidget(voted);
         }
         if (p.reply_count > 5) {
-            auto* hot = new QLabel("● HOT");
+            auto* hot = new QLabel(tr("● HOT"));
             hot->setStyleSheet(QString("color:%1;font-size:9px;font-weight:700;"
                                        "background:rgba(220,38,38,0.08);padding:2px 6px;"
                                        "border-radius:8px;%2")
                                    .arg(ui::colors::NEGATIVE(), M(9)));
             eng_hl->addWidget(hot);
         } else if (p.reply_count > 2) {
-            auto* active_badge = new QLabel("● ACTIVE");
+            auto* active_badge = new QLabel(tr("● ACTIVE"));
             active_badge->setStyleSheet(QString("color:%1;font-size:9px;font-weight:700;"
                                                 "background:rgba(16,185,129,0.08);padding:2px 6px;"
                                                 "border-radius:8px;%2")
@@ -507,7 +507,7 @@ void ForumFeedPanel::rebuild_posts() {
     // ── Load more button ──────────────────────────────────────────────────────
     if (page_.page < page_.pages) {
         int remaining = page_.total - page_.posts.size();
-        auto* more = new QPushButton(QString("Load %1 more posts").arg(remaining));
+        auto* more = new QPushButton(tr("Load %1 more posts").arg(remaining));
         more->setFixedHeight(36);
         more->setCursor(Qt::PointingHandCursor);
         more->setStyleSheet(QString("QPushButton{background:%1;color:%2;"

@@ -57,6 +57,8 @@ struct NewsArticle {
     ThreatClassification threat;
     SourceFlag source_flag = SourceFlag::NONE;
     QString lang; // ISO language code (e.g., "en", "fr", "ar")
+    QString headline_zh; // cached Chinese translation of headline
+    QString summary_zh;  // cached Chinese translation of summary
 };
 
 struct SentimentAnalysis {
@@ -122,7 +124,7 @@ class NewsService : public QObject
     Q_OBJECT
   public:
     using ArticlesCallback = std::function<void(bool ok, QVector<NewsArticle>)>;
-    using AnalysisCallback = std::function<void(bool ok, NewsAnalysis)>;
+    using AnalysisCallback = std::function<void(bool ok, NewsAnalysis, const QString& error)>;
     using SummaryCallback = std::function<void(bool ok, QString summary)>;
 
     static NewsService& instance();
@@ -140,7 +142,7 @@ class NewsService : public QObject
     int max_requests_per_sec() const override;  // RSS — cap at 2/s
 
     void fetch_all_news(bool force, ArticlesCallback cb);
-    void analyze_article(const QString& url, AnalysisCallback cb);
+    void analyze_article(const QString& headline, const QString& summary, AnalysisCallback cb);
 
     /// Summarize top N headlines via AI. Cached for 10 min per headline signature.
     void summarize_headlines(const QVector<NewsArticle>& articles, int count, SummaryCallback cb);

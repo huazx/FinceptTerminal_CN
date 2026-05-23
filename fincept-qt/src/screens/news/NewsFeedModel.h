@@ -6,11 +6,11 @@
 #include <QAbstractListModel>
 #include <QHash>
 #include <QSet>
+#include <QTimer>
 #include <QVector>
 
 namespace fincept::screens {
 
-/// Custom roles for the delegate to query article data without creating widgets.
 enum NewsFeedRole {
     ArticleRole = Qt::UserRole + 1,
     ClusterRole,
@@ -25,18 +25,16 @@ enum NewsFeedRole {
     LanguageRole,
     HasGeoRole,
     PulsePhaseRole,
-    // Pre-formatted display strings — computed once in set_wire_articles,
-    // read directly in paint() to avoid per-frame allocations (P7/Per.19)
-    FormattedSourceRole,  // source.left(10).toUpper()
-    FormattedLangRole,    // lang.toUpper()
-    FormattedThreatRole,  // threat_level_string().left(4)
-    FormattedTickersRole, // "$AAPL $MSFT" pre-joined string
-    ThreatColorRole,      // threat_level_color() string
-    PriorityColorRole,    // priority_color() string
+    HeadlineZhRole,
+    SummaryZhRole,
+    FormattedSourceRole,
+    FormattedLangRole,
+    FormattedThreatRole,
+    FormattedTickersRole,
+    ThreatColorRole,
+    PriorityColorRole,
 };
 
-/// QAbstractListModel holding article/cluster data for QListView.
-/// Zero widget allocation — data is queried via roles and painted by delegate.
 class NewsFeedModel : public QAbstractListModel {
     Q_OBJECT
   public:
@@ -50,45 +48,56 @@ class NewsFeedModel : public QAbstractListModel {
     void set_view_mode(const QString& mode);
     void set_selected_id(const QString& article_id);
     void set_monitor_matches(const QMap<QString, QVector<services::NewsArticle>>& matches,
-                             const QVector<services::NewsMonitor>& monitors);
+                              const QVector<services::NewsMonitor>& monitors);
 
     void mark_all_seen();
     void mark_seen(const QString& article_id);
     int unseen_count() const;
 
     void set_geo_articles(const QSet<QString>& geolocated_ids);
-    void advance_pulse(); // called by timer to animate new-item pulse
+    void advance_pulse();
 
     QModelIndex index_for_article(const QString& article_id) const;
     services::NewsArticle article_at(int row) const;
     services::NewsCluster cluster_at(int row) const;
     QString view_mode() const { return view_mode_; }
 
+    void translate_headlines();
+
   private:
     QString monitor_color_for(const QString& article_id) const;
+    void translate_next_batch();
 
     QVector<services::NewsArticle> articles_;
     QVector<services::NewsCluster> clusters_;
     QString view_mode_ = "WIRE";
     QString selected_id_;
     QSet<QString> seen_ids_;
-    QHash<QString, int> article_id_to_row_;         // O(1) index lookup for WIRE mode
-    QHash<QString, int> cluster_id_to_row_;         // O(1) index lookup for CLUSTERS mode
-    QHash<QString, QString> article_monitor_color_; // O(1) vs QMap's O(log n)
+    QHash<QString, int> article_id_to_row_;
+    QHash<QString, int> cluster_id_to_row_;
+    QHash<QString, QString> article_monitor_color_;
     QSet<QString> geo_article_ids_;
-    int pulse_phase_ = 0;  // 0-3 for animation cycle
-    int unseen_count_ = 0; // incremental counter, avoids O(n) scan
+    int pulse_phase_ = 0;
+    int unseen_count_ = 0;
 
-    // Per-row pre-formatted display strings — avoids string allocations in paint()
     struct FormattedRow {
-        QString source;  // source.left(10).toUpper()
-        QString lang;    // lang.toUpper()
-        QString threat;  // threat_level_string().left(4) or ""
-        QString tickers; // "$AAPL $MSFT" or ""
+        QString source;
+        QString lang;
+        QString threat;
+        QString tickers;
         QString threat_color;
         QString priority_color;
     };
     QVector<FormattedRow> formatted_rows_;
+
+    static constexpr int kMaxCacheSize = 1000;
+    QHash<QString, QString> headline_zh_cache_;
+    QHash<QString, QString> summary_zh_cache_;
+    int translate_batch_idx_ = 0;
+    bool translate_in_progress_ = false;
+    QTimer* translate_timer_ = nullptr;
+    static constexpr int kTranslateBatchSize = 6;
+    static constexpr int kTranslateDelayMs = 1000;
 };
 
 } // namespace fincept::screens

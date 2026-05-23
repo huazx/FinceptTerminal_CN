@@ -2,6 +2,7 @@
 
 #include "datahub/DataHub.h"
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -15,7 +16,7 @@
 namespace fincept::screens::widgets {
 
 PolymarketPriceWidget::PolymarketPriceWidget(const QJsonObject& cfg, QWidget* parent)
-    : BaseWidget("POLYMARKET", parent) {
+    : BaseWidget(QCoreApplication::translate("PolymarketPriceWidget", "POLYMARKET"), parent) {
     auto* vl = content_layout();
     vl->setContentsMargins(10, 8, 10, 8);
     vl->setSpacing(4);
@@ -75,7 +76,7 @@ void PolymarketPriceWidget::build_rows() {
     rows_.clear();
 
     if (entries_.isEmpty()) {
-        auto* hint = new QLabel("No markets configured — click gear to add");
+        auto* hint = new QLabel(QCoreApplication::translate("PolymarketPriceWidget", "No markets configured — click gear to add"));
         hint->setStyleSheet(
             QString("color:%1;font-size:10px;background:transparent;padding:4px 0;")
                 .arg(ui::colors::TEXT_TERTIARY()));
@@ -155,17 +156,17 @@ void PolymarketPriceWidget::on_price(const QString& asset_id, double price) {
 
 QDialog* PolymarketPriceWidget::make_config_dialog(QWidget* parent) {
     auto* dlg = new QDialog(parent);
-    dlg->setWindowTitle("Configure — Polymarket");
+    dlg->setWindowTitle(QCoreApplication::translate("PolymarketPriceWidget", "Configure — Polymarket"));
     auto* form = new QFormLayout(dlg);
 
     auto* edit = new QPlainTextEdit(dlg);
-    edit->setPlaceholderText("One per line:  <asset_id> | <label>");
+    edit->setPlaceholderText(QCoreApplication::translate("PolymarketPriceWidget", "One per line:  <asset_id> | <label>"));
     QStringList lines;
     for (const auto& e : entries_)
         lines.append(e.asset_id + " | " + e.label);
     edit->setPlainText(lines.join("\n"));
     edit->setFixedHeight(120);
-    form->addRow("Markets", edit);
+    form->addRow(QCoreApplication::translate("PolymarketPriceWidget", "Markets"), edit);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, dlg);
     form->addRow(buttons);

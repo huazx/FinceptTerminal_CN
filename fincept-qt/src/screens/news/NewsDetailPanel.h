@@ -22,6 +22,7 @@ class NewsDetailPanel : public QWidget {
 
     void show_article(const services::NewsArticle& article);
     void show_analysis(const services::NewsAnalysis& analysis);
+    void show_analysis_failed(const QString& reason = {});
     void show_related(const QVector<services::NewsArticle>& related);
     void show_monitor_matches(const QVector<QPair<services::NewsMonitor, QStringList>>& matches);
     void show_entities(const services::EntityResult& entities);
@@ -34,7 +35,7 @@ class NewsDetailPanel : public QWidget {
     bool is_panel_open() const { return panel_open_; }
 
   signals:
-    void analyze_requested(const QString& article_url);
+    void analyze_requested(const QString& headline, const QString& summary);
     void related_article_clicked(const services::NewsArticle& article);
     void open_in_browser(const QString& url);
     void copy_url(const QString& url);
@@ -80,6 +81,12 @@ class NewsDetailPanel : public QWidget {
 
     // Translate button
     QPushButton* translate_btn_ = nullptr;
+
+    // Original text section (immersive translate)
+    QWidget* original_section_ = nullptr;
+    QLabel* original_headline_label_ = nullptr;
+    QLabel* original_summary_label_ = nullptr;
+    bool showing_translated_ = false;
 
     // Entities section
     QWidget* entities_section_ = nullptr;

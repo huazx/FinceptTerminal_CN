@@ -21,6 +21,7 @@
 #include "ui/theme/Theme.h"
 #include "ui/theme/ThemeManager.h"
 
+#include <QCoreApplication>
 #include <QDateTime>
 #include <QEvent>
 #include <QGraphicsOpacityEffect>
@@ -36,6 +37,14 @@
 #include <memory>
 
 namespace fincept {
+
+namespace {
+
+QString bubble_tr(const char* s) {
+    return QCoreApplication::translate("fincept::AiChatBubble", s);
+}
+
+}
 
 namespace col = fincept::ui::colors;
 
@@ -157,7 +166,7 @@ void AiChatBubble::build_bubble_button() {
     bubble_btn_ = new QWidget(this);
     bubble_btn_->setFixedSize(BTN_SIZE, BTN_SIZE);
     bubble_btn_->setCursor(Qt::PointingHandCursor);
-    bubble_btn_->setToolTip("Quick Chat (separate from AI Chat tab)");
+    bubble_btn_->setToolTip(bubble_tr("Quick Chat (separate from AI Chat tab)"));
     bubble_btn_->setStyleSheet(QString("background:%1;border:2px solid %2;border-radius:0px;")
                                    .arg(col::BG_SURFACE(), col::BORDER_BRIGHT()));
 
@@ -247,12 +256,12 @@ QWidget* AiChatBubble::build_panel_header() {
     tl->setContentsMargins(0, 0, 0, 0);
     tl->setSpacing(0);
 
-    auto* title = new QLabel("Quick Chat");
+    auto* title = new QLabel(bubble_tr("Quick Chat"));
     title->setStyleSheet(QString("color:%1;font-size:13px;font-weight:700;background:transparent;")
                              .arg(col::TEXT_PRIMARY()));
     tl->addWidget(title);
 
-    auto* subtitle = new QLabel("Not saved · separate from AI Chat tab");
+    auto* subtitle = new QLabel(bubble_tr("Not saved · separate from AI Chat tab"));
     subtitle->setStyleSheet(QString("color:%1;font-size:10px;background:transparent;")
                                 .arg(col::TEXT_TERTIARY()));
     tl->addWidget(subtitle);
@@ -260,11 +269,11 @@ QWidget* AiChatBubble::build_panel_header() {
     hl->addWidget(title_col, 1);
 
     // Voice mode toggle (continuous mic + speak)
-    voice_mode_btn_ = new QPushButton("Voice");
+    voice_mode_btn_ = new QPushButton(bubble_tr("Voice"));
     voice_mode_btn_->setFixedHeight(26);
     voice_mode_btn_->setCheckable(true);
     voice_mode_btn_->setCursor(Qt::PointingHandCursor);
-    voice_mode_btn_->setToolTip("Toggle continuous voice conversation (auto-listen + auto-speak)");
+    voice_mode_btn_->setToolTip(bubble_tr("Toggle continuous voice conversation (auto-listen + auto-speak)"));
     voice_mode_btn_->setStyleSheet(
         QString("QPushButton{background:transparent;color:%1;border:1px solid %2;"
                 "font-size:11px;font-weight:600;border-radius:0px;padding:0 10px;}"
@@ -276,10 +285,10 @@ QWidget* AiChatBubble::build_panel_header() {
     hl->addWidget(voice_mode_btn_);
 
     // Clear chat (does NOT touch ChatRepository — wipes in-memory only)
-    new_btn_ = new QPushButton("Clear");
+    new_btn_ = new QPushButton(bubble_tr("Clear"));
     new_btn_->setFixedHeight(26);
     new_btn_->setCursor(Qt::PointingHandCursor);
-    new_btn_->setToolTip("Clear this chat (Ctrl+L)");
+    new_btn_->setToolTip(bubble_tr("Clear this chat (Ctrl+L)"));
     new_btn_->setStyleSheet(QString("QPushButton{background:transparent;color:%1;border:1px solid %2;"
                                     "font-size:11px;font-weight:600;border-radius:0px;padding:0 10px;}"
                                     "QPushButton:hover{color:%3;border-color:%3;}")
@@ -291,7 +300,7 @@ QWidget* AiChatBubble::build_panel_header() {
     close_btn_ = new QPushButton("X");
     close_btn_->setFixedSize(26, 26);
     close_btn_->setCursor(Qt::PointingHandCursor);
-    close_btn_->setToolTip("Close (Esc)");
+    close_btn_->setToolTip(bubble_tr("Close (Esc)"));
     close_btn_->setStyleSheet(QString("QPushButton{background:transparent;color:%1;border:none;font-size:14px;}"
                                       "QPushButton:hover{color:%2;}")
                                   .arg(col::TEXT_PRIMARY(), col::NEGATIVE()));
@@ -312,7 +321,7 @@ QWidget* AiChatBubble::build_input_row() {
 
     input_box_ = new QPlainTextEdit;
     input_box_->setFixedHeight(40);
-    input_box_->setPlaceholderText("Ask anything…  (Enter to send, Shift+Enter for newline)");
+    input_box_->setPlaceholderText(bubble_tr("Ask anything…  (Enter to send, Shift+Enter for newline)"));
     input_box_->setStyleSheet(QString("QPlainTextEdit{background:%1;color:%2;border:1px solid %3;"
                                       "border-radius:0px;padding:6px 10px;font-size:13px;}"
                                       "QPlainTextEdit:focus{border-color:%4;}")
@@ -324,7 +333,7 @@ QWidget* AiChatBubble::build_input_row() {
     mic_btn_ = new QPushButton("🎤");
     mic_btn_->setFixedSize(38, 38);
     mic_btn_->setCursor(Qt::PointingHandCursor);
-    mic_btn_->setToolTip("Push-to-talk: click to dictate one message");
+    mic_btn_->setToolTip(bubble_tr("Push-to-talk: click to dictate one message"));
     // No setCheckable — listening state is rendered via property + opacity.
     mic_btn_->setStyleSheet(QString("QPushButton{background:transparent;color:%1;border:1px solid %2;"
                                     "border-radius:0px;font-size:18px;}"
@@ -336,10 +345,10 @@ QWidget* AiChatBubble::build_input_row() {
     connect(mic_btn_, &QPushButton::clicked, this, &AiChatBubble::on_toggle_mic);
     hl->addWidget(mic_btn_);
 
-    send_btn_ = new QPushButton("Send");
+    send_btn_ = new QPushButton(bubble_tr("Send"));
     send_btn_->setFixedSize(56, 38);
     send_btn_->setCursor(Qt::PointingHandCursor);
-    send_btn_->setToolTip("Send (Enter)");
+    send_btn_->setToolTip(bubble_tr("Send (Enter)"));
     send_btn_->setStyleSheet(QString("QPushButton{background:%1;color:%2;border:none;"
                                      "border-radius:0px;font-size:12px;font-weight:700;}"
                                      "QPushButton:hover:enabled{background:%3;}"
@@ -374,10 +383,10 @@ QWidget* AiChatBubble::build_status_strip() {
     status_lbl_->setTextInteractionFlags(Qt::TextSelectableByMouse);
     hl->addWidget(status_lbl_, 1);
 
-    stop_speech_btn_ = new QPushButton("Stop");
+    stop_speech_btn_ = new QPushButton(bubble_tr("Stop"));
     stop_speech_btn_->setFixedHeight(20);
     stop_speech_btn_->setCursor(Qt::PointingHandCursor);
-    stop_speech_btn_->setToolTip("Stop speaking");
+    stop_speech_btn_->setToolTip(bubble_tr("Stop speaking"));
     stop_speech_btn_->setStyleSheet(QString("QPushButton{background:%1;color:white;border:none;"
                                             "font-size:10px;font-weight:700;border-radius:0px;padding:0 10px;}"
                                             "QPushButton:hover{background:%2;}")
@@ -404,14 +413,14 @@ void AiChatBubble::build_welcome_widget() {
                              .arg(col::AMBER()));
     wvl->addWidget(glyph);
 
-    auto* h = new QLabel("How can I help?");
+    auto* h = new QLabel(bubble_tr("How can I help?"));
     h->setAlignment(Qt::AlignCenter);
     h->setStyleSheet(QString("color:%1;font-size:14px;font-weight:700;background:transparent;")
                          .arg(col::TEXT_PRIMARY()));
     wvl->addWidget(h);
 
-    auto* sub = new QLabel("Ask a quick question. Nothing here is saved.\n"
-                           "For long-form chats use the AI Chat tab.");
+    auto* sub = new QLabel(bubble_tr("Ask a quick question. Nothing here is saved.\n"
+                           "For long-form chats use the AI Chat tab."));
     sub->setAlignment(Qt::AlignCenter);
     sub->setWordWrap(true);
     sub->setStyleSheet(QString("color:%1;font-size:11px;background:transparent;")
@@ -565,7 +574,7 @@ void AiChatBubble::on_streaming_done(ai_chat::LlmResponse response) {
     set_input_enabled(true);
 
     const QString content = response.success ? response.content
-                                             : QString("Error: %1").arg(response.error);
+                                             : bubble_tr("Error: %1").arg(response.error);
 
     if (!streaming_bubble_ && !content.isEmpty())
         streaming_bubble_ = add_streaming_bubble();
@@ -628,7 +637,7 @@ void AiChatBubble::set_input_enabled(bool enabled) {
     // Mic stays clickable so the user can cancel a stuck listen, but it's
     // greyed visually while streaming.
     mic_btn_->setEnabled(enabled || is_listening_);
-    send_btn_->setText(enabled ? "Send" : "…");
+    send_btn_->setText(enabled ? bubble_tr("Send") : "…");
 }
 
 void AiChatBubble::update_unread(int delta) {
@@ -772,15 +781,15 @@ void AiChatBubble::render_status() {
             return;
         case Status::Listening:
             color = col::POSITIVE();
-            text  = "Listening — speak now";
+            text  = bubble_tr("Listening — speak now");
             break;
         case Status::Thinking:
             color = col::TEXT_DIM();
-            text  = "AI is thinking…";
+            text  = bubble_tr("AI is thinking…");
             break;
         case Status::Speaking:
             color = col::WARNING();
-            text  = "AI speaking…";
+            text  = bubble_tr("AI speaking…");
             show_stop = true;
             break;
         case Status::Error:

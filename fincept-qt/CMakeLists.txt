@@ -1091,6 +1091,7 @@ set(UI_SOURCES
     src/ui/widgets/NotifToast.cpp
     src/ui/widgets/NotifBell.cpp
     src/ui/widgets/NotifPanel.cpp
+    src/ui/widgets/CustomTooltip.cpp
 )
 
 # Screens
@@ -1930,10 +1931,13 @@ set_source_files_properties(
 
 # ADS files use anonymous namespaces and heavy Qt meta-object includes —
 # exclude from unity to avoid ODR / symbol clashes in large batches
+# VideoPlayerWidget: Qt Multimedia headers (qaudio.h) forward-declare class QString,
+# which Unity builds resolve into the enclosing namespace — exclude to avoid the clash.
 set_source_files_properties(
     src/app/WindowFrame.cpp
     src/app/DockScreenRouter.cpp
     src/app/TerminalShell.cpp
+    src/screens/dashboard/widgets/VideoPlayerWidget.cpp
     PROPERTIES SKIP_UNITY_BUILD_INCLUSION TRUE
 )
 
@@ -2099,6 +2103,32 @@ add_executable(FinceptTerminal ${_FINCEPT_EXE_FLAGS}
 target_include_directories(FinceptTerminal PRIVATE
     src
 )
+
+# ── Translations (Qt Linguist) ───────────────────────────────────────────────
+find_package(Qt6 ${_FINCEPT_QT_VER_ARGS} QUIET COMPONENTS LinguistTools)
+set(FINCEPT_TS_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/translations/fincept_zh_CN.ts
+)
+if(Qt6LinguistTools_FOUND)
+    qt_add_lrelease(FinceptTerminal
+        TS_FILES ${FINCEPT_TS_FILES}
+        QM_FILES_OUTPUT_VARIABLE FINCEPT_QM_FILES
+    )
+    # Copy .qm files next to the executable for runtime discovery
+    foreach(_qm ${FINCEPT_QM_FILES})
+        add_custom_command(TARGET FinceptTerminal POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory
+                "$<TARGET_FILE_DIR:FinceptTerminal>/translations"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${_qm}"
+                "$<TARGET_FILE_DIR:FinceptTerminal>/translations/"
+            COMMENT "Copying translation ${_qm}"
+        )
+    endforeach()
+else()
+    message(STATUS "Qt6LinguistTools not found — translations will not be compiled. "
+                    "Install Qt6 Linguist component to enable i18n.")
+endif()
 
 # ── macOS bundle properties ───────────────────────────────────────────────────
 if(APPLE)
@@ -2465,6 +2495,15 @@ if(WIN32)
             "$<TARGET_FILE_DIR:FinceptTerminal>"
         COMMENT "Copying qgeoview.dll..."
     )
+elseif(APPLE)
+    add_custom_command(TARGET FinceptTerminal POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            "$<TARGET_FILE_DIR:FinceptTerminal>/../Frameworks"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:qgeoview>"
+            "$<TARGET_FILE_DIR:FinceptTerminal>/../Frameworks/libqgeoview.dylib"
+        COMMENT "Copying libqgeoview.dylib to app bundle..."
+    )
 endif()
 
 # ── Windows: deploy Qt DLLs ──────────────────────────────────────────────────
@@ -2488,7 +2527,7 @@ if(WIN32)
         # producing 0xc0000005 crashes on startup.
         add_custom_command(TARGET FinceptTerminal POST_BUILD
             COMMAND "${WINDEPLOYQT_EXE}"
-            ARGS "--no-translations" "--no-compiler-runtime" "$<TARGET_FILE:FinceptTerminal>"
+            ARGS "--no-compiler-runtime" "$<TARGET_FILE:FinceptTerminal>"
             COMMENT "Running windeployqt..."
         )
     endif()

@@ -177,6 +177,9 @@ void AuthManager::fetch_user_profile(std::function<void()> on_done) {
         if (r.success) {
             const auto data = unwrap_data(r.data);
             session_.user_info = UserProfile::from_json(data);
+            LOG_INFO("Auth", QString("Profile: credit_balance=%1, account_type=%2")
+                              .arg(session_.user_info.credit_balance)
+                              .arg(session_.user_info.account_type));
 
             // api_key confirmed valid — now restore session_token on HttpClient
             // so subsequent authenticated requests include it. If the old
@@ -208,6 +211,9 @@ void AuthManager::complete_auth_flow(std::function<void()> on_done) {
             const auto sub_data = unwrap_data(r.data);
             session_.subscription = UserSubscription::from_json(sub_data);
             session_.has_subscription = !session_.subscription.account_type.isEmpty();
+            LOG_INFO("Auth", QString("Subscription: credit_balance=%1, account_type=%2")
+                              .arg(session_.subscription.credit_balance)
+                              .arg(session_.subscription.account_type));
         }
         // Fallback: promote profile account_type into subscription so account_type() is consistent
         if (session_.subscription.account_type.isEmpty() && !session_.user_info.account_type.isEmpty()) {
@@ -220,6 +226,7 @@ void AuthManager::complete_auth_flow(std::function<void()> on_done) {
             session_.user_info.account_type = session_.subscription.account_type;
         if (session_.subscription.credit_balance > 0)
             session_.user_info.credit_balance = session_.subscription.credit_balance;
+        LOG_INFO("Auth", QString("Final credit_balance=%1").arg(session_.user_info.credit_balance));
 
         if (!session_.api_key.isEmpty())
             session_.authenticated = true;

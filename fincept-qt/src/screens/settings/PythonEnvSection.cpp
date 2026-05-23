@@ -119,15 +119,15 @@ void PythonEnvSection::build_ui() {
     root->setSpacing(0);
 
     // Title
-    auto* title = new QLabel("PYTHON ENVIRONMENTS");
+    auto* title = new QLabel(tr("PYTHON ENVIRONMENTS"));
     title->setStyleSheet(section_title_ss());
     root->addWidget(title);
     root->addSpacing(4);
 
     auto* info = new QLabel(
-        "Inspect and manage packages installed in both Python environments. "
-        "Trading (venv-numpy1) contains NumPy 1.x-dependent libraries. "
-        "Analytics (venv-numpy2) contains NumPy 2.x / ML / AI libraries.");
+        tr("Inspect and manage packages installed in both Python environments. "
+           "Trading (venv-numpy1) contains NumPy 1.x-dependent libraries. "
+           "Analytics (venv-numpy2) contains NumPy 2.x / ML / AI libraries."));
     info->setWordWrap(true);
     info->setStyleSheet(label_ss());
     root->addWidget(info);
@@ -150,9 +150,9 @@ void PythonEnvSection::build_ui() {
     warn_layout->addWidget(warn_icon);
 
     auto* warn_text = new QLabel(
-        "<b>Upgrading packages may break the terminal.</b> "
-        "Only proceed if you know what you are doing. "
-        "Incompatible version changes can cause analytics scripts to crash or produce incorrect results.",
+        tr("<b>Upgrading packages may break the terminal.</b> "
+           "Only proceed if you know what you are doing. "
+           "Incompatible version changes can cause analytics scripts to crash or produce incorrect results."),
         this);
     warn_text->setWordWrap(true);
     warn_text->setStyleSheet(
@@ -170,29 +170,29 @@ void PythonEnvSection::build_ui() {
     thl->setSpacing(8);
 
     search_input_ = new QLineEdit(this);
-    search_input_->setPlaceholderText("Filter packages...");
+    search_input_->setPlaceholderText(tr("Filter packages..."));
     search_input_->setFixedWidth(200);
     search_input_->setStyleSheet(input_ss());
     thl->addWidget(search_input_);
 
     venv_filter_ = new QComboBox(this);
-    venv_filter_->addItems({"All", "Trading", "Analytics"});
+    venv_filter_->addItems({tr("All"), tr("Trading"), tr("Analytics")});
     venv_filter_->setStyleSheet(combo_ss());
     thl->addWidget(venv_filter_);
 
     thl->addStretch();
 
-    refresh_btn_ = new QPushButton("Refresh", this);
+    refresh_btn_ = new QPushButton(tr("Refresh"), this);
     refresh_btn_->setStyleSheet(btn_secondary_ss());
     refresh_btn_->setCursor(Qt::PointingHandCursor);
     thl->addWidget(refresh_btn_);
 
-    install_missing_btn_ = new QPushButton("Install Missing", this);
+    install_missing_btn_ = new QPushButton(tr("Install Missing"), this);
     install_missing_btn_->setStyleSheet(btn_secondary_ss());
     install_missing_btn_->setCursor(Qt::PointingHandCursor);
     thl->addWidget(install_missing_btn_);
 
-    upgrade_all_btn_ = new QPushButton("Upgrade All", this);
+    upgrade_all_btn_ = new QPushButton(tr("Upgrade All"), this);
     upgrade_all_btn_->setStyleSheet(btn_secondary_ss());
     upgrade_all_btn_->setCursor(Qt::PointingHandCursor);
     thl->addWidget(upgrade_all_btn_);
@@ -203,7 +203,7 @@ void PythonEnvSection::build_ui() {
     // ── Package table ─────────────────────────────────────────────────────────
     pkg_table_ = new QTableWidget(0, 7, this);
     pkg_table_->setHorizontalHeaderLabels(
-        {"", "Package", "Venv", "Required", "Installed", "Status", "Action"});
+        {"", tr("Package"), tr("Venv"), tr("Required"), tr("Installed"), tr("Status"), tr("Action")});
     pkg_table_->setStyleSheet(table_ss());
     pkg_table_->setSelectionMode(QAbstractItemView::NoSelection);
     pkg_table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -231,7 +231,7 @@ void PythonEnvSection::build_ui() {
     bhl->setContentsMargins(0, 0, 0, 0);
     bhl->setSpacing(10);
 
-    batch_action_btn_ = new QPushButton("Install / Upgrade Selected", this);
+    batch_action_btn_ = new QPushButton(tr("Install / Upgrade Selected"), this);
     batch_action_btn_->setStyleSheet(btn_primary_ss());
     batch_action_btn_->setCursor(Qt::PointingHandCursor);
     bhl->addWidget(batch_action_btn_);
@@ -413,7 +413,7 @@ void PythonEnvSection::load_packages() {
     using python::PythonSetupManager;
 
     if (!QFileInfo::exists(PythonSetupManager::instance().uv_path())) {
-        show_status("Python environment not set up — run Setup first", true);
+        show_status(tr("Python environment not set up — run Setup first"), true);
         return;
     }
 
@@ -423,10 +423,10 @@ void PythonEnvSection::load_packages() {
     v1_loaded_ = false;
     v2_loaded_ = false;
     pkg_table_->setRowCount(0);
-    show_status("Loading...");
+    show_status(tr("Loading..."));
 
-    parse_requirements("requirements-numpy1.txt", "venv-numpy1", "Trading");
-    parse_requirements("requirements-numpy2.txt", "venv-numpy2", "Analytics");
+    parse_requirements("requirements-numpy1.txt", "venv-numpy1", tr("Trading"));
+    parse_requirements("requirements-numpy2.txt", "venv-numpy2", tr("Analytics"));
 
     LOG_INFO("PythonEnv",
              QString("Parsed %1 packages from requirements files").arg(all_packages_.size()));
@@ -449,6 +449,13 @@ void PythonEnvSection::start_list_venv(const QString& venv_name) {
 
     list_stdout_buf_.clear();
 
+    if (list_proc_->state() != QProcess::NotRunning) {
+        LOG_WARN("PythonEnv", "list_proc_ still running — terminating before restart");
+        list_proc_->terminate();
+        if (!list_proc_->waitForFinished(3000))
+            list_proc_->kill();
+    }
+
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     env.insert("UV_PYTHON_INSTALL_DIR", mgr.install_dir() + "/python");
     list_proc_->setProcessEnvironment(env);
@@ -466,11 +473,23 @@ void PythonEnvSection::start_list_venv(const QString& venv_name) {
 
     list_proc_->start(mgr.uv_path(), {"pip", "list", "--python", python});
     LOG_DEBUG("PythonEnv", "Started uv pip list for " + venv_name);
+
+    list_timeout_.disconnect();
+    list_timeout_.setSingleShot(true);
+    list_timeout_.setInterval(30000);
+    connect(&list_timeout_, &QTimer::timeout, this, [this, venv_name]() {
+        LOG_WARN("PythonEnv", "uv pip list timed out for " + venv_name);
+        if (list_proc_->state() != QProcess::NotRunning)
+            list_proc_->kill();
+        on_list_finished(venv_name, -1);
+    });
+    list_timeout_.start();
 }
 
 // ── on_list_finished ──────────────────────────────────────────────────────────
 
 void PythonEnvSection::on_list_finished(const QString& venv_name, int exit_code) {
+    list_timeout_.stop();
     QMap<QString, QString>& target = (venv_name == "venv-numpy1") ? installed_v1_ : installed_v2_;
 
     if (exit_code == 0) {
@@ -576,13 +595,13 @@ void PythonEnvSection::merge_and_populate_table() {
         pkg_table_->setItem(i, 4, inst_item);
 
         // Col 5: status badge
-        auto* status_item = new QTableWidgetItem(row.missing ? "MISSING" : "OK");
+        auto* status_item = new QTableWidgetItem(row.missing ? tr("MISSING") : tr("OK"));
         status_item->setForeground(QColor(row.missing ? ui::colors::NEGATIVE() : ui::colors::POSITIVE()));
         status_item->setTextAlignment(Qt::AlignCenter);
         pkg_table_->setItem(i, 5, status_item);
 
         // Col 6: action button
-        auto* btn = new QPushButton(row.missing ? "Install" : "Upgrade", this);
+        auto* btn = new QPushButton(row.missing ? tr("Install") : tr("Upgrade"), this);
         btn->setFixedHeight(22);
         btn->setStyleSheet(
             row.missing
@@ -602,7 +621,7 @@ void PythonEnvSection::merge_and_populate_table() {
     pkg_table_->setUpdatesEnabled(true);
 
     show_status(
-        QString("%1 packages — %2 missing").arg(total).arg(missing),
+        tr("%1 packages — %2 missing").arg(total).arg(missing),
         missing > 0);
 
     LOG_INFO("PythonEnv",
@@ -675,7 +694,7 @@ void PythonEnvSection::start_action(const QList<ActionBatch>& batches) {
     install_bar_->setValue(0);
     install_bar_->setVisible(true);
     install_log_->setVisible(true);
-    install_log_->setText("Starting...");
+    install_log_->setText(tr("Starting..."));
 
     run_next_batch();
 }
@@ -694,7 +713,7 @@ void PythonEnvSection::run_next_batch() {
     ActionBatch batch = action_queue_.takeFirst();
     QString venv_python = mgr.python_path(batch.venv);
 
-    QStringList args = {"pip", "install", "--python", venv_python};
+    QStringList args = {"pip", "install", "-i", "https://pypi.tuna.tsinghua.edu.cn/simple", "--python", venv_python};
     if (batch.upgrade)
         args << "--upgrade";
     args << batch.packages;
@@ -731,7 +750,7 @@ void PythonEnvSection::run_next_batch() {
                  .arg(batch.venv).arg(batch.upgrade).arg(batch.packages.join(", ").left(200)));
 
     install_log_->setText(
-        QString("Installing into %1...").arg(batch.venv == "venv-numpy1" ? "Trading" : "Analytics"));
+        tr("Installing into %1...").arg(batch.venv == "venv-numpy1" ? tr("Trading") : tr("Analytics")));
     install_bar_->setValue(10);
 
     action_proc_->start(mgr.uv_path(), args);
@@ -745,10 +764,10 @@ void PythonEnvSection::on_action_finished(int exit_code) {
     set_actions_enabled(true);
 
     if (exit_code == 0) {
-        show_status("Install complete — refreshing...");
+        show_status(tr("Install complete — refreshing..."));
         LOG_INFO("PythonEnv", "Install/upgrade finished successfully");
     } else {
-        show_status(QString("Install finished with errors (exit %1)").arg(exit_code), true);
+        show_status(tr("Install finished with errors (exit %1)").arg(exit_code), true);
         LOG_WARN("PythonEnv", QString("Install finished with exit code %1").arg(exit_code));
     }
 

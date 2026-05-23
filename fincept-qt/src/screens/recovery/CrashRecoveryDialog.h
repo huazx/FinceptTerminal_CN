@@ -46,10 +46,14 @@ class CrashRecoveryDialog : public QDialog {
                                  fincept::WorkspaceSnapshotRing* ring,
                                  QWidget* parent = nullptr);
 
-    /// True iff the user picked "Restore" and the snapshot was successfully
-    /// decoded + applied. False when the user picked "Skip" or no snapshot
-    /// could be parsed (parse failures fall back to skip with a warning).
+    /// True iff the user picked "Restore". The actual workspace restore
+    /// happens via restore_selected() after the dialog closes, not inside
+    /// the modal event loop (avoids crash from WindowFrame creation).
     bool was_restored() const { return restored_; }
+
+    /// Apply the selected snapshot workspace via WorkspaceShell::apply.
+    /// Call AFTER exec() returns Accepted — safe to create WindowFrames.
+    void restore_selected();
 
   private slots:
     void on_selection_changed();
@@ -80,6 +84,7 @@ class CrashRecoveryDialog : public QDialog {
     QPushButton* skip_button_ = nullptr;
 
     QList<fincept::WorkspaceSnapshotRing::Entry> entries_;
+    qint64 selected_snapshot_id_ = -1;  // set by on_restore_clicked, used by restore_selected
     bool restored_ = false;
 };
 

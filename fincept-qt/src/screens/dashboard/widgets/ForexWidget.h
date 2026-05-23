@@ -1,15 +1,22 @@
 #pragma once
 #include "screens/dashboard/widgets/QuoteTableWidget.h"
+#include <QCoreApplication>
 
 namespace fincept::screens::widgets {
 
-/// Forex major pairs widget — fetches 8 pairs via yfinance.
 inline QuoteTableWidget* create_forex_widget(QWidget* parent = nullptr) {
     QMap<QString, QString> labels = {
-        {"EURUSD=X", "EUR/USD"}, {"GBPUSD=X", "GBP/USD"}, {"USDJPY=X", "USD/JPY"}, {"AUDUSD=X", "AUD/USD"},
-        {"USDCAD=X", "USD/CAD"}, {"USDCHF=X", "USD/CHF"}, {"NZDUSD=X", "NZD/USD"}, {"EURCHF=X", "EUR/CHF"},
+        {"EURUSD=X", QCoreApplication::translate("ForexWidget", "EUR/USD")},
+        {"GBPUSD=X", QCoreApplication::translate("ForexWidget", "GBP/USD")},
+        {"USDJPY=X", QCoreApplication::translate("ForexWidget", "USD/JPY")},
+        {"AUDUSD=X", QCoreApplication::translate("ForexWidget", "AUD/USD")},
+        {"USDCAD=X", QCoreApplication::translate("ForexWidget", "USD/CAD")},
+        {"USDCHF=X", QCoreApplication::translate("ForexWidget", "USD/CHF")},
+        {"NZDUSD=X", QCoreApplication::translate("ForexWidget", "NZD/USD")},
+        {"EURCHF=X", QCoreApplication::translate("ForexWidget", "EUR/CHF")},
     };
-    return new QuoteTableWidget("FOREX - MAJOR PAIRS", services::MarketDataService::forex_symbols(), labels, 4,
+    return new QuoteTableWidget(QCoreApplication::translate("ForexWidget", "FOREX - MAJOR PAIRS"),
+                                services::MarketDataService::forex_symbols(), labels, 4,
                                 "#9D4EDD", parent);
 }
 

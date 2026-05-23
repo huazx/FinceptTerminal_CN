@@ -1,4 +1,5 @@
 #include "screens/news/NewsCommandBar.h"
+#include <QCoreApplication>
 
 #include <QScrollArea>
 #include <QStyle>
@@ -42,12 +43,12 @@ void NewsCommandBar::build_command_row(QVBoxLayout* root) {
     hl->setSpacing(2);
 
     // Drawer toggle button
-    drawer_btn_ = new QPushButton("INTEL", row);
+    drawer_btn_ = new QPushButton(QCoreApplication::translate("NewsCommandBar", "INTEL"), row);
     drawer_btn_->setObjectName("newsDrawerBtn");
     drawer_btn_->setFixedHeight(20);
     drawer_btn_->setCursor(Qt::PointingHandCursor);
     drawer_btn_->setCheckable(true);
-    drawer_btn_->setToolTip("Toggle intelligence drawer");
+    drawer_btn_->setToolTip(QCoreApplication::translate("NewsCommandBar", "Toggle intelligence drawer"));
     hl->addWidget(drawer_btn_);
     connect(drawer_btn_, &QPushButton::clicked, this, &NewsCommandBar::drawer_toggle_requested);
 
@@ -56,7 +57,7 @@ void NewsCommandBar::build_command_row(QVBoxLayout* root) {
     // Search input — compact
     search_input_ = new QLineEdit(row);
     search_input_->setObjectName("newsCommandBarSearch");
-    search_input_->setPlaceholderText("Search...");
+    search_input_->setPlaceholderText(QCoreApplication::translate("NewsCommandBar", "Search..."));
     search_input_->setFixedWidth(120);
     search_input_->setFixedHeight(20);
     hl->addWidget(search_input_);
@@ -65,15 +66,26 @@ void NewsCommandBar::build_command_row(QVBoxLayout* root) {
 
     hl->addSpacing(4);
 
-    // Category pills — compact
-    QStringList categories = {"ALL", "MKT", "EARN", "ECO", "TECH", "NRG", "CRPT", "GEO", "DEF"};
+    // Category pills — compact (display text -> internal value mapping)
+    struct CatInfo { QString display; QString value; };
+    QVector<CatInfo> categories = {
+        {QCoreApplication::translate("NewsCommandBar", "ALL"), "ALL"},
+        {QCoreApplication::translate("NewsCommandBar", "MKT"), "MKT"},
+        {QCoreApplication::translate("NewsCommandBar", "EARN"), "EARN"},
+        {QCoreApplication::translate("NewsCommandBar", "ECO"), "ECO"},
+        {QCoreApplication::translate("NewsCommandBar", "TECH"), "TECH"},
+        {QCoreApplication::translate("NewsCommandBar", "NRG"), "NRG"},
+        {QCoreApplication::translate("NewsCommandBar", "CRPT"), "CRPT"},
+        {QCoreApplication::translate("NewsCommandBar", "GEO"), "GEO"},
+        {QCoreApplication::translate("NewsCommandBar", "DEF"), "DEF"}
+    };
     for (const auto& cat : categories) {
-        auto* btn = make_pill(cat, cat, hl);
+        auto* btn = make_pill(cat.display, cat.value, hl);
         category_btns_.append(btn);
         connect(btn, &QPushButton::clicked, this, [this, cat]() {
-            active_category_ = cat;
+            active_category_ = cat.value;
             update_pill_group(category_btns_, active_category_);
-            emit category_changed(cat);
+            emit category_changed(cat.value);
         });
     }
     update_pill_group(category_btns_, active_category_);
@@ -103,8 +115,8 @@ void NewsCommandBar::build_command_row(QVBoxLayout* root) {
     hl->addSpacing(4);
 
     // Sort toggle
-    sort_relevance_ = make_pill("REL", "RELEVANCE", hl);
-    sort_newest_ = make_pill("NEW", "NEWEST", hl);
+    sort_relevance_ = make_pill(QCoreApplication::translate("NewsCommandBar", "REL"), "RELEVANCE", hl);
+    sort_newest_ = make_pill(QCoreApplication::translate("NewsCommandBar", "NEW"), "NEWEST", hl);
     connect(sort_relevance_, &QPushButton::clicked, this, [this]() {
         active_sort_ = "RELEVANCE";
         update_pill_group({sort_relevance_, sort_newest_}, "REL");
@@ -120,8 +132,8 @@ void NewsCommandBar::build_command_row(QVBoxLayout* root) {
     hl->addSpacing(2);
 
     // View mode toggle
-    view_wire_ = make_pill("WIRE", "WIRE", hl);
-    view_clusters_ = make_pill("CLST", "CLUSTERS", hl);
+    view_wire_ = make_pill(QCoreApplication::translate("NewsCommandBar", "WIRE"), "WIRE", hl);
+    view_clusters_ = make_pill(QCoreApplication::translate("NewsCommandBar", "CLST"), "CLUSTERS", hl);
     connect(view_wire_, &QPushButton::clicked, this, [this]() {
         active_view_ = "WIRE";
         update_pill_group({view_wire_, view_clusters_}, "WIRE");
@@ -164,7 +176,10 @@ void NewsCommandBar::build_command_row(QVBoxLayout* root) {
     lang_filter_combo_->setObjectName("newsCommandBarCombo");
     lang_filter_combo_->setFixedHeight(18);
     lang_filter_combo_->setFixedWidth(44);
-    lang_filter_combo_->addItems({"ALL", "EN", "FR", "DE", "ES", "AR", "ZH", "JA", "HI", "RU"});
+    lang_filter_combo_->addItems({
+        QCoreApplication::translate("NewsCommandBar", "ALL"),
+        "EN", "FR", "DE", "ES", "AR", "ZH", "JA", "HI", "RU"
+    });
     hl->addWidget(lang_filter_combo_);
     connect(lang_filter_combo_, &QComboBox::currentTextChanged, this, &NewsCommandBar::language_filter_changed);
 
@@ -173,7 +188,12 @@ void NewsCommandBar::build_command_row(QVBoxLayout* root) {
     variant_combo_->setObjectName("newsCommandBarCombo");
     variant_combo_->setFixedHeight(18);
     variant_combo_->setFixedWidth(60);
-    variant_combo_->addItems({"FULL", "FINANCE", "CRYPTO", "MACRO"});
+    variant_combo_->addItems({
+        QCoreApplication::translate("NewsCommandBar", "FULL"),
+        QCoreApplication::translate("NewsCommandBar", "FINANCE"),
+        QCoreApplication::translate("NewsCommandBar", "CRPT"),
+        QCoreApplication::translate("NewsCommandBar", "MACRO")
+    });
     hl->addWidget(variant_combo_);
     connect(variant_combo_, &QComboBox::currentTextChanged, this, &NewsCommandBar::variant_changed);
 
@@ -190,15 +210,15 @@ void NewsCommandBar::build_command_row(QVBoxLayout* root) {
     });
 
     // Summarize button
-    summarize_btn_ = new QPushButton("AI", row);
+    summarize_btn_ = new QPushButton(QCoreApplication::translate("NewsCommandBar", "AI"), row);
     summarize_btn_->setObjectName("newsDetailAnalyzeBtn");
     summarize_btn_->setFixedHeight(20);
-    summarize_btn_->setToolTip("AI Brief — summarize headlines");
+    summarize_btn_->setToolTip(QCoreApplication::translate("NewsCommandBar", "AI Brief — summarize headlines"));
     hl->addWidget(summarize_btn_);
     connect(summarize_btn_, &QPushButton::clicked, this, &NewsCommandBar::summarize_clicked);
 
     // Refresh button
-    refresh_btn_ = new QPushButton("REFRESH", row);
+    refresh_btn_ = new QPushButton(QCoreApplication::translate("NewsCommandBar", "REFRESH"), row);
     refresh_btn_->setObjectName("newsCommandBarRefresh");
     refresh_btn_->setFixedHeight(20);
     hl->addWidget(refresh_btn_);
@@ -233,10 +253,10 @@ void NewsCommandBar::build_intel_row(QVBoxLayout* root) {
         return val;
     };
 
-    intel_feeds_ = make_intel_stat("FEEDS");
-    intel_articles_ = make_intel_stat("ARTS");
-    intel_clusters_ = make_intel_stat("CLST");
-    intel_sources_ = make_intel_stat("SRCS");
+    intel_feeds_ = make_intel_stat(QCoreApplication::translate("NewsCommandBar", "FEEDS"));
+    intel_articles_ = make_intel_stat(QCoreApplication::translate("NewsCommandBar", "ARTS"));
+    intel_clusters_ = make_intel_stat(QCoreApplication::translate("NewsCommandBar", "CLST"));
+    intel_sources_ = make_intel_stat(QCoreApplication::translate("NewsCommandBar", "SRCS"));
 
     // Separator
     auto* sep1 = new QLabel("|", row);
@@ -249,7 +269,7 @@ void NewsCommandBar::build_intel_row(QVBoxLayout* root) {
     sent_layout->setContentsMargins(0, 0, 0, 0);
     sent_layout->setSpacing(4);
 
-    auto* sent_label = new QLabel("SENT", sent_container);
+    auto* sent_label = new QLabel(QCoreApplication::translate("NewsCommandBar", "SENT"), sent_container);
     sent_label->setObjectName("newsIntelLabel");
     sent_layout->addWidget(sent_label);
 
@@ -300,9 +320,9 @@ void NewsCommandBar::build_intel_row(QVBoxLayout* root) {
 }
 
 QPushButton* NewsCommandBar::make_pill(const QString& text, const QString& value, QHBoxLayout* layout) {
-    Q_UNUSED(value);
     auto* btn = new QPushButton(text, this);
     btn->setObjectName("newsCommandBarPill");
+    btn->setProperty("pillValue", value);
     btn->setFixedHeight(18);
     btn->setCursor(Qt::PointingHandCursor);
     layout->addWidget(btn);
@@ -311,7 +331,7 @@ QPushButton* NewsCommandBar::make_pill(const QString& text, const QString& value
 
 void NewsCommandBar::update_pill_group(const QVector<QPushButton*>& btns, const QString& active_value) {
     for (auto* btn : btns) {
-        bool active = (btn->text() == active_value);
+        bool active = (btn->property("pillValue").toString() == active_value);
         btn->setProperty("active", active);
         btn->style()->unpolish(btn);
         btn->style()->polish(btn);
@@ -325,7 +345,7 @@ void NewsCommandBar::set_active_category(const QString& cat) {
 
 void NewsCommandBar::set_loading(bool loading) {
     refresh_btn_->setEnabled(!loading);
-    refresh_btn_->setText(loading ? "..." : "REFRESH");
+    refresh_btn_->setText(loading ? tr("...") : QCoreApplication::translate("NewsCommandBar", "REFRESH"));
 }
 
 void NewsCommandBar::set_loading_progress(int done, int total) {
@@ -343,7 +363,7 @@ void NewsCommandBar::set_article_count(int count) {
 
 void NewsCommandBar::set_alert_count(int count) {
     if (count > 0) {
-        alert_label_->setText(QString("%1 ALERTS").arg(count));
+        alert_label_->setText(QCoreApplication::translate("NewsCommandBar", "%1 ALERTS").arg(count));
         alert_label_->show();
     } else {
         alert_label_->hide();
@@ -352,7 +372,7 @@ void NewsCommandBar::set_alert_count(int count) {
 
 void NewsCommandBar::set_unseen_count(int count) {
     if (count > 0) {
-        unseen_label_->setText(QString("%1 NEW").arg(count));
+        unseen_label_->setText(QCoreApplication::translate("NewsCommandBar", "%1 NEW").arg(count));
         unseen_label_->show();
     } else {
         unseen_label_->hide();
@@ -362,7 +382,7 @@ void NewsCommandBar::set_unseen_count(int count) {
 void NewsCommandBar::show_summary(const QString& summary) {
     summary_label_->setText(summary);
     summary_label_->show();
-    summarize_btn_->setText("AI");
+    summarize_btn_->setText(QCoreApplication::translate("NewsCommandBar", "AI"));
     summarize_btn_->setEnabled(true);
 }
 
@@ -371,7 +391,7 @@ void NewsCommandBar::hide_summary() {
 }
 
 void NewsCommandBar::set_summarizing(bool busy) {
-    summarize_btn_->setText(busy ? "..." : "AI");
+    summarize_btn_->setText(busy ? tr("...") : QCoreApplication::translate("NewsCommandBar", "AI"));
     summarize_btn_->setEnabled(!busy);
 }
 
@@ -418,9 +438,9 @@ void NewsCommandBar::update_deviations(const QVector<QPair<QString, double>>& de
 
 void NewsCommandBar::update_monitor_summary(int total_monitors, int active_alerts) {
     if (active_alerts > 0)
-        intel_monitors_->setText(QString("%1 WATCHES  %2 HIT").arg(total_monitors).arg(active_alerts));
+        intel_monitors_->setText(QCoreApplication::translate("NewsCommandBar", "%1 WATCHES  %2 HIT").arg(total_monitors).arg(active_alerts));
     else
-        intel_monitors_->setText(QString("%1 WATCHES").arg(total_monitors));
+        intel_monitors_->setText(QCoreApplication::translate("NewsCommandBar", "%1 WATCHES").arg(total_monitors));
 }
 
 } // namespace fincept::screens

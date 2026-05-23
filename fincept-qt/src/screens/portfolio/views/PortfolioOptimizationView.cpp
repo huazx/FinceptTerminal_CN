@@ -83,15 +83,15 @@ void PortfolioOptimizationView::build_ui() {
                              .arg(ui::colors::BG_BASE(), ui::colors::BG_SURFACE(), ui::colors::TEXT_SECONDARY(),
                                   ui::colors::AMBER(), ui::colors::TEXT_PRIMARY()));
 
-    tabs_->addTab(build_optimize_tab(), "OPTIMIZE");
-    tabs_->addTab(build_frontier_tab(), "FRONTIER");
-    tabs_->addTab(build_allocation_tab(), "ALLOCATION");
-    tabs_->addTab(build_strategies_tab(), "STRATEGIES");
-    tabs_->addTab(build_compare_tab(), "COMPARE");
-    tabs_->addTab(build_backtest_tab(), "BACKTEST");
-    tabs_->addTab(build_risk_tab(), "RISK");
-    tabs_->addTab(build_stress_tab(), "STRESS");
-    tabs_->addTab(build_black_litterman_tab(), "B-L MODEL");
+    tabs_->addTab(build_optimize_tab(), tr("OPTIMIZE"));
+    tabs_->addTab(build_frontier_tab(), tr("FRONTIER"));
+    tabs_->addTab(build_allocation_tab(), tr("ALLOCATION"));
+    tabs_->addTab(build_strategies_tab(), tr("STRATEGIES"));
+    tabs_->addTab(build_compare_tab(), tr("COMPARE"));
+    tabs_->addTab(build_backtest_tab(), tr("BACKTEST"));
+    tabs_->addTab(build_risk_tab(), tr("RISK"));
+    tabs_->addTab(build_stress_tab(), tr("STRESS"));
+    tabs_->addTab(build_black_litterman_tab(), tr("B-L MODEL"));
 
     layout->addWidget(tabs_);
 }
@@ -129,7 +129,7 @@ QWidget* PortfolioOptimizationView::build_optimize_tab() {
 
     config->addStretch();
 
-    run_btn_ = new QPushButton("\u25B6 RUN OPTIMIZATION");
+    run_btn_ = new QPushButton(tr("\u25B6 RUN OPTIMIZATION"));
     run_btn_->setFixedHeight(26);
     run_btn_->setCursor(Qt::PointingHandCursor);
     run_btn_->setStyleSheet(QString("QPushButton { background:%1; color:%5; border:none;"
@@ -149,7 +149,7 @@ QWidget* PortfolioOptimizationView::build_optimize_tab() {
 
     result_table_ = new QTableWidget;
     result_table_->setColumnCount(5);
-    result_table_->setHorizontalHeaderLabels({"SYMBOL", "CURRENT WT%", "OPTIMAL WT%", "CHANGE", "ACTION"});
+    result_table_->setHorizontalHeaderLabels({tr("SYMBOL"), tr("CURRENT WT%"), tr("OPTIMAL WT%"), tr("CHANGE"), tr("ACTION")});
     style_table(result_table_);
     layout->addWidget(result_table_, 1);
 
@@ -161,7 +161,7 @@ QWidget* PortfolioOptimizationView::build_frontier_tab() {
     auto* layout = new QVBoxLayout(w);
     layout->setContentsMargins(12, 8, 12, 8);
 
-    auto* title = new QLabel("EFFICIENT FRONTIER");
+    auto* title = new QLabel(tr("EFFICIENT FRONTIER"));
     title->setStyleSheet(
         QString("color:%1; font-size:11px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     layout->addWidget(title);
@@ -169,7 +169,7 @@ QWidget* PortfolioOptimizationView::build_frontier_tab() {
     frontier_stack_ = new QStackedWidget;
 
     frontier_stack_->addWidget(
-        make_placeholder("Run optimization on the OPTIMIZE tab to generate the efficient frontier."));
+        make_placeholder(tr("Run optimization on the OPTIMIZE tab to generate the efficient frontier.")));
 
     // Chart page
     auto* chart_w = new QWidget(this);
@@ -210,7 +210,7 @@ QWidget* PortfolioOptimizationView::build_allocation_tab() {
 
     alloc_table_ = new QTableWidget;
     alloc_table_->setColumnCount(4);
-    alloc_table_->setHorizontalHeaderLabels({"SYMBOL", "WEIGHT", "VALUE", "VS EQUAL WT"});
+    alloc_table_->setHorizontalHeaderLabels({tr("SYMBOL"), tr("WEIGHT"), tr("VALUE"), tr("VS EQUAL WT")});
     style_table(alloc_table_);
     layout->addWidget(alloc_table_, 1);
 
@@ -223,18 +223,18 @@ QWidget* PortfolioOptimizationView::build_strategies_tab() {
     layout->setContentsMargins(12, 8, 12, 8);
     layout->setSpacing(8);
 
-    auto* title = new QLabel("STRATEGY COMPARISON  (populated after optimization)");
+    auto* title = new QLabel(tr("STRATEGY COMPARISON  (populated after optimization)"));
     title->setStyleSheet(
         QString("color:%1; font-size:11px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     layout->addWidget(title);
 
     strategies_stack_ = new QStackedWidget;
-    strategies_stack_->addWidget(make_placeholder("Run optimization on the OPTIMIZE tab.\n"
-                                                  "All 5 strategies will be compared automatically."));
+    strategies_stack_->addWidget(make_placeholder(tr("Run optimization on the OPTIMIZE tab.\n"
+                                                  "All 5 strategies will be compared automatically.")));
 
     strategies_table_ = new QTableWidget;
     strategies_table_->setColumnCount(5);
-    strategies_table_->setHorizontalHeaderLabels({"STRATEGY", "EXP. RETURN", "VOLATILITY", "SHARPE", "DESCRIPTION"});
+    strategies_table_->setHorizontalHeaderLabels({tr("STRATEGY"), tr("EXP. RETURN"), tr("VOLATILITY"), tr("SHARPE"), tr("DESCRIPTION")});
     style_table(strategies_table_);
     strategies_stack_->addWidget(strategies_table_);
 
@@ -248,13 +248,13 @@ QWidget* PortfolioOptimizationView::build_compare_tab() {
     layout->setContentsMargins(12, 8, 12, 8);
     layout->setSpacing(8);
 
-    auto* title = new QLabel("WEIGHT COMPARISON  (all methods, per symbol)");
+    auto* title = new QLabel(tr("WEIGHT COMPARISON  (all methods, per symbol)"));
     title->setStyleSheet(
         QString("color:%1; font-size:11px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     layout->addWidget(title);
 
     compare_stack_ = new QStackedWidget;
-    compare_stack_->addWidget(make_placeholder("Run optimization on the OPTIMIZE tab to populate this comparison."));
+    compare_stack_->addWidget(make_placeholder(tr("Run optimization on the OPTIMIZE tab to populate this comparison.")));
 
     compare_table_ = new QTableWidget;
     style_table(compare_table_);
@@ -270,14 +270,14 @@ QWidget* PortfolioOptimizationView::build_backtest_tab() {
     layout->setContentsMargins(16, 12, 16, 12);
     layout->setAlignment(Qt::AlignCenter);
 
-    auto* title = new QLabel("BACKTEST RESULTS");
+    auto* title = new QLabel(tr("BACKTEST RESULTS"));
     title->setStyleSheet(
         QString("color:%1; font-size:12px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     title->setAlignment(Qt::AlignCenter);
     layout->addWidget(title);
 
-    layout->addWidget(make_placeholder("Run an optimization first, then backtest the optimal weights\n"
-                                       "against historical data to evaluate out-of-sample performance."));
+    layout->addWidget(make_placeholder(tr("Run an optimization first, then backtest the optimal weights\n"
+                                        "against historical data to evaluate out-of-sample performance.")));
     return w;
 }
 
@@ -286,14 +286,14 @@ QWidget* PortfolioOptimizationView::build_risk_tab() {
     auto* layout = new QVBoxLayout(w);
     layout->setContentsMargins(16, 12, 16, 12);
 
-    auto* title = new QLabel("RISK DECOMPOSITION");
+    auto* title = new QLabel(tr("RISK DECOMPOSITION"));
     title->setStyleSheet(
         QString("color:%1; font-size:12px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     layout->addWidget(title);
 
     layout->addWidget(
-        make_placeholder("Risk decomposition shows how each holding contributes to overall portfolio risk.\n"
-                         "Run optimization to compute marginal risk contributions."));
+        make_placeholder(tr("Risk decomposition shows how each holding contributes to overall portfolio risk.\n"
+                          "Run optimization to compute marginal risk contributions.")));
     return w;
 }
 
@@ -302,13 +302,13 @@ QWidget* PortfolioOptimizationView::build_stress_tab() {
     auto* layout = new QVBoxLayout(w);
     layout->setContentsMargins(16, 12, 16, 12);
 
-    auto* title = new QLabel("OPTIMIZATION STRESS SCENARIOS");
+    auto* title = new QLabel(tr("OPTIMIZATION STRESS SCENARIOS"));
     title->setStyleSheet(
         QString("color:%1; font-size:12px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     layout->addWidget(title);
 
-    layout->addWidget(make_placeholder("Test how different optimization methods perform under stress conditions.\n"
-                                       "Compares optimal weights across historical crisis scenarios."));
+    layout->addWidget(make_placeholder(tr("Test how different optimization methods perform under stress conditions.\n"
+                                        "Compares optimal weights across historical crisis scenarios.")));
     return w;
 }
 
@@ -317,15 +317,15 @@ QWidget* PortfolioOptimizationView::build_black_litterman_tab() {
     auto* layout = new QVBoxLayout(w);
     layout->setContentsMargins(16, 12, 16, 12);
 
-    auto* title = new QLabel("BLACK-LITTERMAN MODEL");
+    auto* title = new QLabel(tr("BLACK-LITTERMAN MODEL"));
     title->setStyleSheet(
         QString("color:%1; font-size:12px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     layout->addWidget(title);
 
     layout->addWidget(
-        make_placeholder("The Black-Litterman model combines market equilibrium returns with investor views\n"
-                         "to produce more stable and intuitive portfolio allocations.\n\n"
-                         "Select 'B-L Model' from the METHOD dropdown on the OPTIMIZE tab to run it."));
+        make_placeholder(tr("The Black-Litterman model combines market equilibrium returns with investor views\n"
+                          "to produce more stable and intuitive portfolio allocations.\n\n"
+                          "Select 'B-L Model' from the METHOD dropdown on the OPTIMIZE tab to run it.")));
     return w;
 }
 
@@ -345,7 +345,7 @@ void PortfolioOptimizationView::run_optimization() {
 
     running_ = true;
     run_btn_->setEnabled(false);
-    status_label_->setText("Running optimization…");
+    status_label_->setText(tr("Running optimization…"));
     status_label_->setStyleSheet(QString("color:%1; font-size:10px;").arg(ui::colors::AMBER()));
 
     QJsonArray symbols_arr;
@@ -410,7 +410,7 @@ void PortfolioOptimizationView::run_optimization() {
                         set(2, QString("%1%").arg(ow, 0, 'f', 1), ui::colors::AMBER);
                         set(3, QString("%1%2%").arg(ch >= 0.0 ? "+" : "").arg(ch, 0, 'f', 1),
                             ch >= 0.0 ? ui::colors::POSITIVE : ui::colors::NEGATIVE);
-                        const QString action = std::abs(ch) < 0.5 ? "HOLD" : ch > 0.0 ? "INCREASE" : "DECREASE";
+                        const QString action = std::abs(ch) < 0.5 ? tr("HOLD") : ch > 0.0 ? tr("INCREASE") : tr("DECREASE");
                         const char* ac = action == "HOLD"       ? ui::colors::TEXT_TERTIARY
                                          : action == "INCREASE" ? ui::colors::POSITIVE
                                                                 : ui::colors::NEGATIVE;
@@ -490,9 +490,9 @@ void PortfolioOptimizationView::run_optimization() {
                         set(3, QString("%1%2%").arg(ch >= 0.0 ? "+" : "").arg(ch, 0, 'f', 1),
                             ch >= 0.0 ? ui::colors::POSITIVE : ui::colors::NEGATIVE);
 
-                        const QString action = std::abs(ch) < 0.5 ? "HOLD"
-                                               : ch > 0.0        ? "INCREASE"
-                                                                 : "DECREASE";
+                        const QString action = std::abs(ch) < 0.5 ? tr("HOLD")
+                                               : ch > 0.0        ? tr("INCREASE")
+                                                                 : tr("DECREASE");
                         const char* ac = action == "HOLD"       ? ui::colors::TEXT_TERTIARY
                                          : action == "INCREASE" ? ui::colors::POSITIVE
                                                                 : ui::colors::NEGATIVE;
@@ -716,7 +716,7 @@ void PortfolioOptimizationView::update_compare(const QJsonObject& comparison) {
     compare_table_->setColumnCount(1 + n_methods);
 
     QStringList headers;
-    headers << "SYMBOL";
+    headers << tr("SYMBOL");
     for (int c = 0; c < n_methods; ++c)
         headers << kCols[c].label;
     compare_table_->setHorizontalHeaderLabels(headers);

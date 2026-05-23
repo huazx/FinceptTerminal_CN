@@ -42,6 +42,11 @@ QString LlmService::get_models_url(const QString& provider, const QString& api_k
             base.chop(1);
         if (p == "anthropic")
             return base + "/v1/models?limit=1000";
+        if (p == "openai_compatible") {
+            if (base.endsWith("/models"))
+                return base;
+            return base + "/models";
+        }
         return base + "/v1/models";
     }
 
@@ -194,6 +199,13 @@ void LlmService::fetch_models(const QString& provider, const QString& api_key, c
     });
     timer->start(15000);
 
+    connect(models_nam_, &QNetworkAccessManager::authenticationRequired,
+            reply, [](QNetworkReply* reply, QAuthenticator* authenticator) {
+        Q_UNUSED(authenticator)
+        reply->setProperty("_auth_failed", true);
+        reply->abort();
+    });
+
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         reply->deleteLater();
         const QString p = reply->property("_provider").toString();
@@ -203,7 +215,9 @@ void LlmService::fetch_models(const QString& provider, const QString& api_key, c
         const int status = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
         if (reply->error() != QNetworkReply::NoError || status < 200 || status >= 300) {
-            if (reply->error() == QNetworkReply::OperationCanceledError)
+            if (reply->property("_auth_failed").toBool())
+                error = "Authentication failed: API key is missing or invalid";
+            else if (reply->error() == QNetworkReply::OperationCanceledError)
                 error = "Request timed out";
             else {
                 error = reply->errorString();

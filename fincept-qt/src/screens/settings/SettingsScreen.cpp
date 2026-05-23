@@ -51,7 +51,7 @@ SettingsScreen::SettingsScreen(QWidget* parent) : QWidget(parent) {
     nvl->setContentsMargins(8, 16, 8, 8);
     nvl->setSpacing(2);
 
-    auto* title = new QLabel("SETTINGS");
+    auto* title = new QLabel(tr("SETTINGS"));
     title->setStyleSheet(section_title_ss());
     nvl->addWidget(title);
     nvl->addSpacing(12);
@@ -109,24 +109,24 @@ SettingsScreen::SettingsScreen(QWidget* parent) : QWidget(parent) {
         nvl->addWidget(h);
     };
 
-    add_scope_header("SHELL");
-    auto* first = make_btn("General",       14);
-    make_btn("Appearance",      1);
-    make_btn("Notifications",   2);
-    make_btn("Keybindings",    10);
-    make_btn("Voice",          13);
-    make_btn("Logging",         7);
-    make_btn("Developer",      12);
+    add_scope_header(tr("SHELL"));
+    auto* first = make_btn(tr("General"),       14);
+    make_btn(tr("Appearance"),      1);
+    make_btn(tr("Notifications"),   2);
+    make_btn(tr("Keybindings"),    10);
+    make_btn(tr("Voice"),          13);
+    make_btn(tr("Logging"),         7);
+    make_btn(tr("Developer"),      12);
 
-    add_scope_header("PROFILE");
-    make_btn("Profiles",        9);
-    make_btn("Credentials",     0);
-    make_btn("Security",        8);
-    make_btn("Data Sources",    4);
-    make_btn("LLM Config",      5);
-    make_btn("MCP Servers",     6);
-    make_btn("Python Env",     11);
-    make_btn("Storage & Cache", 3);
+    add_scope_header(tr("PROFILE"));
+    make_btn(tr("Profiles"),        9);
+    make_btn(tr("Credentials"),     0);
+    make_btn(tr("Security"),        8);
+    make_btn(tr("Data Sources"),    4);
+    make_btn(tr("LLM Config"),      5);
+    make_btn(tr("MCP Servers"),     6);
+    make_btn(tr("Python Env"),     11);
+    make_btn(tr("Storage & Cache"), 3);
 
     first->setChecked(true);
     sections_->setCurrentIndex(14);
@@ -174,7 +174,7 @@ void SettingsScreen::refresh_theme() {
         // SETTINGS title at the top of the nav.
         for (auto* lbl : nav_->findChildren<QLabel*>()) {
             const QString text = lbl->text();
-            if (text == QStringLiteral("SHELL") || text == QStringLiteral("PROFILE")) {
+            if (text == tr("SHELL") || text == tr("PROFILE")) {
                 lbl->setStyleSheet(
                     QString("color:%1;font-size:10px;font-weight:700;"
                             "letter-spacing:1.2px;padding:8px 6px 4px 6px;")

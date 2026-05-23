@@ -9,6 +9,7 @@
 #include "storage/repositories/SettingsRepository.h"
 #include "ui/theme/Theme.h"
 
+#include <QCoreApplication>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -42,25 +43,25 @@ struct ProviderDef {
 const QVector<ProviderDef>& provider_defs() {
     static const QVector<ProviderDef> defs = {
         {"telegram", "Telegram", "✈",
-         {{"bot_token", "Bot Token", "Enter bot token from @BotFather", true},
-          {"chat_id",   "Chat ID",   "e.g. 123456789"}}},
+         {{"bot_token", QT_TRANSLATE_NOOP("NotificationsSection", "Bot Token"), QT_TRANSLATE_NOOP("NotificationsSection", "Enter bot token from @BotFather"), true},
+          {"chat_id",   QT_TRANSLATE_NOOP("NotificationsSection", "Chat ID"),   QT_TRANSLATE_NOOP("NotificationsSection", "e.g. 123456789")}}},
         {"discord", "Discord", "🎮",
-         {{"webhook_url", "Webhook URL", "https://discord.com/api/webhooks/..."}}},
+         {{"webhook_url", QT_TRANSLATE_NOOP("NotificationsSection", "Webhook URL"), QT_TRANSLATE_NOOP("NotificationsSection", "https://discord.com/api/webhooks/...")}}},
         {"slack", "Slack", "💬",
-         {{"webhook_url", "Webhook URL", "https://hooks.slack.com/services/..."},
-          {"channel",     "Channel",     "#alerts (optional)"}}},
+         {{"webhook_url", QT_TRANSLATE_NOOP("NotificationsSection", "Webhook URL"), QT_TRANSLATE_NOOP("NotificationsSection", "https://hooks.slack.com/services/...")},
+          {"channel",     QT_TRANSLATE_NOOP("NotificationsSection", "Channel"),     QT_TRANSLATE_NOOP("NotificationsSection", "#alerts (optional)")}}},
         {"email", "Email", "📧",
-         {{"smtp_host", "SMTP Host", "smtp.gmail.com"},
-          {"smtp_port", "Port",      "587"},
-          {"smtp_user", "Username",  "you@gmail.com"},
-          {"smtp_pass", "Password",  "App password", true},
-          {"to_addr",   "To Address","recipient@example.com"},
-          {"from_addr", "From Address","you@gmail.com (optional)"}}},
+         {{"smtp_host", QT_TRANSLATE_NOOP("NotificationsSection", "SMTP Host"), QT_TRANSLATE_NOOP("NotificationsSection", "smtp.gmail.com")},
+          {"smtp_port", QT_TRANSLATE_NOOP("NotificationsSection", "Port"),      QT_TRANSLATE_NOOP("NotificationsSection", "587")},
+          {"smtp_user", QT_TRANSLATE_NOOP("NotificationsSection", "Username"),  QT_TRANSLATE_NOOP("NotificationsSection", "you@gmail.com")},
+          {"smtp_pass", QT_TRANSLATE_NOOP("NotificationsSection", "Password"),  QT_TRANSLATE_NOOP("NotificationsSection", "App password"), true},
+          {"to_addr",   QT_TRANSLATE_NOOP("NotificationsSection", "To Address"),QT_TRANSLATE_NOOP("NotificationsSection", "recipient@example.com")},
+          {"from_addr", QT_TRANSLATE_NOOP("NotificationsSection", "From Address"),QT_TRANSLATE_NOOP("NotificationsSection", "you@gmail.com (optional)")}}},
         {"whatsapp", "WhatsApp", "📱",
-         {{"account_sid", "Account SID", "Twilio Account SID"},
-          {"auth_token",  "Auth Token",  "Twilio Auth Token", true},
-          {"from_number", "From Number", "+14155238886"},
-          {"to_number",   "To Number",   "+1XXXXXXXXXX"}}},
+         {{"account_sid", QT_TRANSLATE_NOOP("NotificationsSection", "Account SID"), QT_TRANSLATE_NOOP("NotificationsSection", "Twilio Account SID")},
+          {"auth_token",  QT_TRANSLATE_NOOP("NotificationsSection", "Auth Token"),  QT_TRANSLATE_NOOP("NotificationsSection", "Twilio Auth Token"), true},
+          {"from_number", QT_TRANSLATE_NOOP("NotificationsSection", "From Number"), QT_TRANSLATE_NOOP("NotificationsSection", "+14155238886")},
+          {"to_number",   QT_TRANSLATE_NOOP("NotificationsSection", "To Number"),   QT_TRANSLATE_NOOP("NotificationsSection", "+1XXXXXXXXXX")}}},
         {"pushover", "Pushover", "🔔",
          {{"api_token", "API Token", "Your Pushover app token", true},
           {"user_key",  "User Key",  "Your Pushover user key", true}}},
@@ -129,7 +130,7 @@ void NotificationsSection::build_ui() {
     vl->setContentsMargins(24, 24, 24, 24);
     vl->setSpacing(6);
 
-    auto* hdr_lbl = new QLabel("NOTIFICATION PROVIDERS");
+    auto* hdr_lbl = new QLabel(tr("NOTIFICATION PROVIDERS"));
     hdr_lbl->setStyleSheet(section_title_ss());
     vl->addWidget(hdr_lbl);
     vl->addWidget(make_sep());
@@ -183,12 +184,12 @@ void NotificationsSection::build_ui() {
 
         for (const auto& fd : def.fields) {
             auto* field = new QLineEdit;
-            field->setPlaceholderText(fd.placeholder);
+            field->setPlaceholderText(QCoreApplication::translate("NotificationsSection", fd.placeholder.toUtf8().constData()));
             field->setStyleSheet(input_ss());
             if (fd.is_password)
                 field->setEchoMode(QLineEdit::Password);
             pw.fields[fd.key] = field;
-            bvl->addWidget(make_row(fd.label, field));
+            bvl->addWidget(make_row(QCoreApplication::translate("NotificationsSection", fd.label.toUtf8().constData()), field));
         }
 
         // Test button + status
@@ -198,7 +199,7 @@ void NotificationsSection::build_ui() {
         thl->setContentsMargins(0, 4, 0, 0);
         thl->setSpacing(8);
 
-        pw.test_btn = new QPushButton("Test Send");
+        pw.test_btn = new QPushButton(tr("Test Send"));
         pw.test_btn->setFixedWidth(100);
         pw.test_btn->setStyleSheet(btn_secondary_ss());
 
@@ -232,19 +233,19 @@ void NotificationsSection::build_ui() {
             save_provider_fields(pid, pw);
             NotificationService::instance().reload_all_configs();
 
-            pw.status_lbl->setText("Sending...");
+            pw.status_lbl->setText(tr("Sending..."));
             pw.status_lbl->setStyleSheet(QString("color:%1;background:transparent;").arg(ui::colors::TEXT_SECONDARY()));
 
             NotificationRequest req;
-            req.title   = "Fincept Test";
-            req.message = "This is a test notification from Fincept Terminal.";
+            req.title   = tr("Fincept Test");
+            req.message = tr("This is a test notification from Fincept Terminal.");
             req.trigger = NotifTrigger::Manual;
 
             QPointer<QLabel> status_ptr = pw.status_lbl;
             NotificationService::instance().send_to(pid, req, [status_ptr](bool ok, const QString& err) {
                 if (!status_ptr) return;
                 if (ok) {
-                    status_ptr->setText("✓ Sent successfully");
+                    status_ptr->setText(tr("✓ Sent successfully"));
                     status_ptr->setStyleSheet(QString("color:%1;background:transparent;").arg(ui::colors::POSITIVE()));
                 } else {
                     status_ptr->setText("✗ " + err.left(60));
@@ -262,7 +263,7 @@ void NotificationsSection::build_ui() {
     vl->addSpacing(8);
 
     // ── Alert triggers ────────────────────────────────────────────────────────
-    auto* trig_hdr = new QLabel("ALERT TRIGGERS");
+    auto* trig_hdr = new QLabel(tr("ALERT TRIGGERS"));
     trig_hdr->setStyleSheet(sub_title_ss());
     vl->addWidget(trig_hdr);
     vl->addSpacing(4);
@@ -272,10 +273,10 @@ void NotificationsSection::build_ui() {
     trigger_news_   = new QCheckBox; trigger_news_->setStyleSheet(check_ss());
     trigger_orders_ = new QCheckBox; trigger_orders_->setStyleSheet(check_ss());
 
-    vl->addWidget(make_row("In-App Alerts (toast + bell)", trigger_inapp_,
-                           "Show slide-in toasts and update bell badge."));
-    vl->addWidget(make_row("Price Alerts", trigger_price_, "Notify when price alert thresholds are crossed."));
-    vl->addWidget(make_row("News Alerts", trigger_news_, "Enable news notifications (configure which types below)."));
+    vl->addWidget(make_row(tr("In-App Alerts (toast + bell)"), trigger_inapp_,
+                           tr("Show slide-in toasts and update bell badge.")));
+    vl->addWidget(make_row(tr("Price Alerts"), trigger_price_, tr("Notify when price alert thresholds are crossed.")));
+    vl->addWidget(make_row(tr("News Alerts"), trigger_news_, tr("Enable news notifications (configure which types below).")));
 
     // News alert sub-options
     news_subopts_frame_ = new QFrame;
@@ -292,27 +293,27 @@ void NotificationsSection::build_ui() {
     news_deviations_ = new QCheckBox; news_deviations_->setStyleSheet(check_ss());
     news_flash_      = new QCheckBox; news_flash_->setStyleSheet(check_ss());
 
-    sub_vl->addWidget(make_row("Breaking News", news_breaking_,
-                               "Notify on FLASH/BREAKING/URGENT priority clusters."));
-    sub_vl->addWidget(make_row("Monitor Keyword Matches", news_monitors_,
-                               "Notify when a news monitor watch list gets new matches."));
-    sub_vl->addWidget(make_row("Category Volume Spikes", news_deviations_,
-                               "Notify when a category has abnormally high article volume (z-score ≥ 3)."));
-    sub_vl->addWidget(make_row("FLASH + High-Impact Articles", news_flash_,
-                               "Notify on individual articles that are both FLASH priority and high market impact."));
+    sub_vl->addWidget(make_row(tr("Breaking News"), news_breaking_,
+                               tr("Notify on FLASH/BREAKING/URGENT priority clusters.")));
+    sub_vl->addWidget(make_row(tr("Monitor Keyword Matches"), news_monitors_,
+                               tr("Notify when a news monitor watch list gets new matches.")));
+    sub_vl->addWidget(make_row(tr("Category Volume Spikes"), news_deviations_,
+                               tr("Notify when a category has abnormally high article volume (z-score ≥ 3).")));
+    sub_vl->addWidget(make_row(tr("FLASH + High-Impact Articles"), news_flash_,
+                               tr("Notify on individual articles that are both FLASH priority and high market impact.")));
 
     vl->addWidget(news_subopts_frame_);
 
     connect(trigger_news_, &QCheckBox::toggled, this,
             [this](bool on) { news_subopts_frame_->setVisible(on); });
 
-    vl->addWidget(make_row("Order Fill Alerts", trigger_orders_,
-                           "Notify when orders are filled or rejected."));
+    vl->addWidget(make_row(tr("Order Fill Alerts"), trigger_orders_,
+                           tr("Notify when orders are filled or rejected.")));
 
     vl->addSpacing(16);
 
     // Save
-    auto* save_btn = new QPushButton("Save All Providers");
+    auto* save_btn = new QPushButton(tr("Save All Providers"));
     save_btn->setFixedWidth(200);
     save_btn->setStyleSheet(btn_primary_ss());
     connect(save_btn, &QPushButton::clicked, this, [this]() {

@@ -71,11 +71,17 @@ struct RegionalMarket {
     QVector<TickerDef> tickers;
 };
 
+/// Data source for market data
+enum class MarketDataSource {
+    YFinance,  // Default - Yahoo Finance
+    AkShare    // Alternative - for users with Yahoo Finance connectivity issues
+};
+
 /// Fetches market quotes via Python/yfinance.
 /// Features:
 ///   - Request batching: collects symbols over a 100ms window, deduplicates, single Python call
 ///   - Quote caching: returns cached data immediately, refreshes in background
-///   - DataHub producer: owns the `market:quote:*` topic family. Phase 2 —
+///   - DataHub producer: owns the `market:quote:*` topic families. Phase 2 —
 ///     see fincept-qt/docs/datahub-phases/phase-02-market-data-pilot.md.
 class MarketDataService : public QObject
     , public fincept::datahub::Producer
@@ -85,6 +91,10 @@ class MarketDataService : public QObject
     using QuoteCallback = std::function<void(bool, QVector<QuoteData>)>;
 
     static MarketDataService& instance();
+    
+    /// Set the data source for market data (yfinance or akshare)
+    void set_data_source(MarketDataSource source);
+    MarketDataSource data_source() const { return data_source_; }
 
     /// Register this service as a DataHub producer + install the default
     /// `market:quote:*` policy. Idempotent — safe if called more than once.
@@ -155,6 +165,9 @@ class MarketDataService : public QObject
 
     // ── Caching — delegated to CacheManager ──
     static constexpr int kQuoteCacheTtlSec = 30;
+    
+    // ── Data source configuration ──
+    MarketDataSource data_source_ = MarketDataSource::AkShare;
 };
 
 } // namespace fincept::services

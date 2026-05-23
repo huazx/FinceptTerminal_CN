@@ -1,4 +1,4 @@
-﻿#include "app/WindowFrame.h"
+#include "app/WindowFrame.h"
 
 #include "ai_chat/AiChatBubble.h"
 #include "ai_chat/AiChatScreen.h"
@@ -1210,10 +1210,9 @@ void WindowFrame::on_auth_state_changed() {
             fincept::trading::InstrumentService::instance().load_from_db_async("angelone");
             fincept::trading::InstrumentService::instance().load_from_db_async("groww");
         } else {
-            // Free/no plan → show pricing gate
-            set_shell_visible(false);
-            stack_->setCurrentIndex(0);
-            auth_stack_->setCurrentIndex(3);
+            set_shell_visible(true);
+            stack_->setCurrentIndex(1);
+            layout::WorkspaceShell::load_last_or_default();
         }
     } else {
         // Disable inactivity guard when logged out and drop the locked flag
@@ -1397,10 +1396,8 @@ void WindowFrame::on_terminal_unlocked() {
             services::UpdateService::instance().check_for_updates(true);
         });
     } else {
-        // Free/no plan → pricing gate
-        set_shell_visible(false);
-        stack_->setCurrentIndex(0);
-        auth_stack_->setCurrentIndex(3);
+        set_shell_visible(true);
+        stack_->setCurrentIndex(1);
     }
 
     // Flip the process-wide locked flag LAST. Sibling MainWindows fan out
@@ -1714,18 +1711,7 @@ bool WindowFrame::apply_layout(const layout::FrameLayout& fl) {
 }
 
 bool WindowFrame::is_active_for_work() const {
-    // Best-effort per decision 9.1. Two cheap checks cover the obvious cases:
-    //   - isMinimized(): user clicked the minimise button or pressed Win+M.
-    //   - isVisible(): the widget tree is hidden (rare for top-level frames
-    //     in this app, but cheap to check).
-    // Everything else (virtual-desktop occupancy, occlusion by other apps,
-    // alt-tab status) is intentionally NOT detected — platform-specific and
-    // unreliable.
-    if (isMinimized())
-        return false;
-    if (!isVisible())
-        return false;
-    return true;
+    return !isMinimized();
 }
 
 namespace {
@@ -1888,12 +1874,6 @@ void WindowFrame::changeEvent(QEvent* event) {
     if (event->type() != QEvent::WindowStateChange)
         return;
 
-    // Phase 8 / decision 9.1: emit active_for_work_changed when the flag
-    // actually flips. Fires on minimise (true → false) AND restore
-    // (false → true), so DataHub (and any other subscriber) can flush
-    // pending updates when the user brings the window forward. We compute
-    // is_active_for_work() now — Qt has already updated windowState by
-    // the time WindowStateChange fires.
     {
         const bool now_active = is_active_for_work();
         if (now_active != last_active_for_work_) {

@@ -1,4 +1,5 @@
 #include "screens/chat_mode/ChatModeService.h"
+#include "auth/AuthManager.h"
 
 #include "auth/AuthManager.h"
 #include "core/logging/Logger.h"
@@ -79,7 +80,8 @@ void ChatModeService::handle_reply(QNetworkReply* reply,
         LOG_DEBUG("ChatModeService", QString("%1  HTTP %2  %3 bytes").arg(url_path).arg(status).arg(data.size()));
 
         if (status == 402) {
-            LOG_WARN("ChatModeService", "Insufficient credits (402)");
+            LOG_WARN("ChatModeService", "Insufficient credits (402) — refreshing user data");
+            auth::AuthManager::instance().refresh_user_data();
             emit insufficient_credits();
             cb(false, {}, "Insufficient credits");
             return;
@@ -699,10 +701,15 @@ void ChatModeService::get_credits(CreditsCallback cb) {
     const QString path = QString("/user/profile?_t=%1").arg(QDateTime::currentMSecsSinceEpoch());
     get(path, [cb = std::move(cb)](bool ok, QJsonDocument doc, QString err) {
         if (!ok) {
+            LOG_WARN("ChatModeService", QString("get_credits failed: %1").arg(err));
             cb(false, 0, err);
             return;
         }
-        const int credits = doc.object().value("data").toObject().value("credit_balance").toInt();
+        const auto data = doc.object().value("data").toObject();
+        const int credits = data.value("credit_balance").toInt();
+        LOG_INFO("ChatModeService", QString("get_credits: credit_balance=%1 (raw: %2)")
+                              .arg(credits)
+                              .arg(data.value("credit_balance").toDouble()));
         cb(true, credits, {});
     });
 }
@@ -901,8 +908,11 @@ QNetworkReply* ChatModeService::stream_message(const QString& message, const QSt
         const int status = sse_reply_->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         const auto net_err = sse_reply_->error();
         LOG_INFO("ChatModeService", QString("SSE stream finished — HTTP %1, net_err=%2").arg(status).arg(net_err));
-        if (status == 402)
+        if (status == 402) {
+            LOG_WARN("ChatModeService", "SSE stream insufficient credits (402) — refreshing user data");
+            auth::AuthManager::instance().refresh_user_data();
             emit insufficient_credits();
+        }
         if (net_err != QNetworkReply::NoError && net_err != QNetworkReply::OperationCanceledError) {
             const QString body = QString::fromUtf8(sse_reply_->readAll().left(200));
             LOG_WARN("ChatModeService", QString("SSE error body: %1").arg(body));

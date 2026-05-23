@@ -2,6 +2,7 @@
 
 #include "storage/repositories/PortfolioHoldingsRepository.h"
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #    include "datahub/DataHub.h"
 #    include "datahub/DataHubMetaTypes.h"
@@ -19,7 +20,7 @@ namespace fincept::screens::widgets {
 // instead so there's no ambiguity about what data they're looking at.
 
 PortfolioSummaryWidget::PortfolioSummaryWidget(QWidget* parent)
-    : BaseWidget("PORTFOLIO SUMMARY", parent, ui::colors::POSITIVE) {
+    : BaseWidget(QCoreApplication::translate("PortfolioSummaryWidget", "PORTFOLIO SUMMARY"), parent, ui::colors::POSITIVE) {
     auto* vl = content_layout();
     vl->setContentsMargins(8, 8, 8, 8);
     vl->setSpacing(6);
@@ -41,10 +42,10 @@ PortfolioSummaryWidget::PortfolioSummaryWidget(QWidget* parent)
         sl->addWidget(value_out, row * 2 + 1, col);
     };
 
-    make_metric("TOTAL VALUE", total_value_lbl_, 0, 0);
-    make_metric("DAY P&L", day_pnl_lbl_, 0, 1);
-    make_metric("TOTAL P&L", total_pnl_lbl_, 1, 0);
-    make_metric("HOLDINGS", num_holdings_lbl_, 1, 1);
+    make_metric(QCoreApplication::translate("PortfolioSummaryWidget", "TOTAL VALUE"), total_value_lbl_, 0, 0);
+    make_metric(QCoreApplication::translate("PortfolioSummaryWidget", "DAY P&L"), day_pnl_lbl_, 0, 1);
+    make_metric(QCoreApplication::translate("PortfolioSummaryWidget", "TOTAL P&L"), total_pnl_lbl_, 1, 0);
+    make_metric(QCoreApplication::translate("PortfolioSummaryWidget", "HOLDINGS"), num_holdings_lbl_, 1, 1);
 
     vl->addWidget(summary_card_);
 
@@ -59,11 +60,11 @@ PortfolioSummaryWidget::PortfolioSummaryWidget(QWidget* parent)
         header_labels_.append(l);
         hl->addWidget(l, s);
     };
-    make_hdr_lbl("SYM", 1);
-    make_hdr_lbl("SHARES", 1, Qt::AlignRight);
-    make_hdr_lbl("PRICE", 1, Qt::AlignRight);
-    make_hdr_lbl("VALUE", 1, Qt::AlignRight);
-    make_hdr_lbl("P&L", 1, Qt::AlignRight);
+    make_hdr_lbl(QCoreApplication::translate("PortfolioSummaryWidget", "SYM"), 1);
+    make_hdr_lbl(QCoreApplication::translate("PortfolioSummaryWidget", "SHARES"), 1, Qt::AlignRight);
+    make_hdr_lbl(QCoreApplication::translate("PortfolioSummaryWidget", "PRICE"), 1, Qt::AlignRight);
+    make_hdr_lbl(QCoreApplication::translate("PortfolioSummaryWidget", "VALUE"), 1, Qt::AlignRight);
+    make_hdr_lbl(QCoreApplication::translate("PortfolioSummaryWidget", "P&L"), 1, Qt::AlignRight);
     vl->addWidget(header_row_);
 
     // Scrollable holdings list
@@ -154,8 +155,8 @@ void PortfolioSummaryWidget::load_holdings() {
                 item->widget()->deleteLater();
             delete item;
         }
-        auto* empty = new QLabel(QStringLiteral(
-            "No holdings configured.\nAdd positions via the Portfolio screen."));
+        auto* empty = new QLabel(tr(
+            "未配置持仓。\n请通过投资组合屏幕添加持仓。"));
         empty->setAlignment(Qt::AlignCenter);
         empty->setWordWrap(true);
         empty->setStyleSheet(QString("color: %1; font-size: 11px; padding: 20px; background: transparent;")

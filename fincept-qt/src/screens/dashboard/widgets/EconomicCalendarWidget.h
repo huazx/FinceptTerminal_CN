@@ -1,11 +1,14 @@
 #pragma once
 #include "screens/dashboard/widgets/BaseWidget.h"
 
+#include <QHash>
 #include <QHideEvent>
 #include <QJsonArray>
 #include <QLabel>
 #include <QScrollArea>
 #include <QShowEvent>
+#include <QStringList>
+#include <QTimer>
 #include <QVBoxLayout>
 
 namespace fincept::screens::widgets {
@@ -30,7 +33,9 @@ class EconomicCalendarWidget : public BaseWidget {
     void hub_subscribe();
     void hub_unsubscribe();
     void populate(const QJsonArray& events);
-
+    void request_online_translation(const QString& original);
+    void on_translation_received(const QString& original, const QString& translated);
+    void refresh_translated_labels();
     QWidget* header_widget_ = nullptr;
     QFrame* header_sep_ = nullptr;
     QScrollArea* scroll_area_ = nullptr;
@@ -38,6 +43,10 @@ class EconomicCalendarWidget : public BaseWidget {
     QLabel* status_label_ = nullptr;
     QVector<QLabel*> header_labels_;
     QJsonArray last_events_; // cached for theme-change re-populate
+    QHash<QString, QString> translation_cache_;
+    QStringList translation_queue_;
+    QTimer* translation_timer_ = nullptr;
+    bool translation_in_progress_ = false;
     bool hub_active_ = false;
 };
 

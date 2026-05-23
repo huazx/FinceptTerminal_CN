@@ -68,6 +68,8 @@ class NewsNlpService : public QObject {
     using GeoCallback = std::function<void(bool, QVector<ArticleGeo>)>;
     using InfraCallback = std::function<void(bool, QVector<InfrastructureItem>)>;
     using TranslateCallback = std::function<void(bool, QString translated, QString detected_lang)>;
+    using ArticleTranslateCallback = std::function<void(bool ok, QString headline_zh, QString summary_zh,
+                                                        QString detected_lang, QString translator)>;
     using SemanticClustersCallback = std::function<void(bool, QJsonArray clusters)>;
 
     static NewsNlpService& instance();
@@ -86,6 +88,10 @@ class NewsNlpService : public QObject {
 
     /// Translate text to target language.
     void translate_text(const QString& text, const QString& target_lang, TranslateCallback cb);
+
+    /// Translate an article's headline and summary to target language.
+    void translate_article(const QString& headline, const QString& summary,
+                           const QString& target_lang, ArticleTranslateCallback cb);
 
     /// Cached NER results (populated after extract_entities completes).
     const NerResult& cached_ner() const { return ner_cache_; }

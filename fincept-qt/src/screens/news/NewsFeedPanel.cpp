@@ -1,9 +1,11 @@
 #include "screens/news/NewsFeedPanel.h"
 
 #include "core/logging/Logger.h"
+#include "services/news/NewsNlpService.h"
 #include <QApplication>
 #include <QDateTime>
 #include <QPushButton>
+#include <QRegularExpression>
 #include <QScrollBar>
 
 #if defined(Q_OS_WIN)
@@ -52,11 +54,11 @@ NewsFeedPanel::NewsFeedPanel(QWidget* parent) : QWidget(parent) {
         layout->setContentsMargins(24, 24, 24, 24);
         layout->setSpacing(8);
         layout->addStretch();
-        auto* title = new QLabel(QStringLiteral("No articles available"), empty_state_);
+        auto* title = new QLabel(tr("No articles available"), empty_state_);
         title->setObjectName("newsEmptyStateTitle");
         title->setAlignment(Qt::AlignCenter);
         auto* hint = new QLabel(
-            QStringLiteral("Check your network connection and click Refresh to retry."),
+            tr("Check your network connection and click Refresh to retry."),
             empty_state_);
         hint->setObjectName("newsEmptyStateHint");
         hint->setAlignment(Qt::AlignCenter);
@@ -96,7 +98,7 @@ void NewsFeedPanel::build_breaking_banner() {
     layout->setContentsMargins(8, 0, 8, 0);
     layout->setSpacing(8);
 
-    banner_tag_ = new QLabel("FLASH", banner_widget_);
+    banner_tag_ = new QLabel(tr("FLASH"), banner_widget_);
     banner_tag_->setObjectName("newsBreakingTag");
     banner_tag_->setFixedWidth(48);
     banner_tag_->setAlignment(Qt::AlignCenter);
@@ -138,11 +140,24 @@ void NewsFeedPanel::show_breaking(const QVector<services::NewsCluster>& breaking
         return;
 
     // Show banner
-    QString tag = lead.priority == services::Priority::FLASH ? "FLASH" : "BREAKING";
+    QString tag = lead.priority == services::Priority::FLASH ? tr("FLASH") : tr("BREAKING");
     banner_tag_->setText(tag);
+    banner_original_headline_ = lead.headline;
     banner_headline_->setText(lead.headline);
     banner_source_->setText(lead.source.toUpper());
     banner_widget_->show();
+
+    // Auto-translate if not Chinese
+    bool has_chinese = lead.headline.contains(QRegularExpression("[\\u4e00-\\u9fa5]"));
+    if (!has_chinese && !lead.headline.isEmpty()) {
+        services::NewsNlpService::instance().translate_text(
+            lead.headline, "zh",
+            [this](bool ok, const QString& translated, const QString& /*detected_lang*/) {
+                if (ok && !translated.isEmpty() && banner_widget_->isVisible()) {
+                    banner_headline_->setText(translated);
+                }
+            });
+    }
 
     // Record for dedup
     recent_banners_.append({key, now});

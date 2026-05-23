@@ -19,14 +19,14 @@ DeveloperSection::DeveloperSection(QWidget* parent) : QWidget(parent) {
     vl->setContentsMargins(16, 16, 16, 16);
     vl->setSpacing(12);
 
-    auto* title = new QLabel("DataHub Inspector");
+    auto* title = new QLabel(tr("DataHub Inspector"));
     title->setStyleSheet(section_title_ss());
     vl->addWidget(title);
 
     auto* desc = new QLabel(
-        "Live view over the in-process pub/sub layer. Shows every active topic, its "
-        "subscriber count, total publishes, and time since last publish. Refreshes "
-        "once per second while this tab is visible.");
+        tr("Live view over the in-process pub/sub layer. Shows every active topic, its "
+           "subscriber count, total publishes, and time since last publish. Refreshes "
+           "once per second while this tab is visible."));
     desc->setWordWrap(true);
     desc->setStyleSheet(QString("color:%1;font-size:11px;").arg(ui::colors::TEXT_SECONDARY()));
     vl->addWidget(desc);

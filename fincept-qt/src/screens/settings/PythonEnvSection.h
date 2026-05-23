@@ -10,6 +10,7 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QTableWidget>
+#include <QTimer>
 #include <QWidget>
 
 namespace fincept::screens {
@@ -41,6 +42,7 @@ class PythonEnvSection : public QWidget {
     // ── Processes — signal-driven, never waitForFinished on UI thread ─────────
     QProcess*      list_proc_           = nullptr;  // uv pip list, reused sequentially
     QProcess*      action_proc_         = nullptr;  // uv pip install / upgrade
+    QTimer         list_timeout_;                     // kills list_proc_ if it hangs
 
     // ── Data ──────────────────────────────────────────────────────────────────
     struct PackageRow {

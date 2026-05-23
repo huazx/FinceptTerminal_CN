@@ -7,6 +7,7 @@
 #include "trading/BrokerTopic.h"
 #include "trading/DataStreamManager.h"
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #include <QComboBox>
 #include <QDialog>
@@ -19,7 +20,7 @@
 namespace fincept::screens::widgets {
 
 OpenPositionsWidget::OpenPositionsWidget(const QJsonObject& cfg, QWidget* parent)
-    : BaseWidget("OPEN POSITIONS", parent) {
+    : BaseWidget(QCoreApplication::translate("OpenPositionsWidget", "OPEN POSITIONS"), parent) {
     auto* vl = content_layout();
     vl->setContentsMargins(8, 6, 8, 6);
     vl->setSpacing(4);
@@ -28,7 +29,7 @@ OpenPositionsWidget::OpenPositionsWidget(const QJsonObject& cfg, QWidget* parent
     vl->addWidget(header_hint_);
 
     table_ = new QTableWidget(0, 5, this);
-    table_->setHorizontalHeaderLabels({"Symbol", "Qty", "Avg", "LTP", "P&L"});
+    table_->setHorizontalHeaderLabels({QCoreApplication::translate("OpenPositionsWidget", "Symbol"), QCoreApplication::translate("OpenPositionsWidget", "Qty"), QCoreApplication::translate("OpenPositionsWidget", "Avg"), QCoreApplication::translate("OpenPositionsWidget", "LTP"), QCoreApplication::translate("OpenPositionsWidget", "P&L")});
     table_->verticalHeader()->setVisible(false);
     table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     table_->setSelectionMode(QAbstractItemView::NoSelection);
@@ -64,7 +65,7 @@ void OpenPositionsWidget::apply_config(const QJsonObject& cfg) {
         broker_id_ = acct.broker_id;
         header_hint_->setText(acct.display_name.isEmpty() ? account_id_ : acct.display_name);
     } else {
-        header_hint_->setText("No active account — click gear to configure");
+        header_hint_->setText(QCoreApplication::translate("OpenPositionsWidget", "No active account — click gear to configure"));
     }
 
     if (isVisible() && !broker_id_.isEmpty() && !account_id_.isEmpty()) {
@@ -145,7 +146,7 @@ void OpenPositionsWidget::populate(const QVector<trading::BrokerPosition>& rows)
 
 QDialog* OpenPositionsWidget::make_config_dialog(QWidget* parent) {
     auto* dlg = new QDialog(parent);
-    dlg->setWindowTitle("Configure — Open Positions");
+    dlg->setWindowTitle(QCoreApplication::translate("OpenPositionsWidget", "Configure — Open Positions"));
     auto* form = new QFormLayout(dlg);
 
     auto* combo = new QComboBox(dlg);
@@ -156,7 +157,7 @@ QDialog* OpenPositionsWidget::make_config_dialog(QWidget* parent) {
         if (a.account_id == account_id_)
             combo->setCurrentIndex(combo->count() - 1);
     }
-    form->addRow("Broker account", combo);
+    form->addRow(QCoreApplication::translate("OpenPositionsWidget", "Broker account"), combo);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, dlg);
     form->addRow(buttons);

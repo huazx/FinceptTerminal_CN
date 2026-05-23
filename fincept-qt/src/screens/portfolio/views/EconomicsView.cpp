@@ -27,19 +27,19 @@ void EconomicsView::build_ui() {
     ind_layout->setContentsMargins(12, 8, 12, 8);
     ind_layout->setSpacing(4);
 
-    auto* ind_title = new QLabel("PORTFOLIO ECONOMICS OVERVIEW");
+    auto* ind_title = new QLabel(tr("PORTFOLIO ECONOMICS OVERVIEW"));
     ind_title->setStyleSheet(
         QString("color:%1; font-size:11px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     ind_layout->addWidget(ind_title);
 
-    auto* ind_note = new QLabel("Per-holding contribution to portfolio value, P&L, and risk");
+    auto* ind_note = new QLabel(tr("Per-holding contribution to portfolio value, P&L, and risk"));
     ind_note->setStyleSheet(QString("color:%1; font-size:9px;").arg(ui::colors::TEXT_TERTIARY()));
     ind_layout->addWidget(ind_note);
 
     indicators_table_ = new QTableWidget;
     indicators_table_->setColumnCount(7);
     indicators_table_->setHorizontalHeaderLabels(
-        {"SYMBOL", "SECTOR", "WEIGHT", "COST BASIS", "MARKET VALUE", "P&L", "P&L %"});
+        {tr("SYMBOL"), tr("SECTOR"), tr("WEIGHT"), tr("COST BASIS"), tr("MARKET VALUE"), tr("P&L"), tr("P&L %")});
     indicators_table_->setSelectionMode(QAbstractItemView::NoSelection);
     indicators_table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     indicators_table_->setShowGrid(false);
@@ -73,18 +73,18 @@ void EconomicsView::build_ui() {
     sens_layout->setContentsMargins(12, 8, 12, 8);
     sens_layout->setSpacing(4);
 
-    auto* sens_title = new QLabel("PORTFOLIO FACTOR SENSITIVITY");
+    auto* sens_title = new QLabel(tr("PORTFOLIO FACTOR SENSITIVITY"));
     sens_title->setStyleSheet(
         QString("color:%1; font-size:11px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     sens_layout->addWidget(sens_title);
 
-    auto* sens_note = new QLabel("Estimated portfolio impact from macro factor shocks, weighted by holdings");
+    auto* sens_note = new QLabel(tr("Estimated portfolio impact from macro factor shocks, weighted by holdings"));
     sens_note->setStyleSheet(QString("color:%1; font-size:9px;").arg(ui::colors::TEXT_TERTIARY()));
     sens_layout->addWidget(sens_note);
 
     sensitivity_table_ = new QTableWidget;
     sensitivity_table_->setColumnCount(4);
-    sensitivity_table_->setHorizontalHeaderLabels({"FACTOR SHOCK", "SENSITIVITY", "DIRECTION", "ESTIMATED IMPACT"});
+    sensitivity_table_->setHorizontalHeaderLabels({tr("FACTOR SHOCK"), tr("SENSITIVITY"), tr("DIRECTION"), tr("ESTIMATED IMPACT")});
     sensitivity_table_->setSelectionMode(QAbstractItemView::NoSelection);
     sensitivity_table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     sensitivity_table_->setShowGrid(false);

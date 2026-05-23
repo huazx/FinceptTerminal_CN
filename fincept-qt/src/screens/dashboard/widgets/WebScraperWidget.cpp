@@ -3,6 +3,7 @@
 #include "core/logging/Logger.h"
 #include "ui/tables/DataTable.h"
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #include <QByteArray>
 #include <QCheckBox>
@@ -176,7 +177,7 @@ QJsonValue walk_json_path(const QJsonValue& root, const QString& dotted) {
 // ─── ctor / dtor ──────────────────────────────────────────────────────────
 
 WebScraperWidget::WebScraperWidget(const QJsonObject& cfg, QWidget* parent)
-    : BaseWidget("WEB SCRAPER", parent) {
+    : BaseWidget(QCoreApplication::translate("WebScraperWidget", "WEB SCRAPER"), parent) {
     net_ = new QNetworkAccessManager(this);
     connect(net_, &QNetworkAccessManager::finished, this, &WebScraperWidget::handle_reply);
 
@@ -223,7 +224,7 @@ void WebScraperWidget::build_ui() {
             &WebScraperWidget::on_table_selected);
     header_row->addWidget(table_combo_, 1);
 
-    status_label_ = new QLabel("Configure a URL via the gear icon");
+    status_label_ = new QLabel(QCoreApplication::translate("WebScraperWidget", "Configure a URL via the gear icon"));
     status_label_->setObjectName("scraperStatus");
     status_label_->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     header_row->addWidget(status_label_, 2);
@@ -297,7 +298,7 @@ void WebScraperWidget::apply_config(const QJsonObject& cfg) {
     if (!url_.isEmpty() && isVisible())
         start_fetch();
     else if (url_.isEmpty())
-        set_status("Configure a URL via the gear icon");
+        set_status(QCoreApplication::translate("WebScraperWidget", "Configure a URL via the gear icon"));
 }
 
 void WebScraperWidget::apply_timer_state() {
@@ -341,7 +342,7 @@ void WebScraperWidget::on_auto_refresh_tick() {
 void WebScraperWidget::start_fetch() {
     const QUrl url(url_);
     if (!url.isValid() || url.scheme().isEmpty()) {
-        set_status("Invalid URL", true);
+        set_status(QCoreApplication::translate("WebScraperWidget", "Invalid URL"), true);
         return;
     }
     if (pending_reply_) {
@@ -351,7 +352,7 @@ void WebScraperWidget::start_fetch() {
     }
 
     set_loading(true);
-    set_status("Fetching…");
+    set_status(QCoreApplication::translate("WebScraperWidget", "Fetching…"));
 
     QNetworkRequest req(url);
     req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
@@ -374,14 +375,14 @@ void WebScraperWidget::handle_reply(QNetworkReply* reply) {
     set_loading(false);
 
     if (reply->error() != QNetworkReply::NoError) {
-        set_status(QString("Fetch failed: %1").arg(reply->errorString()), true);
+        set_status(QCoreApplication::translate("WebScraperWidget", "Fetch failed: %1").arg(reply->errorString()), true);
         LOG_WARN("WebScraper", QString("Fetch %1 failed: %2").arg(url_, reply->errorString()));
         return;
     }
 
     const QByteArray body = reply->readAll();
     if (body.isEmpty()) {
-        set_status("Empty response", true);
+        set_status(QCoreApplication::translate("WebScraperWidget", "Empty response"), true);
         return;
     }
     const QString ct = reply->header(QNetworkRequest::ContentTypeHeader).toString();
@@ -476,14 +477,14 @@ void WebScraperWidget::parse_payload(const QByteArray& body, const QString& cont
     table_combo_->clear();
     for (int i = 0; i < tables_.size(); ++i)
         table_combo_->addItem(QString("%1 (%2 rows)")
-                                  .arg(tables_[i].label.isEmpty() ? QString("Table %1").arg(i + 1)
-                                                                   : tables_[i].label)
-                                  .arg(tables_[i].rows.size()));
+                                   .arg(tables_[i].label.isEmpty() ? QCoreApplication::translate("WebScraperWidget", "Table %1").arg(i + 1)
+                                                                    : tables_[i].label)
+                                   .arg(tables_[i].rows.size()));
     if (tables_.isEmpty()) {
         table_combo_->setEnabled(false);
         table_->clear_data();
         table_->set_headers({});
-        set_status("No tabular data found — site may require JavaScript. Try its JSON API URL instead.",
+        set_status(QCoreApplication::translate("WebScraperWidget", "No tabular data found — site may require JavaScript. Try its JSON API URL instead."),
                    true);
         return;
     }
@@ -492,7 +493,7 @@ void WebScraperWidget::parse_payload(const QByteArray& body, const QString& cont
     table_index_ = idx;
     table_combo_->setCurrentIndex(idx);
     render_selected_table();
-    set_status(QString("Loaded %1 table%2").arg(tables_.size()).arg(tables_.size() == 1 ? "" : "s"));
+    set_status(tr("Loaded %1 table(s)", "", tables_.size()).arg(tables_.size()));
 }
 
 void WebScraperWidget::on_table_selected(int index) {
@@ -516,7 +517,7 @@ void WebScraperWidget::render_selected_table() {
     table_->set_data(display);
     table_->setSortingEnabled(true);
     if (t.rows.size() > kMaxRowsRendered) {
-        set_status(QString("Showing first %1 of %2 rows").arg(n).arg(t.rows.size()));
+        set_status(QCoreApplication::translate("WebScraperWidget", "Showing first %1 of %2 rows").arg(n).arg(t.rows.size()));
     }
 }
 
@@ -564,7 +565,7 @@ QVector<ScrapedTable> WebScraperWidget::parse_html_tables(const QString& html) c
                 tbl.label = c.left(60);
         }
         if (tbl.label.isEmpty())
-            tbl.label = QString("Table %1").arg(table_idx);
+            tbl.label = QCoreApplication::translate("WebScraperWidget", "Table %1").arg(table_idx);
 
         QVector<QStringList> rows;
         qsizetype max_cols = 0;
@@ -608,7 +609,7 @@ QVector<ScrapedTable> WebScraperWidget::parse_html_tables(const QString& html) c
         } else {
             tbl.headers.reserve(max_cols);
             for (qsizetype i = 0; i < max_cols; ++i)
-                tbl.headers.append(QString("Col %1").arg(i + 1));
+                tbl.headers.append(QCoreApplication::translate("WebScraperWidget", "Col %1").arg(i + 1));
         }
         // Pad ragged rows to max_cols.
         for (QStringList& r : rows) {
@@ -616,7 +617,7 @@ QVector<ScrapedTable> WebScraperWidget::parse_html_tables(const QString& html) c
                 r.append(QString());
         }
         while (tbl.headers.size() < max_cols)
-            tbl.headers.append(QString("Col %1").arg(tbl.headers.size() + 1));
+            tbl.headers.append(QCoreApplication::translate("WebScraperWidget", "Col %1").arg(tbl.headers.size() + 1));
 
         tbl.rows = rows;
         out.append(std::move(tbl));
@@ -684,7 +685,7 @@ QVector<ScrapedTable> WebScraperWidget::parse_json_tables(const QByteArray& body
         }
         if (arr_array) {
             for (qsizetype i = 0; i < max_cols; ++i)
-                t.headers.append(QString("Col %1").arg(i + 1));
+                t.headers.append(QCoreApplication::translate("WebScraperWidget", "Col %1").arg(i + 1));
             for (const auto& v : arr) {
                 const QJsonArray inner = v.toArray();
                 QStringList row;
@@ -790,7 +791,7 @@ QVector<ScrapedTable> WebScraperWidget::parse_csv_tables(const QString& text, QC
     t.label = delim == '\t' ? QStringLiteral("TSV") : QStringLiteral("CSV");
     t.headers = rows.takeFirst();
     while (t.headers.size() < max_cols)
-        t.headers.append(QString("Col %1").arg(t.headers.size() + 1));
+        t.headers.append(QCoreApplication::translate("WebScraperWidget", "Col %1").arg(t.headers.size() + 1));
     for (QStringList& r : rows) {
         while (r.size() < max_cols)
             r.append(QString());
@@ -902,56 +903,57 @@ QVector<ScrapedTable> WebScraperWidget::parse_xml_tables(const QByteArray& body)
 
 QDialog* WebScraperWidget::make_config_dialog(QWidget* parent) {
     auto* dlg = new QDialog(parent);
-    dlg->setWindowTitle("Configure — Web Scraper");
+    dlg->setWindowTitle(QCoreApplication::translate("WebScraperWidget", "Configure — Web Scraper"));
     dlg->resize(520, 420);
     auto* form = new QFormLayout(dlg);
 
     auto* url_edit = new QLineEdit(dlg);
     url_edit->setText(url_);
-    url_edit->setPlaceholderText("https://example.com/table-page or API endpoint");
-    form->addRow("URL", url_edit);
+    url_edit->setPlaceholderText(QCoreApplication::translate("WebScraperWidget", "https://example.com/table-page or API endpoint"));
+    form->addRow(QCoreApplication::translate("WebScraperWidget", "URL"), url_edit);
 
     auto* refresh_spin = new QSpinBox(dlg);
     refresh_spin->setRange(0, 86400);
     refresh_spin->setSuffix(" sec");
-    refresh_spin->setSpecialValueText("manual only");
+    refresh_spin->setSpecialValueText(QCoreApplication::translate("WebScraperWidget", "manual only"));
     refresh_spin->setValue(refresh_sec_);
-    form->addRow("Auto-refresh", refresh_spin);
+    form->addRow(QCoreApplication::translate("WebScraperWidget", "Auto-refresh"), refresh_spin);
 
     auto* ua_edit = new QLineEdit(dlg);
     ua_edit->setText(user_agent_);
     ua_edit->setPlaceholderText(QString::fromLatin1(kDefaultUA));
-    form->addRow("User-Agent", ua_edit);
+    form->addRow(QCoreApplication::translate("WebScraperWidget", "User-Agent"), ua_edit);
 
     auto* fmt_combo = new QComboBox(dlg);
-    fmt_combo->addItems({"Auto-detect", "HTML", "JSON", "CSV", "TSV", "XML"});
+    fmt_combo->addItems({QCoreApplication::translate("WebScraperWidget", "Auto-detect"), QStringLiteral("HTML"), QStringLiteral("JSON"),
+                          QStringLiteral("CSV"), QStringLiteral("TSV"), QStringLiteral("XML")});
     const QMap<QString, int> fmt_idx = {{"", 0},    {"html", 1}, {"json", 2},
                                          {"csv", 3}, {"tsv", 4},  {"xml", 5}};
     fmt_combo->setCurrentIndex(fmt_idx.value(force_format_.toLower(), 0));
-    form->addRow("Format", fmt_combo);
+    form->addRow(QCoreApplication::translate("WebScraperWidget", "Format"), fmt_combo);
 
     auto* enc_edit = new QLineEdit(dlg);
     enc_edit->setText(encoding_);
-    enc_edit->setPlaceholderText("auto (from Content-Type / <meta>)");
-    form->addRow("Encoding", enc_edit);
+    enc_edit->setPlaceholderText(QCoreApplication::translate("WebScraperWidget", "auto (from Content-Type / <meta>)"));
+    form->addRow(QCoreApplication::translate("WebScraperWidget", "Encoding"), enc_edit);
 
     auto* json_path_edit = new QLineEdit(dlg);
     json_path_edit->setText(json_path_);
-    json_path_edit->setPlaceholderText("e.g. data.items  (JSON only)");
-    form->addRow("JSON path", json_path_edit);
+    json_path_edit->setPlaceholderText(QCoreApplication::translate("WebScraperWidget", "e.g. data.items  (JSON only)"));
+    form->addRow(QCoreApplication::translate("WebScraperWidget", "JSON path"), json_path_edit);
 
     auto* headers_edit = new QPlainTextEdit(dlg);
     QString hdr_text;
     for (auto it = headers_.cbegin(); it != headers_.cend(); ++it)
         hdr_text.append(QString("%1: %2\n").arg(it.key(), it.value()));
     headers_edit->setPlainText(hdr_text);
-    headers_edit->setPlaceholderText("One per line:\nAuthorization: Bearer abc\nX-API-Key: xyz");
+    headers_edit->setPlaceholderText(QCoreApplication::translate("WebScraperWidget", "One per line:\nAuthorization: Bearer abc\nX-API-Key: xyz"));
     headers_edit->setMaximumHeight(100);
-    form->addRow("Extra headers", headers_edit);
+    form->addRow(QCoreApplication::translate("WebScraperWidget", "Extra headers"), headers_edit);
 
     auto* help = new QLabel(
-        "Auto-detects HTML tables, JSON arrays/objects, CSV/TSV, XML/RSS/Atom. "
-        "If the page renders tables via JavaScript, use its underlying API URL instead.");
+        tr("Auto-detects HTML tables, JSON arrays/objects, CSV/TSV, XML/RSS/Atom. "
+           "If the page renders tables via JavaScript, use its underlying API URL instead."));
     help->setWordWrap(true);
     help->setStyleSheet(QString("color:%1;font-size:11px;").arg(ui::colors::TEXT_TERTIARY()));
     form->addRow(help);

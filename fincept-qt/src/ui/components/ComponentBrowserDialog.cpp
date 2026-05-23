@@ -35,7 +35,7 @@ bool matches_query(const ComponentMeta& m, const QString& query) {
 } // namespace
 
 ComponentBrowserDialog::ComponentBrowserDialog(QWidget* parent) : QDialog(parent) {
-    setWindowTitle("Component Browser");
+    setWindowTitle(tr("Component Browser"));
     setModal(true);
     resize(960, 640);
     setStyleSheet("QDialog{background:#0f172a;} QLabel{color:#e5e7eb;}");
@@ -56,14 +56,14 @@ void ComponentBrowserDialog::build_ui() {
     hl->setContentsMargins(16, 8, 16, 8);
     hl->setSpacing(12);
 
-    auto* title = new QLabel("COMPONENT BROWSER", header);
+    auto* title = new QLabel(tr("COMPONENT BROWSER"), header);
     title->setStyleSheet("color:#d97706;font-size:13px;font-weight:700;letter-spacing:2px;");
     hl->addWidget(title);
 
     hl->addSpacing(24);
 
     search_ = new QLineEdit(header);
-    search_->setPlaceholderText("Search components…");
+    search_->setPlaceholderText(tr("Search components…"));
     search_->setClearButtonEnabled(true);
     search_->setStyleSheet(
         "QLineEdit{background:#0b1220;border:1px solid #374151;border-radius:3px;"

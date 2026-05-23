@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QMetaObject>
 #include <QMutexLocker>
+#include <QSet>
 #include <QThread>
 #include <QVariant>
 #include <QWidget>
@@ -559,7 +560,7 @@ void DataHub::emit_to_subscribers(const QString& topic, const QVariant& value) {
 
     int suppressed = 0;
     for (const auto& p : direct) {
-        if (!p.owner) continue; // owner died between snapshot and invoke
+        if (!p.owner) continue;
         if (pause_when_inactive && !is_owner_active_for_work(p.owner.data())) {
             ++suppressed;
             continue;
@@ -575,20 +576,11 @@ void DataHub::emit_to_subscribers(const QString& topic, const QVariant& value) {
         p.slot(topic, value);
     }
 
-    // Topic-level signal mirrors fanout: fire only if at least one active
-    // subscriber received the value (or pause is off). Avoids waking
-    // global topic_updated listeners when the only consumers are
-    // inactive-frame panels.
     const bool any_delivered =
         !pause_when_inactive ||
         (suppressed < direct.size() + pattern.size());
     if (any_delivered)
         emit topic_updated(topic, value);
-
-    if (suppressed > 0) {
-        LOG_DEBUG("DataHub", QString("Suppressed %1 inactive-frame fanout(s) for topic '%2'")
-                                 .arg(suppressed).arg(topic));
-    }
 }
 
 void DataHub::do_publish(const QString& topic, const QVariant& value,
@@ -914,6 +906,11 @@ void DataHub::scheduler_body() {
         QMutexLocker lock(&mutex_);
         const qint64 t = now_ms();
 
+        // Per-tick per-producer rate limit tracking: first topic for a
+        // producer sets the mark; subsequent topics in the same tick are
+        // NOT rate-capped — they are being batched into the same work[] list.
+        QSet<Producer*> rate_checked;
+
         // Pre-pass: clear `in_flight` on topics whose producer missed the
         // refresh_timeout_ms window. Without this a crashed / hung producer
         // pins the topic forever and subscribers never see fresh data.
@@ -955,13 +952,23 @@ void DataHub::scheduler_body() {
             Producer* p = find_producer(topic);
             if (!p) continue;
 
-            // Per-producer rate limit: if producer caps at N req/sec,
-            // ensure at least (1000/N) ms between refresh() calls to it.
-            const int rps = p->max_requests_per_sec();
-            if (rps > 0) {
-                const qint64 last = producer_last_refresh_ms_.value(p, 0);
-                const qint64 min_gap = 1000 / std::max(1, rps);
-                if (last > 0 && (t - last) < min_gap) continue;
+            // Per-producer rate limit: on the first topic for this producer
+            // in this tick, check the rate cap. Subsequent topics that land
+            // in the same batch *skip* the check so they are dispatched
+            // together in one coalesced refresh() call.
+            if (!rate_checked.contains(p)) {
+                rate_checked.insert(p);
+                const int rps = p->max_requests_per_sec();
+                if (rps > 0) {
+                    const qint64 last = producer_last_refresh_ms_.value(p, 0);
+                    const qint64 min_gap = 1000 / std::max(1, rps);
+                    if (last > 0 && (t - last) < min_gap) {
+                        // Rate-limited — skip this producer entirely for
+                        // this tick. Don't mark any topics in_flight so they
+                        // retry on the next pass.
+                        continue;
+                    }
+                }
             }
 
             st.in_flight = true;

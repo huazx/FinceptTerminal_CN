@@ -1,13 +1,14 @@
 #include "screens/dashboard/widgets/TopMoversWidget.h"
 
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #    include "datahub/DataHub.h"
 #    include "datahub/DataHubMetaTypes.h"
 
 namespace fincept::screens::widgets {
 
-TopMoversWidget::TopMoversWidget(QWidget* parent) : BaseWidget("TOP MOVERS", parent) {
+TopMoversWidget::TopMoversWidget(QWidget* parent) : BaseWidget(QCoreApplication::translate("TopMoversWidget", "TOP MOVERS"), parent) {
     // Tab toggle
     auto* tab_bar = new QWidget(this);
     tab_bar->setFixedHeight(26);
@@ -15,8 +16,8 @@ TopMoversWidget::TopMoversWidget(QWidget* parent) : BaseWidget("TOP MOVERS", par
     tl->setContentsMargins(4, 2, 4, 2);
     tl->setSpacing(0);
 
-    gainers_btn_ = new QPushButton(QString(QChar(0x25B2)) + " GAINERS");
-    losers_btn_ = new QPushButton(QString(QChar(0x25BC)) + " LOSERS");
+    gainers_btn_ = new QPushButton(QString(QChar(0x25B2)) + " " + QCoreApplication::translate("TopMoversWidget", "GAINERS"));
+    losers_btn_ = new QPushButton(QString(QChar(0x25BC)) + " " + QCoreApplication::translate("TopMoversWidget", "LOSERS"));
 
     connect(gainers_btn_, &QPushButton::clicked, this, [this]() { show_tab(true); });
     connect(losers_btn_, &QPushButton::clicked, this, [this]() { show_tab(false); });
@@ -28,7 +29,7 @@ TopMoversWidget::TopMoversWidget(QWidget* parent) : BaseWidget("TOP MOVERS", par
 
     // Table
     table_ = new ui::DataTable;
-    table_->set_headers({"SYMBOL", "PRICE", "CHG%"});
+    table_->set_headers({QCoreApplication::translate("TopMoversWidget", "SYMBOL"), QCoreApplication::translate("TopMoversWidget", "PRICE"), QCoreApplication::translate("TopMoversWidget", "CHG%")});
     table_->set_column_widths({100, 90, 80});
     content_layout()->addWidget(table_);
 

@@ -4,6 +4,7 @@
 #include "services/pushpins/PushpinService.h"
 #include "ui/pushpins/SymbolChip.h"
 
+#include <QCoreApplication>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QScrollArea>
@@ -37,7 +38,7 @@ PushpinBar::PushpinBar(QWidget* parent) : QWidget(parent) {
     strip_layout_->addStretch(1);
     scroll_->setWidget(strip_);
 
-    empty_hint_ = new QLabel("Drag any symbol here to pin", strip_);
+    empty_hint_ = new QLabel(QCoreApplication::translate("fincept::ui::PushpinBar", "Drag any symbol here to pin"), strip_);
     empty_hint_->setStyleSheet("color:#6b7280;font-size:11px;font-style:italic;");
 
     // Dropping a symbol anywhere on the bar pins it.

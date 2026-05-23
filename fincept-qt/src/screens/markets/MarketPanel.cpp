@@ -57,9 +57,9 @@ void MarketPanel::build_ui() {
         return b;
     };
 
-    cols_btn_   = make_hdr_btn("[COLS]");
-    edit_btn_   = make_hdr_btn("[EDIT]");
-    delete_btn_ = make_hdr_btn("[DEL]");
+    cols_btn_   = make_hdr_btn(tr("[COLS]"));
+    edit_btn_   = make_hdr_btn(tr("[EDIT]"));
+    delete_btn_ = make_hdr_btn(tr("[DEL]"));
 
     hhl->addWidget(cols_btn_);
     hhl->addWidget(edit_btn_);
@@ -104,7 +104,7 @@ void MarketPanel::build_ui() {
     el->setAlignment(Qt::AlignCenter);
     error_label_ = new QLabel;
     error_label_->setAlignment(Qt::AlignCenter);
-    retry_btn_ = new QPushButton("[RETRY]");
+    retry_btn_ = new QPushButton(tr("[RETRY]"));
     retry_btn_->setCursor(Qt::PointingHandCursor);
     retry_btn_->setFlat(true);
     connect(retry_btn_, &QPushButton::clicked, this, &MarketPanel::refresh);
@@ -117,7 +117,7 @@ void MarketPanel::build_ui() {
     loading_widget_ = new QWidget(body_);
     auto* ll = new QVBoxLayout(loading_widget_);
     ll->setAlignment(Qt::AlignCenter);
-    loading_label_ = new QLabel("  ⠋  LOADING");
+    loading_label_ = new QLabel(tr("  ⠋  LOADING"));
     loading_label_->setAlignment(Qt::AlignCenter);
     ll->addWidget(loading_label_);
     bl->addWidget(loading_widget_);
@@ -133,17 +133,15 @@ void MarketPanel::setup_table_columns() {
     const QStringList& cols = config_.column_order;
     table_->setColumnCount(cols.size());
 
-    // Set header labels with alignment matching cell alignment
     for (int i = 0; i < cols.size(); ++i) {
         const QString& c = cols[i];
-        auto* hdr = new QTableWidgetItem(c);
+        auto* hdr = new QTableWidgetItem(market_column_display_name(c));
         bool is_text = (c == "SYMBOL" || c == "NAME");
         hdr->setTextAlignment(is_text ? (Qt::AlignLeft | Qt::AlignVCenter)
                                       : (Qt::AlignRight | Qt::AlignVCenter));
         table_->setHorizontalHeaderItem(i, hdr);
     }
 
-    // All columns stretch to fill available width evenly.
     for (int i = 0; i < cols.size(); ++i)
         table_->horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
 }
@@ -165,7 +163,7 @@ void MarketPanel::open_cols_dropdown() {
     const QStringList optional = {"CHG", "CHG%", "HIGH", "LOW", "VOL", "BID", "ASK", "OPEN", "NAME"};
 
     for (const QString& col : optional) {
-        auto* act = menu->addAction(col);
+        auto* act = menu->addAction(market_column_display_name(col));
         act->setCheckable(true);
         act->setChecked(config_.column_order.contains(col));
         // Enforce max 7 columns (SYMBOL + LAST are locked = 2, so max 5 optional)
@@ -266,9 +264,15 @@ void MarketPanel::hub_resubscribe() {
                 return;
             row_cache_.insert(sym, v.value<services::QuoteData>());
             rebuild_from_cache();
-            // Drain the initial-set counter on first delivery for this symbol.
             if (refresh_inflight_ && pending_initial_.remove(sym) && pending_initial_.isEmpty()) {
                 refresh_inflight_ = false;
+                emit refresh_finished();
+            }
+        });
+        hub.subscribe_errors(this, topic, [this, sym](const QString&) {
+            if (refresh_inflight_ && pending_initial_.remove(sym) && pending_initial_.isEmpty()) {
+                refresh_inflight_ = false;
+                rebuild_from_cache();
                 emit refresh_finished();
             }
         });
@@ -311,7 +315,7 @@ void MarketPanel::tick_loading_anim() {
     };
     constexpr int kCount = 10;
     loading_frame_ = (loading_frame_ + 1) % kCount;
-    loading_label_->setText(QString("  %1  LOADING").arg(kFrames[loading_frame_]));
+    loading_label_->setText(tr("  %1  LOADING").arg(kFrames[loading_frame_]));
 }
 
 void MarketPanel::show_data() {
@@ -357,7 +361,7 @@ void MarketPanel::populate(const QVector<services::QuoteData>& quotes) {
         const QStringList& cols = config_.column_order;
         for (int ci = 0; ci < cols.size(); ++ci) {
             const QString& col = cols[ci];
-            if      (col == "SYMBOL") table_->setItem(row, ci, mk(q.symbol, ui::colors::TEXT_PRIMARY(), Qt::AlignLeft | Qt::AlignVCenter));
+            if      (col == "SYMBOL") table_->setItem(row, ci, mk(market_symbol_display_name(q.symbol), ui::colors::TEXT_PRIMARY(), Qt::AlignLeft | Qt::AlignVCenter));
             else if (col == "NAME")   table_->setItem(row, ci, mk(q.name,   ui::colors::TEXT_DIM(),     Qt::AlignLeft | Qt::AlignVCenter));
             else if (col == "LAST")   table_->setItem(row, ci, mk(QString::number(q.price,  'f', prec), ui::colors::AMBER()));
             else if (col == "CHG")    table_->setItem(row, ci, mk(QString("%1 %2").arg(arr).arg(std::abs(q.change),     0, 'f', 2), cc));

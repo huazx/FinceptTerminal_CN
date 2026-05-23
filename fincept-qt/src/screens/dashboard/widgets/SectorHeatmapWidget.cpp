@@ -1,6 +1,7 @@
 #include "screens/dashboard/widgets/SectorHeatmapWidget.h"
 
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #    include "datahub/DataHub.h"
 #    include "datahub/DataHubMetaTypes.h"
@@ -18,13 +19,13 @@ QStringList SectorHeatmapWidget::sector_symbols() {
 
 QMap<QString, QString> SectorHeatmapWidget::sector_labels() {
     return {
-        {"XLK", "Technology"},     {"XLV", "Healthcare"},  {"XLF", "Financials"},     {"XLE", "Energy"},
-        {"XLY", "Consumer Disc."}, {"XLI", "Industrials"}, {"XLB", "Materials"},      {"XLU", "Utilities"},
-        {"XLRE", "Real Estate"},   {"XLC", "Comm. Svc."},  {"XLP", "Consumer Stap."}, {"SOXX", "Semis"},
+        {"XLK", QCoreApplication::translate("SectorHeatmapWidget", "Technology")},     {"XLV", QCoreApplication::translate("SectorHeatmapWidget", "Healthcare")},  {"XLF", QCoreApplication::translate("SectorHeatmapWidget", "Financials")},     {"XLE", QCoreApplication::translate("SectorHeatmapWidget", "Energy")},
+        {"XLY", QCoreApplication::translate("SectorHeatmapWidget", "Consumer Disc.")}, {"XLI", QCoreApplication::translate("SectorHeatmapWidget", "Industrials")}, {"XLB", QCoreApplication::translate("SectorHeatmapWidget", "Materials")},      {"XLU", QCoreApplication::translate("SectorHeatmapWidget", "Utilities")},
+        {"XLRE", QCoreApplication::translate("SectorHeatmapWidget", "Real Estate")},   {"XLC", QCoreApplication::translate("SectorHeatmapWidget", "Comm. Svc.")},  {"XLP", QCoreApplication::translate("SectorHeatmapWidget", "Consumer Stap.")}, {"SOXX", QCoreApplication::translate("SectorHeatmapWidget", "Semis")},
     };
 }
 
-SectorHeatmapWidget::SectorHeatmapWidget(QWidget* parent) : BaseWidget("SECTOR HEATMAP", parent) {
+SectorHeatmapWidget::SectorHeatmapWidget(QWidget* parent) : BaseWidget(QCoreApplication::translate("SectorHeatmapWidget", "SECTOR HEATMAP"), parent) {
     grid_container_ = new QWidget(this);
     grid_ = new QGridLayout(grid_container_);
     grid_->setContentsMargins(4, 4, 4, 4);

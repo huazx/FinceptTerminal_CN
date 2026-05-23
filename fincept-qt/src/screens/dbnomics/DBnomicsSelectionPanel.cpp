@@ -119,7 +119,7 @@ QWidget* DBnomicsSelectionPanel::build_search_section() {
     global_search_input_ = new QLineEdit(w);
     global_search_input_->setStyleSheet(kInputStyle());
     global_search_input_->setFixedHeight(28);
-    global_search_input_->setPlaceholderText("Search providers, datasets...");
+    global_search_input_->setPlaceholderText(tr("Search providers, datasets..."));
     layout->addWidget(global_search_input_);
 
     // Loading spinner (hidden by default, appears between input and results)
@@ -191,7 +191,7 @@ QWidget* DBnomicsSelectionPanel::build_provider_section() {
     provider_filter_input_ = new QLineEdit(prov_content_);
     provider_filter_input_->setStyleSheet(kInputStyle());
     provider_filter_input_->setFixedHeight(26);
-    provider_filter_input_->setPlaceholderText("Filter providers...");
+    provider_filter_input_->setPlaceholderText(tr("Filter providers..."));
     pc_layout->addWidget(provider_filter_input_);
 
     provider_list_ = make_styled_list(130);
@@ -285,7 +285,7 @@ QWidget* DBnomicsSelectionPanel::build_series_section() {
     series_search_input_ = new QLineEdit(series_content_);
     series_search_input_->setStyleSheet(kInputStyle());
     series_search_input_->setFixedHeight(26);
-    series_search_input_->setPlaceholderText("Search series...");
+    series_search_input_->setPlaceholderText(tr("Search series..."));
     sc_layout->addWidget(series_search_input_);
 
     series_list_ = make_styled_list(130);
@@ -419,7 +419,7 @@ void DBnomicsSelectionPanel::build_ui() {
     root_layout->addWidget(scroll);
 
     // Status label — fixed outside scroll at bottom
-    status_label_ = new QLabel("Ready");
+    status_label_ = new QLabel(tr("Ready"));
     status_label_->setStyleSheet(QString("color: %1; font-size: 10px; "
                                          "font-family: 'Consolas','Courier New',monospace; "
                                          "padding: 3px 8px; background: %2; "

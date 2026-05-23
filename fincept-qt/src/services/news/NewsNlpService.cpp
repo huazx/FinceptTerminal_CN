@@ -202,4 +202,31 @@ void NewsNlpService::translate_text(const QString& text, const QString& target_l
         });
 }
 
+void NewsNlpService::translate_article(const QString& headline, const QString& summary,
+                                        const QString& target_lang, ArticleTranslateCallback cb) {
+    QStringList args;
+    args << "article" << headline;
+    if (!summary.isEmpty())
+        args << summary;
+    args << "auto" << target_lang;
+
+    QPointer<NewsNlpService> self = this;
+    python::PythonRunner::instance().run(
+        "translate_text.py", args, [self, cb](python::PythonResult result) {
+            if (!self)
+                return;
+            if (!result.success) {
+                cb(false, {}, {}, {}, {});
+                return;
+            }
+            auto doc = QJsonDocument::fromJson(result.output.toUtf8());
+            auto obj = doc.object();
+            cb(obj["success"].toBool(),
+               obj["headline_zh"].toString(),
+               obj["summary_zh"].toString(),
+               obj["detected_lang"].toString(),
+               obj["translator"].toString());
+        });
+}
+
 } // namespace fincept::services

@@ -14,6 +14,7 @@
 #include <QScrollArea>
 #include <QSplitter>
 #include <QVBoxLayout>
+#include <QCoreApplication>
 
 namespace {
 using namespace fincept::ui;
@@ -102,34 +103,132 @@ using namespace fincept::ui;
 static QList<QuantModule> build_modules() {
     return {
         {"core",
-         "Core",
+         QCoreApplication::translate("QuantLibModule", "Core"),
          51,
-         {"Types", "Conventions", "AutoDiff", "Distributions", "Math", "Operations", "Legs", "Periods"}},
+         {QCoreApplication::translate("QuantLibPanel", "Types"), QCoreApplication::translate("QuantLibPanel", "Conventions"),
+          QCoreApplication::translate("QuantLibPanel", "AutoDiff"), QCoreApplication::translate("QuantLibPanel", "Distributions"),
+          QCoreApplication::translate("QuantLibPanel", "Math"), QCoreApplication::translate("QuantLibPanel", "Operations"),
+          QCoreApplication::translate("QuantLibPanel", "Legs"), QCoreApplication::translate("QuantLibPanel", "Periods")}},
         {"analysis",
-         "Analysis",
+         QCoreApplication::translate("QuantLibModule", "Analysis"),
          122,
-         {"Fundamentals", "Profitability", "Liquidity", "Efficiency", "Growth", "Leverage", "Valuation Ratios",
-          "DCF Valuation"}},
-        {"curves", "Curves", 31, {"Build & Query", "Transforms", "NS/NSS Fitting", "Specialized"}},
-        {"economics", "Economics", 25, {"Equilibrium", "Game Theory", "Auctions", "Utility Theory"}},
-        {"instruments", "Instruments", 26, {"Bonds", "Swaps/FRA", "Markets", "Credit/Futures"}},
+         {QCoreApplication::translate("QuantLibPanel", "Fundamentals"),
+          QCoreApplication::translate("QuantLibPanel", "Profitability"),
+          QCoreApplication::translate("QuantLibPanel", "Liquidity"),
+          QCoreApplication::translate("QuantLibPanel", "Efficiency"),
+          QCoreApplication::translate("QuantLibPanel", "Growth"),
+          QCoreApplication::translate("QuantLibPanel", "Leverage"),
+          QCoreApplication::translate("QuantLibPanel", "Valuation Ratios"),
+          QCoreApplication::translate("QuantLibPanel", "DCF Valuation")}},
+        {"curves",
+         QCoreApplication::translate("QuantLibModule", "Curves"),
+         31,
+         {QCoreApplication::translate("QuantLibPanel", "Build & Query"),
+          QCoreApplication::translate("QuantLibPanel", "Transforms"),
+          QCoreApplication::translate("QuantLibPanel", "NS/NSS Fitting"),
+          QCoreApplication::translate("QuantLibPanel", "Specialized")}},
+        {"economics",
+         QCoreApplication::translate("QuantLibModule", "Economics"),
+         25,
+         {QCoreApplication::translate("QuantLibPanel", "Equilibrium"),
+          QCoreApplication::translate("QuantLibPanel", "Game Theory"),
+          QCoreApplication::translate("QuantLibPanel", "Auctions"),
+          QCoreApplication::translate("QuantLibPanel", "Utility Theory")}},
+        {"instruments",
+         QCoreApplication::translate("QuantLibModule", "Instruments"),
+         26,
+         {QCoreApplication::translate("QuantLibPanel", "Bonds"),
+          QCoreApplication::translate("QuantLibPanel", "Swaps/FRA"),
+          QCoreApplication::translate("QuantLibPanel", "Markets"),
+          QCoreApplication::translate("QuantLibPanel", "Credit/Futures")}},
         {"ml",
-         "Machine Learning",
+         QCoreApplication::translate("QuantLibModule", "Machine Learning"),
          48,
-         {"Credit", "Regression", "Clustering", "Preprocessing", "Features", "Validation", "Time Series",
-          "GP/Neural Net", "Factor/Covariance"}},
-        {"models", "Models", 14, {"Short Rate", "Hull-White", "Heston", "Jump Diffusion", "Dupire/SVI"}},
-        {"numerical", "Numerical", 28, {"Diff/FFT/Int", "Interp/LinAlg", "ODE/Roots/Opt"}},
-        {"physics", "Physics", 24, {"Entropy", "Thermodynamics"}},
-        {"portfolio", "Portfolio", 15, {"Optimization", "Risk Metrics"}},
-        {"pricing", "Pricing", 29, {"Black-Scholes", "Black76", "Bachelier", "Numerical"}},
-        {"regulatory", "Regulatory", 11, {"Basel III", "SA-CCR", "IFRS 9", "Liquidity", "Stress Test"}},
-        {"risk", "Risk", 25, {"VaR/Stress", "EVT/XVA", "Sensitivities"}},
-        {"scheduling", "Scheduling", 14, {"Calendars", "Day Count"}},
-        {"solver", "Solver", 25, {"Bond Analytics", "Rates/IV", "Cashflows"}},
-        {"statistics", "Statistics", 52, {"Continuous Dist", "Discrete Dist", "Time Series"}},
-        {"stochastic", "Stochastic", 36, {"Processes", "Exact", "Simulation", "Sampling", "Theory"}},
-        {"volatility", "Volatility", 14, {"Surface", "SABR", "Local Vol"}},
+         {QCoreApplication::translate("QuantLibPanel", "Credit"),
+          QCoreApplication::translate("QuantLibPanel", "Regression"),
+          QCoreApplication::translate("QuantLibPanel", "Clustering"),
+          QCoreApplication::translate("QuantLibPanel", "Preprocessing"),
+          QCoreApplication::translate("QuantLibPanel", "Features"),
+          QCoreApplication::translate("QuantLibPanel", "Validation"),
+          QCoreApplication::translate("QuantLibPanel", "Time Series"),
+          QCoreApplication::translate("QuantLibPanel", "GP/Neural Net"),
+          QCoreApplication::translate("QuantLibPanel", "Factor/Covariance")}},
+        {"models",
+         QCoreApplication::translate("QuantLibModule", "Models"),
+         14,
+         {QCoreApplication::translate("QuantLibPanel", "Short Rate"),
+          QCoreApplication::translate("QuantLibPanel", "Hull-White"),
+          QCoreApplication::translate("QuantLibPanel", "Heston"),
+          QCoreApplication::translate("QuantLibPanel", "Jump Diffusion"),
+          QCoreApplication::translate("QuantLibPanel", "Dupire/SVI")}},
+        {"numerical",
+         QCoreApplication::translate("QuantLibModule", "Numerical"),
+         28,
+         {QCoreApplication::translate("QuantLibPanel", "Diff/FFT/Int"),
+          QCoreApplication::translate("QuantLibPanel", "Interp/LinAlg"),
+          QCoreApplication::translate("QuantLibPanel", "ODE/Roots/Opt")}},
+        {"physics",
+         QCoreApplication::translate("QuantLibModule", "Physics"),
+         24,
+         {QCoreApplication::translate("QuantLibPanel", "Entropy"),
+          QCoreApplication::translate("QuantLibPanel", "Thermodynamics")}},
+        {"portfolio",
+         QCoreApplication::translate("QuantLibModule", "Portfolio"),
+         15,
+         {QCoreApplication::translate("QuantLibPanel", "Optimization"),
+          QCoreApplication::translate("QuantLibPanel", "Risk Metrics")}},
+        {"pricing",
+         QCoreApplication::translate("QuantLibModule", "Pricing"),
+         29,
+         {QCoreApplication::translate("QuantLibPanel", "Black-Scholes"),
+          QCoreApplication::translate("QuantLibPanel", "Black76"),
+          QCoreApplication::translate("QuantLibPanel", "Bachelier"),
+          QCoreApplication::translate("QuantLibPanel", "Numerical")}},
+        {"regulatory",
+         QCoreApplication::translate("QuantLibModule", "Regulatory"),
+         11,
+         {QCoreApplication::translate("QuantLibPanel", "Basel III"),
+          QCoreApplication::translate("QuantLibPanel", "SA-CCR"),
+          QCoreApplication::translate("QuantLibPanel", "IFRS 9"),
+          QCoreApplication::translate("QuantLibPanel", "Liquidity"),
+          QCoreApplication::translate("QuantLibPanel", "Stress Test")}},
+        {"risk",
+         QCoreApplication::translate("QuantLibModule", "Risk"),
+         25,
+         {QCoreApplication::translate("QuantLibPanel", "VaR/Stress"),
+          QCoreApplication::translate("QuantLibPanel", "EVT/XVA"),
+          QCoreApplication::translate("QuantLibPanel", "Sensitivities")}},
+        {"scheduling",
+         QCoreApplication::translate("QuantLibModule", "Scheduling"),
+         14,
+         {QCoreApplication::translate("QuantLibPanel", "Calendars"),
+          QCoreApplication::translate("QuantLibPanel", "Day Count")}},
+        {"solver",
+         QCoreApplication::translate("QuantLibModule", "Solver"),
+         25,
+         {QCoreApplication::translate("QuantLibPanel", "Bond Analytics"),
+          QCoreApplication::translate("QuantLibPanel", "Rates/IV"),
+          QCoreApplication::translate("QuantLibPanel", "Cashflows")}},
+        {"statistics",
+         QCoreApplication::translate("QuantLibModule", "Statistics"),
+         52,
+         {QCoreApplication::translate("QuantLibPanel", "Continuous Dist"),
+          QCoreApplication::translate("QuantLibPanel", "Discrete Dist"),
+          QCoreApplication::translate("QuantLibPanel", "Time Series")}},
+        {"stochastic",
+         QCoreApplication::translate("QuantLibModule", "Stochastic"),
+         36,
+         {QCoreApplication::translate("QuantLibPanel", "Processes"),
+          QCoreApplication::translate("QuantLibPanel", "Exact"),
+          QCoreApplication::translate("QuantLibPanel", "Simulation"),
+          QCoreApplication::translate("QuantLibPanel", "Sampling"),
+          QCoreApplication::translate("QuantLibPanel", "Theory")}},
+        {"volatility",
+         QCoreApplication::translate("QuantLibModule", "Volatility"),
+         14,
+         {QCoreApplication::translate("QuantLibPanel", "Surface"),
+          QCoreApplication::translate("QuantLibPanel", "SABR"),
+          QCoreApplication::translate("QuantLibPanel", "Local Vol")}},
     };
 }
 
@@ -189,16 +288,16 @@ QWidget* QuantLibScreen::create_header() {
 
     auto* title_col = new QVBoxLayout;
     title_col->setSpacing(0);
-    auto* title = new QLabel("QUANTLIB SUITE");
+    auto* title = new QLabel(tr("QUANTLIB SUITE"));
     title->setObjectName("qlHeaderTitle");
-    auto* sub = new QLabel("18 MODULES | 590+ QUANTITATIVE ENDPOINTS");
+    auto* sub = new QLabel(tr("18 MODULES | 590+ QUANTITATIVE ENDPOINTS"));
     sub->setObjectName("qlHeaderSub");
     title_col->addWidget(title);
     title_col->addWidget(sub);
     hl->addLayout(title_col);
     hl->addStretch(1);
 
-    auto* badge = new QLabel("API POWERED");
+    auto* badge = new QLabel(tr("API POWERED"));
     badge->setObjectName("qlHeaderBadge");
     hl->addWidget(badge);
 
@@ -213,7 +312,7 @@ QWidget* QuantLibScreen::create_sidebar() {
     vl->setContentsMargins(0, 0, 0, 0);
     vl->setSpacing(0);
 
-    auto* title = new QLabel("MODULES");
+    auto* title = new QLabel(tr("MODULES"));
     title->setStyleSheet(QString("color: %1; font-weight: 700; "
                                  "letter-spacing: 0.5px; background: transparent; "
                                  "padding: 8px 12px; border-bottom: 1px solid %2;")
@@ -269,7 +368,7 @@ QWidget* QuantLibScreen::create_center_panel() {
     vl->setContentsMargins(16, 16, 16, 16);
     vl->setSpacing(12);
 
-    center_title_ = new QLabel("CORE");
+    center_title_ = new QLabel(tr("CORE"));
     center_title_->setObjectName("qlCenterTitle");
     vl->addWidget(center_title_);
 
@@ -285,7 +384,7 @@ QWidget* QuantLibScreen::create_center_panel() {
     ephdr->setFixedHeight(34);
     auto* ephl = new QHBoxLayout(ephdr);
     ephl->setContentsMargins(12, 0, 12, 0);
-    auto* ept = new QLabel("ENDPOINT");
+    auto* ept = new QLabel(tr("ENDPOINT"));
     ept->setObjectName("qlPanelTitle");
     ephl->addWidget(ept);
     ephl->addStretch(1);
@@ -300,7 +399,7 @@ QWidget* QuantLibScreen::create_center_panel() {
     ebl->addWidget(endpoint_combo_);
 
     // JSON body input — users enter the exact fields the API expects
-    auto* json_label = new QLabel("REQUEST BODY (JSON)");
+    auto* json_label = new QLabel(tr("REQUEST BODY (JSON)"));
     json_label->setObjectName("qlLabel");
     ebl->addWidget(json_label);
 
@@ -344,7 +443,7 @@ QWidget* QuantLibScreen::create_center_panel() {
     param_input4_ = new QLineEdit;
     param_input4_->hide();
 
-    exec_btn_ = new QPushButton("EXECUTE COMPUTATION");
+    exec_btn_ = new QPushButton(tr("EXECUTE COMPUTATION"));
     exec_btn_->setObjectName("qlExecBtn");
     exec_btn_->setCursor(Qt::PointingHandCursor);
     exec_btn_->setFixedHeight(34);
@@ -372,7 +471,7 @@ QWidget* QuantLibScreen::create_right_panel() {
     toolbar->setFixedHeight(32);
     auto* tbl = new QHBoxLayout(toolbar);
     tbl->setContentsMargins(12, 0, 12, 0);
-    auto* rt = new QLabel("RESULTS");
+    auto* rt = new QLabel(tr("RESULTS"));
     rt->setObjectName("qlPanelTitle");
     tbl->addWidget(rt);
     tbl->addStretch(1);
@@ -386,7 +485,7 @@ QWidget* QuantLibScreen::create_right_panel() {
 
     result_view_ = new QTextEdit;
     result_view_->setReadOnly(true);
-    result_view_->setPlaceholderText("Select a module and endpoint, then execute to see results...");
+    result_view_->setPlaceholderText(tr("Select a module and endpoint, then execute to see results..."));
     result_stack_->addWidget(result_view_);
 
     result_table_ = new QTableWidget;
@@ -408,7 +507,7 @@ QWidget* QuantLibScreen::create_status_bar() {
     auto* hl = new QHBoxLayout(bar);
     hl->setContentsMargins(16, 0, 16, 0);
 
-    auto* left = new QLabel("QUANTLIB SUITE");
+    auto* left = new QLabel(tr("QUANTLIB SUITE"));
     left->setObjectName("qlStatusText");
     hl->addWidget(left);
     hl->addStretch(1);

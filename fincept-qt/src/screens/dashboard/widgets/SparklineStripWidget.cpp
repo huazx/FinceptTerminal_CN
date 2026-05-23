@@ -3,6 +3,7 @@
 #include "datahub/DataHub.h"
 #include "datahub/DataHubMetaTypes.h"
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -67,7 +68,7 @@ const QStringList kDefaultSymbols = {"AAPL", "MSFT", "GOOGL", "NVDA"};
 } // namespace
 
 SparklineStripWidget::SparklineStripWidget(const QJsonObject& cfg, QWidget* parent)
-    : BaseWidget("SPARKLINES", parent) {
+    : BaseWidget(QCoreApplication::translate("SparklineStripWidget", "SPARKLINES"), parent) {
     auto* vl = content_layout();
     vl->setContentsMargins(10, 8, 10, 8);
     vl->setSpacing(4);
@@ -190,13 +191,13 @@ void SparklineStripWidget::on_points(const QString& symbol, const QVector<double
 
 QDialog* SparklineStripWidget::make_config_dialog(QWidget* parent) {
     auto* dlg = new QDialog(parent);
-    dlg->setWindowTitle("Configure — Sparklines");
+    dlg->setWindowTitle(QCoreApplication::translate("SparklineStripWidget", "Configure — Sparklines"));
     auto* form = new QFormLayout(dlg);
 
     auto* edit = new QLineEdit(dlg);
     edit->setText(symbols_.join(", "));
-    edit->setPlaceholderText("e.g. AAPL, MSFT, NVDA");
-    form->addRow("Symbols", edit);
+    edit->setPlaceholderText(QCoreApplication::translate("SparklineStripWidget", "e.g. AAPL, MSFT, NVDA"));
+    form->addRow(QCoreApplication::translate("SparklineStripWidget", "Symbols"), edit);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, dlg);
     form->addRow(buttons);

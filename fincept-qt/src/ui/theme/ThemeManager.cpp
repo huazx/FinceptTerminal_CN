@@ -3,6 +3,7 @@
 #include "core/logging/Logger.h"
 
 #include <QApplication>
+#include <QPalette>
 #include <QWidget>
 
 namespace fincept::ui {
@@ -120,6 +121,12 @@ void ThemeManager::rebuild_and_apply() {
     } else {
         LOG_INFO("ThemeManager", "QSS unchanged — skipping setStyleSheet");
     }
+
+    QPalette pal = qApp->palette();
+    pal.setColor(QPalette::ToolTipBase, QColor(current_.bg_raised));
+    pal.setColor(QPalette::ToolTipText, QColor(current_.text_primary));
+    qApp->setPalette(pal);
+
     emit theme_changed(current_);
     LOG_INFO("ThemeManager", "theme_changed emitted");
 }
@@ -198,10 +205,6 @@ QString ThemeManager::build_global_qss() const {
         QTabBar::tab:selected {
             background: %11; color: %2; border-bottom: 1px solid %9;
         }
-        QToolTip {
-            background: %5; color: %2; border: 1px solid %6;
-            padding: %7px %8px;
-        }
         QCheckBox { color: %10; }
         QCheckBox::indicator {
             width: 12px; height: 12px; border: 1px solid %4; background: %5;
@@ -219,6 +222,10 @@ QString ThemeManager::build_global_qss() const {
         /* App-level QFrame transparent rule would erase ADS tab/title styling,
            so re-assert ADS widget backgrounds below — later, more-specific rules win. */
         QFrame { background: transparent; border: none; }
+        QToolTip {
+            background: %5; color: %2; border: 1px solid %6;
+            padding: %7px %8px;
+        }
         ads--CDockContainerWidget { background: %1; border: none; }
         ads--CDockAreaWidget { background: %1; border: none; }
         ads--CDockWidget { background: %1; border: none; }

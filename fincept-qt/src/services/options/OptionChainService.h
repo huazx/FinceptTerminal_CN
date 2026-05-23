@@ -32,7 +32,7 @@
 
 namespace fincept::services::options {
 
-class OptionChainService : public QObject, public fincept::datahub::Producer {
+class OptionChainService : public QObject, public datahub::Producer {
     Q_OBJECT
   public:
     static OptionChainService& instance();

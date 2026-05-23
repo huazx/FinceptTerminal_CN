@@ -53,7 +53,7 @@ MarketPanelEditor::MarketPanelEditor(const MarketPanelConfig& config, QWidget* p
 }
 
 void MarketPanelEditor::build_ui() {
-    setWindowTitle(config_.id.isEmpty() ? "New Panel" : "Edit Panel — " + config_.title);
+    setWindowTitle(config_.id.isEmpty() ? tr("New Panel") : tr("Edit Panel — ") + config_.title);
     setModal(true);
     setMinimumSize(440, 520);
     setStyleSheet(QString("QDialog{background:%1;color:%2;}")
@@ -64,12 +64,12 @@ void MarketPanelEditor::build_ui() {
     root->setSpacing(10);
 
     // Title
-    auto* title_lbl = new QLabel("PANEL TITLE");
+    auto* title_lbl = new QLabel(tr("PANEL TITLE"));
     title_lbl->setStyleSheet(section_lbl_ss());
     root->addWidget(title_lbl);
 
     title_edit_ = new QLineEdit(config_.title);
-    title_edit_->setPlaceholderText("e.g. My Tech Stocks");
+    title_edit_->setPlaceholderText(tr("e.g. My Tech Stocks"));
     title_edit_->setStyleSheet(input_ss());
     root->addWidget(title_edit_);
 
@@ -84,11 +84,11 @@ void MarketPanelEditor::build_ui() {
     auto* tickers_hdr = new QWidget;
     auto* tickers_hl  = new QHBoxLayout(tickers_hdr);
     tickers_hl->setContentsMargins(0, 0, 0, 0);
-    auto* tickers_lbl = new QLabel("TICKERS");
+    auto* tickers_lbl = new QLabel(tr("TICKERS"));
     tickers_lbl->setStyleSheet(section_lbl_ss());
     tickers_hl->addWidget(tickers_lbl);
     tickers_hl->addStretch();
-    auto* remove_btn = new QPushButton("✕ REMOVE");
+    auto* remove_btn = new QPushButton(tr("✕ REMOVE"));
     remove_btn->setFixedHeight(20);
     remove_btn->setCursor(Qt::PointingHandCursor);
     remove_btn->setStyleSheet(
@@ -111,12 +111,12 @@ void MarketPanelEditor::build_ui() {
     root->addWidget(make_sep());
 
     // Search / add
-    auto* search_lbl = new QLabel("ADD TICKER  ·  type to search, click or Enter to add");
+    auto* search_lbl = new QLabel(tr("ADD TICKER  ·  type to search, click or Enter to add"));
     search_lbl->setStyleSheet(section_lbl_ss());
     root->addWidget(search_lbl);
 
     search_edit_ = new QLineEdit;
-    search_edit_->setPlaceholderText("Search symbol or name: AAPL, Reliance, Bitcoin ...");
+    search_edit_->setPlaceholderText(tr("Search symbol or name: AAPL, Reliance, Bitcoin ..."));
     search_edit_->setStyleSheet(input_ss());
     search_edit_->installEventFilter(this);
     root->addWidget(search_edit_);

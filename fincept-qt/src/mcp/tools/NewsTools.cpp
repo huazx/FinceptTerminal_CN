@@ -482,10 +482,12 @@ std::vector<ToolDef> get_news_tools() {
 
             auto* svc = &NewsService::instance();
             bool ok = false;
+            QString err_msg;
             NewsAnalysis analysis;
-            detail::run_async_wait(svc, [svc, url, &ok, &analysis](auto signal_done) {
-                svc->analyze_article(url, [signal_done, &ok, &analysis](bool success, NewsAnalysis a) {
+            detail::run_async_wait(svc, [svc, url, &ok, &analysis, &err_msg](auto signal_done) {
+                svc->analyze_article(url, {}, [signal_done, &ok, &analysis, &err_msg](bool success, NewsAnalysis a, const QString& error) {
                     ok = success;
+                    err_msg = error;
                     if (success)
                         analysis = std::move(a);
                     signal_done();
@@ -493,7 +495,7 @@ std::vector<ToolDef> get_news_tools() {
             });
 
             if (!ok)
-                return ToolResult::fail("Analysis failed (network error or insufficient credits)");
+                return ToolResult::fail(err_msg.isEmpty() ? "Analysis failed" : err_msg);
 
             auto risk_to_json = [](const RiskSignal& r) {
                 return QJsonObject{{"level", r.level}, {"details", r.details}};

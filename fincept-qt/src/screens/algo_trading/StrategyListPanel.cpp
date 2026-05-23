@@ -53,7 +53,7 @@ void StrategyListPanel::build_ui() {
     top_hl->setSpacing(8);
 
     search_edit_ = new QLineEdit(top_bar);
-    search_edit_->setPlaceholderText("Search strategies...");
+    search_edit_->setPlaceholderText(tr("Search strategies..."));
     search_edit_->setFixedHeight(28);
     search_edit_->setStyleSheet(
         QString("QLineEdit { background:%1; border:1px solid %2; color:%3;"
@@ -68,7 +68,7 @@ void StrategyListPanel::build_ui() {
     cat_combo_ = new QComboBox(top_bar);
     cat_combo_->setFixedHeight(28);
     cat_combo_->setFixedWidth(150);
-    cat_combo_->addItem("All Categories");
+    cat_combo_->addItem(tr("All Categories"));
     const QString combo_style =
         QString("QComboBox { background:%1; color:%2; border:1px solid %3;"
                 " padding:2px 6px; font-size:%4px; font-family:%5; }"
@@ -82,7 +82,7 @@ void StrategyListPanel::build_ui() {
     top_hl->addWidget(cat_combo_);
 
     // Sort
-    auto* sort_lbl = new QLabel("SORT:", top_bar);
+    auto* sort_lbl = new QLabel(tr("SORT:"), top_bar);
     sort_lbl->setStyleSheet(QString("color:%1; font-size:%2px; font-weight:700; font-family:%3;"
                                     " background:transparent; border:none;")
                                 .arg(colors::TEXT_TERTIARY())
@@ -93,11 +93,11 @@ void StrategyListPanel::build_ui() {
     sort_combo_ = new QComboBox(top_bar);
     sort_combo_->setFixedHeight(28);
     sort_combo_->setFixedWidth(120);
-    sort_combo_->addItems({"Name A→Z", "Name Z→A", "Category"});
+    sort_combo_->addItems({tr("Name A→Z"), tr("Name Z→A"), tr("Category")});
     sort_combo_->setStyleSheet(combo_style);
     top_hl->addWidget(sort_combo_);
 
-    count_label_ = new QLabel("0 strategies", top_bar);
+    count_label_ = new QLabel(tr("0 strategies"), top_bar);
     count_label_->setStyleSheet(QString("color:%1; font-size:%2px; font-weight:700; font-family:%3;"
                                         " background:transparent; border:none;")
                                     .arg(colors::TEXT_SECONDARY())
@@ -110,7 +110,7 @@ void StrategyListPanel::build_ui() {
     // ── Table ────────────────────────────────────────────────────────────────
     table_ = new QTableWidget(this);
     table_->setColumnCount(4); // #, NAME, CATEGORY, ID
-    table_->setHorizontalHeaderLabels({"#", "STRATEGY NAME", "CATEGORY", "ID"});
+    table_->setHorizontalHeaderLabels({tr("#"), tr("STRATEGY NAME"), tr("CATEGORY"), tr("ID")});
     table_->verticalHeader()->setVisible(false);
     table_->setSelectionBehavior(QAbstractItemView::SelectRows);
     table_->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -159,13 +159,13 @@ void StrategyListPanel::build_ui() {
             .arg(fonts::TINY)
             .arg(fonts::DATA_FAMILY(), colors::CYAN());
 
-    prev_btn_ = new QPushButton("◀ PREV", page_bar);
+    prev_btn_ = new QPushButton(tr("◀ PREV"), page_bar);
     prev_btn_->setFixedHeight(24);
     prev_btn_->setCursor(Qt::PointingHandCursor);
     prev_btn_->setStyleSheet(btn_style);
     page_hl->addWidget(prev_btn_);
 
-    page_label_ = new QLabel("Page 1 of 1", page_bar);
+    page_label_ = new QLabel(tr("Page 1 of 1"), page_bar);
     page_label_->setStyleSheet(QString("color:%1; font-size:%2px; font-weight:700; font-family:%3;"
                                        " background:transparent; border:none;")
                                    .arg(colors::TEXT_SECONDARY())
@@ -174,7 +174,7 @@ void StrategyListPanel::build_ui() {
     page_label_->setAlignment(Qt::AlignCenter);
     page_hl->addWidget(page_label_, 1);
 
-    next_btn_ = new QPushButton("NEXT ▶", page_bar);
+    next_btn_ = new QPushButton(tr("NEXT ▶"), page_bar);
     next_btn_->setFixedHeight(24);
     next_btn_->setCursor(Qt::PointingHandCursor);
     next_btn_->setStyleSheet(btn_style);
@@ -238,8 +238,8 @@ void StrategyListPanel::render_page() {
     update_pagination_controls();
 
     page_label_->setText(total > 0
-        ? QString("Page %1 of %2  ·  %3 strategies").arg(page_num).arg(total_pages).arg(total)
-        : "No strategies");
+        ? tr("Page %1 of %2  ·  %3 strategies").arg(page_num).arg(total_pages).arg(total)
+        : tr("No strategies"));
 
     count_label_->setText(
         QString("%1 of %2").arg(total).arg(strategies_.size()));
@@ -306,7 +306,7 @@ void StrategyListPanel::on_strategies_loaded(QVector<AlgoStrategy> strategies) {
     const QString prev_cat = cat_combo_->currentIndex() > 0 ? cat_combo_->currentText() : QString();
     cat_combo_->blockSignals(true);
     cat_combo_->clear();
-    cat_combo_->addItem("All Categories");
+    cat_combo_->addItem(tr("All Categories"));
     QStringList cats;
     for (const auto& s : strategies_)
         if (!cats.contains(s.description))

@@ -8,6 +8,7 @@
 
 #include <QApplication>
 #include <QClipboard>
+#include <QCoreApplication>
 #include <QDateTime>
 #include <QDesktopServices>
 #include <QFile>
@@ -37,7 +38,7 @@ NewsDetailPanel::NewsDetailPanel(QWidget* parent) : QWidget(parent) {
     header_layout->setContentsMargins(10, 0, 6, 0);
     header_layout->setSpacing(0);
 
-    auto* title = new QLabel("ARTICLE DETAIL", header);
+    auto* title = new QLabel(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "ARTICLE DETAIL"), header);
     title->setObjectName("newsDetailHeaderTitle");
     header_layout->addWidget(title);
     header_layout->addStretch();
@@ -63,7 +64,7 @@ NewsDetailPanel::NewsDetailPanel(QWidget* parent) : QWidget(parent) {
     analyze_timeout_->setInterval(30000);
     connect(analyze_timeout_, &QTimer::timeout, this, [this]() {
         if (analyze_btn_) {
-            analyze_btn_->setText("ANALYZE");
+            analyze_btn_->setText(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "ANALYZE"));
             analyze_btn_->setEnabled(true);
         }
     });
@@ -73,7 +74,7 @@ QWidget* NewsDetailPanel::build_empty_state() {
     auto* empty = new QWidget(this);
     auto* layout = new QVBoxLayout(empty);
     layout->setAlignment(Qt::AlignCenter);
-    auto* label = new QLabel("Select an article", empty);
+    auto* label = new QLabel(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Select an article"), empty);
     label->setObjectName("newsDetailEmpty");
     label->setAlignment(Qt::AlignCenter);
     layout->addWidget(label);
@@ -156,30 +157,32 @@ QWidget* NewsDetailPanel::build_content_view() {
     action_layout->setContentsMargins(0, 4, 0, 4);
     action_layout->setSpacing(6);
 
-    open_btn_ = new QPushButton("OPEN", content);
+    open_btn_ = new QPushButton(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "OPEN"), content);
     open_btn_->setObjectName("newsDetailOpenBtn");
     open_btn_->setFixedHeight(24);
-    copy_btn_ = new QPushButton("COPY URL", content);
+    copy_btn_ = new QPushButton(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "COPY URL"), content);
     copy_btn_->setObjectName("newsDetailCopyBtn");
     copy_btn_->setFixedHeight(24);
-    analyze_btn_ = new QPushButton("ANALYZE", content);
+    analyze_btn_ = new QPushButton(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "ANALYZE"), content);
     analyze_btn_->setObjectName("newsDetailAnalyzeBtn");
     analyze_btn_->setFixedHeight(24);
-    save_btn_ = new QPushButton("SAVE", content);
+    save_btn_ = new QPushButton(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "SAVE"), content);
     save_btn_->setObjectName("newsDetailSaveBtn");
     save_btn_->setFixedHeight(24);
-    save_btn_->setToolTip("Save article to File Manager");
+    save_btn_->setToolTip(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Save article to File Manager"));
 
-    bookmark_btn_ = new QPushButton("BOOKMARK", content);
+    bookmark_btn_ = new QPushButton(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "BOOKMARK"), content);
     bookmark_btn_->setObjectName("newsDetailSaveBtn");
     bookmark_btn_->setFixedHeight(24);
-    bookmark_btn_->setToolTip("Bookmark article");
+    bookmark_btn_->setToolTip(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Bookmark article"));
     bookmark_btn_->setCheckable(true);
 
-    // Translate button
-    translate_btn_ = new QPushButton("TRANSLATE", content);
+    // Translate toggle button
+    translate_btn_ = new QPushButton("翻译", content);
     translate_btn_->setObjectName("newsDetailOpenBtn");
     translate_btn_->setFixedHeight(24);
+    translate_btn_->setCheckable(true);
+    translate_btn_->setToolTip(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Toggle between original and Chinese translation"));
 
     action_layout->addWidget(open_btn_);
     action_layout->addWidget(copy_btn_);
@@ -200,16 +203,15 @@ QWidget* NewsDetailPanel::build_content_view() {
     connect(analyze_btn_, &QPushButton::clicked, this, [this]() {
         if (!has_article_)
             return;
-        analyze_btn_->setText("ANALYZING...");
+        analyze_btn_->setText(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "ANALYZING..."));
         analyze_btn_->setEnabled(false);
         analyze_timeout_->start();
-        emit analyze_requested(current_article_.link);
+        emit analyze_requested(current_article_.headline, current_article_.summary);
     });
     connect(save_btn_, &QPushButton::clicked, this, [this]() {
         if (!has_article_)
             return;
 
-        // Build a safe filename from headline
         QString safe = current_article_.headline;
         safe = safe.replace(QRegularExpression("[^a-zA-Z0-9_\\- ]"), "").simplified();
         safe.replace(' ', '_');
@@ -228,7 +230,7 @@ QWidget* NewsDetailPanel::build_content_view() {
             out << current_article_.summary << "\n";
             f.close();
             services::FileManagerService::instance().register_file(stored_name, safe + ".txt", QFileInfo(dest).size(),
-                                                                   "text/plain", "news");
+                                                                    "text/plain", "news");
             LOG_INFO("News", "Saved article: " + stored_name);
         }
     });
@@ -240,18 +242,68 @@ QWidget* NewsDetailPanel::build_content_view() {
     connect(translate_btn_, &QPushButton::clicked, this, [this]() {
         if (!has_article_)
             return;
-        translate_btn_->setText("...");
-        translate_btn_->setEnabled(false);
-        services::NewsNlpService::instance().translate_text(
-            current_article_.headline + "\n\n" + current_article_.summary, "en",
-            [this](bool ok, QString translated, QString detected_lang) {
-                translate_btn_->setText("TRANSLATE");
-                translate_btn_->setEnabled(true);
-                if (ok && !translated.isEmpty()) {
-                    summary_label_->setText(QString("[%1 -> EN] %2").arg(detected_lang, translated));
-                }
-            });
+        if (showing_translated_) {
+            headline_label_->setText(current_article_.headline);
+            summary_label_->setText(current_article_.summary.isEmpty() ? QCoreApplication::translate("fincept::screens::NewsDetailPanel", "No summary available.") : current_article_.summary);
+            original_section_->hide();
+            translate_btn_->setText("翻译");
+            showing_translated_ = false;
+        } else {
+            translate_btn_->setText("...");
+            translate_btn_->setEnabled(false);
+            services::NewsNlpService::instance().translate_article(
+                current_article_.headline, current_article_.summary, "zh",
+                [this](bool ok, QString headline_zh, QString summary_zh, QString /*detected_lang*/, QString /*translator*/) {
+                    translate_btn_->setEnabled(true);
+                    if (ok && !headline_zh.isEmpty()) {
+                        headline_label_->setText(headline_zh);
+                        if (!summary_zh.isEmpty())
+                            summary_label_->setText(summary_zh);
+                        original_headline_label_->setText(current_article_.headline);
+                        original_summary_label_->setText(
+                            current_article_.summary.isEmpty() ? QString() : current_article_.summary);
+                        original_section_->show();
+                        translate_btn_->setText("原文");
+                        showing_translated_ = true;
+                    } else {
+                        translate_btn_->setText("翻译");
+                    }
+                });
+        }
     });
+
+    // Original text section (immersive translate — shown when translated)
+    original_section_ = new QWidget(content);
+    original_section_->setObjectName("newsOriginalSection");
+    original_section_->hide();
+    auto* orig_layout = new QVBoxLayout(original_section_);
+    orig_layout->setContentsMargins(0, 4, 0, 4);
+    orig_layout->setSpacing(4);
+
+    auto* orig_badge_row = new QHBoxLayout();
+    auto* orig_badge = new QLabel("原文", original_section_);
+    orig_badge->setObjectName("newsDetailSubTitle");
+    orig_badge->setStyleSheet(QString("color: %1; background: %2; padding: 1px 6px; border-radius: 3px;")
+                                  .arg(ui::colors::TEXT_DIM(), ui::colors::BG_RAISED()));
+    orig_badge_row->addWidget(orig_badge);
+    orig_badge_row->addStretch();
+    orig_layout->addLayout(orig_badge_row);
+
+    original_headline_label_ = new QLabel(original_section_);
+    original_headline_label_->setObjectName("newsDetailSummary");
+    original_headline_label_->setWordWrap(true);
+    original_headline_label_->setStyleSheet(QString("color: %1; background: transparent;")
+                                                .arg(ui::colors::TEXT_TERTIARY()));
+    orig_layout->addWidget(original_headline_label_);
+
+    original_summary_label_ = new QLabel(original_section_);
+    original_summary_label_->setObjectName("newsDetailSummary");
+    original_summary_label_->setWordWrap(true);
+    original_summary_label_->setStyleSheet(QString("color: %1; background: transparent;")
+                                                .arg(ui::colors::TEXT_TERTIARY()));
+    orig_layout->addWidget(original_summary_label_);
+
+    layout->addWidget(original_section_);
 
     // Separator
     auto* sep = new QWidget(content);
@@ -267,7 +319,7 @@ QWidget* NewsDetailPanel::build_content_view() {
     analysis_layout->setContentsMargins(0, 4, 0, 4);
     analysis_layout->setSpacing(4);
 
-    auto* ai_title = new QLabel("AI ANALYSIS", analysis_section_);
+    auto* ai_title = new QLabel(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "AI ANALYSIS"), analysis_section_);
     ai_title->setObjectName("newsDetailSectionTitle");
     analysis_layout->addWidget(ai_title);
 
@@ -289,7 +341,7 @@ QWidget* NewsDetailPanel::build_content_view() {
     ai_row_layout->addStretch();
     analysis_layout->addWidget(ai_row);
 
-    auto* kp_title = new QLabel("KEY POINTS", analysis_section_);
+    auto* kp_title = new QLabel(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "KEY POINTS"), analysis_section_);
     kp_title->setObjectName("newsDetailSubTitle");
     analysis_layout->addWidget(kp_title);
 
@@ -299,7 +351,7 @@ QWidget* NewsDetailPanel::build_content_view() {
     key_points_layout_->setSpacing(2);
     analysis_layout->addWidget(kp_container);
 
-    auto* risk_title = new QLabel("RISK SIGNALS", analysis_section_);
+    auto* risk_title = new QLabel(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "RISK SIGNALS"), analysis_section_);
     risk_title->setObjectName("newsDetailSubTitle");
     analysis_layout->addWidget(risk_title);
 
@@ -309,7 +361,7 @@ QWidget* NewsDetailPanel::build_content_view() {
     risk_layout_->setSpacing(2);
     analysis_layout->addWidget(risk_container);
 
-    auto* topics_title = new QLabel("TOPICS", analysis_section_);
+    auto* topics_title = new QLabel(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "TOPICS"), analysis_section_);
     topics_title->setObjectName("newsDetailSubTitle");
     analysis_layout->addWidget(topics_title);
 
@@ -327,7 +379,7 @@ QWidget* NewsDetailPanel::build_content_view() {
     auto* mon_layout = new QVBoxLayout(monitor_section_);
     mon_layout->setContentsMargins(0, 4, 0, 4);
     mon_layout->setSpacing(2);
-    auto* mon_title = new QLabel("MONITOR MATCHES", monitor_section_);
+    auto* mon_title = new QLabel(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "MONITOR MATCHES"), monitor_section_);
     mon_title->setObjectName("newsDetailSectionTitle");
     mon_layout->addWidget(mon_title);
     auto* mon_container = new QWidget(monitor_section_);
@@ -343,7 +395,7 @@ QWidget* NewsDetailPanel::build_content_view() {
     auto* rel_layout_outer = new QVBoxLayout(related_section_);
     rel_layout_outer->setContentsMargins(0, 4, 0, 4);
     rel_layout_outer->setSpacing(2);
-    auto* rel_title = new QLabel("RELATED", related_section_);
+    auto* rel_title = new QLabel(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "RELATED"), related_section_);
     rel_title->setObjectName("newsDetailSectionTitle");
     rel_layout_outer->addWidget(rel_title);
     auto* rel_container = new QWidget(related_section_);
@@ -359,7 +411,7 @@ QWidget* NewsDetailPanel::build_content_view() {
     auto* ent_layout_outer = new QVBoxLayout(entities_section_);
     ent_layout_outer->setContentsMargins(0, 4, 0, 4);
     ent_layout_outer->setSpacing(2);
-    auto* ent_title = new QLabel("ENTITIES", entities_section_);
+    auto* ent_title = new QLabel(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "ENTITIES"), entities_section_);
     ent_title->setObjectName("newsDetailSectionTitle");
     ent_layout_outer->addWidget(ent_title);
     auto* ent_container = new QWidget(entities_section_);
@@ -375,7 +427,7 @@ QWidget* NewsDetailPanel::build_content_view() {
     auto* infra_layout_outer = new QVBoxLayout(infra_section_);
     infra_layout_outer->setContentsMargins(0, 4, 0, 4);
     infra_layout_outer->setSpacing(2);
-    auto* infra_title = new QLabel("NEARBY INFRASTRUCTURE", infra_section_);
+    auto* infra_title = new QLabel(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "NEARBY INFRASTRUCTURE"), infra_section_);
     infra_title->setObjectName("newsDetailSectionTitle");
     infra_layout_outer->addWidget(infra_title);
     auto* infra_container = new QWidget(infra_section_);
@@ -431,8 +483,8 @@ void NewsDetailPanel::show_article(const services::NewsArticle& article) {
     sentiment_badge_->setStyleSheet(QString("color: %1; padding: 1px 4px;").arg(scolor));
 
     // Tier badge
-    QStringList tier_names = {"", "WIRE", "MAJOR", "SPECIALTY", "BLOG"};
-    QString tier_text = (article.tier >= 1 && article.tier <= 4) ? tier_names[article.tier] : "OTHER";
+    QStringList tier_names = {"", QCoreApplication::translate("fincept::screens::NewsDetailPanel", "WIRE"), QCoreApplication::translate("fincept::screens::NewsDetailPanel", "MAJOR"), QCoreApplication::translate("fincept::screens::NewsDetailPanel", "SPECIALTY"), QCoreApplication::translate("fincept::screens::NewsDetailPanel", "BLOG")};
+    QString tier_text = (article.tier >= 1 && article.tier <= 4) ? tier_names[article.tier] : QCoreApplication::translate("fincept::screens::NewsDetailPanel", "OTHER");
     tier_badge_->setText(tier_text);
 
     category_label_->setText(article.category);
@@ -456,13 +508,13 @@ void NewsDetailPanel::show_article(const services::NewsArticle& article) {
     if (article.threat.level != services::ThreatLevel::INFO) {
         QString threat_text = services::threat_level_string(article.threat.level);
         QString threat_color = services::threat_level_color(article.threat.level);
-        impact_label_->setText(QString("Threat: %1 (%2, %3% conf)")
+        impact_label_->setText(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Threat: %1 (%2, %3% conf)")
                                    .arg(threat_text, article.threat.category)
                                    .arg(static_cast<int>(article.threat.confidence * 100)));
         impact_label_->setStyleSheet(QString("color: %1; background: transparent;").arg(threat_color));
     }
-    summary_label_->setText(article.summary.isEmpty() ? "No summary available." : article.summary);
-    impact_label_->setText(QString("Impact: %1").arg(services::impact_string(article.impact)));
+    summary_label_->setText(article.summary.isEmpty() ? QCoreApplication::translate("fincept::screens::NewsDetailPanel", "No summary available.") : article.summary);
+    impact_label_->setText(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Impact: %1").arg(services::impact_string(article.impact)));
 
     if (!article.tickers.isEmpty())
         tickers_label_->setText("$" + article.tickers.join("  $"));
@@ -471,9 +523,15 @@ void NewsDetailPanel::show_article(const services::NewsArticle& article) {
 
     // Reset analysis
     analysis_section_->hide();
-    analyze_btn_->setText("ANALYZE");
+    analyze_btn_->setText(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "ANALYZE"));
     analyze_btn_->setEnabled(true);
     analyze_timeout_->stop();
+
+    // Reset translation state
+    showing_translated_ = false;
+    translate_btn_->setText("翻译");
+    translate_btn_->setChecked(false);
+    original_section_->hide();
 
     // Reflect saved state from DB
     {
@@ -488,7 +546,7 @@ void NewsDetailPanel::show_article(const services::NewsArticle& article) {
             }
         }
         bookmark_btn_->setChecked(is_saved);
-        bookmark_btn_->setText(is_saved ? "BOOKMARKED" : "BOOKMARK");
+        bookmark_btn_->setText(is_saved ? QCoreApplication::translate("fincept::screens::NewsDetailPanel", "BOOKMARKED") : QCoreApplication::translate("fincept::screens::NewsDetailPanel", "BOOKMARK"));
     }
 
     // Clear related and monitors
@@ -497,19 +555,19 @@ void NewsDetailPanel::show_article(const services::NewsArticle& article) {
 }
 
 void NewsDetailPanel::show_analysis(const services::NewsAnalysis& analysis) {
-    analyze_btn_->setText("ANALYZE");
+    analyze_btn_->setText(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "ANALYZE"));
     analyze_btn_->setEnabled(true);
     analyze_timeout_->stop();
 
-    ai_summary_->setText(analysis.summary.isEmpty() ? "No AI summary available." : analysis.summary);
+    ai_summary_->setText(analysis.summary.isEmpty() ? QCoreApplication::translate("fincept::screens::NewsDetailPanel", "No AI summary available.") : analysis.summary);
 
     double score = std::clamp(analysis.sentiment.score, -1.0, 1.0);
     QString sent_color =
         score > 0.1 ? ui::colors::POSITIVE : (score < -0.1 ? ui::colors::NEGATIVE : ui::colors::WARNING);
-    ai_sentiment_->setText(QString("Sentiment: %1%2").arg(score >= 0 ? "+" : "").arg(score, 0, 'f', 2));
+    ai_sentiment_->setText(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Sentiment: %1%2").arg(score >= 0 ? "+" : "").arg(score, 0, 'f', 2));
     ai_sentiment_->setStyleSheet(QString("color: %1;").arg(sent_color));
 
-    ai_urgency_->setText(QString("Urgency: %1").arg(analysis.market_impact.urgency));
+    ai_urgency_->setText(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Urgency: %1").arg(analysis.market_impact.urgency));
 
     // Key points
     while (key_points_layout_->count() > 0) {
@@ -540,10 +598,10 @@ void NewsDetailPanel::show_analysis(const services::NewsAnalysis& analysis) {
         lbl->setToolTip(sig.details);
         risk_layout_->addWidget(lbl);
     };
-    add_risk("Regulatory", analysis.regulatory);
-    add_risk("Geopolitical", analysis.geopolitical);
-    add_risk("Operational", analysis.operational);
-    add_risk("Market", analysis.market);
+    add_risk(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Regulatory"), analysis.regulatory);
+    add_risk(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Geopolitical"), analysis.geopolitical);
+    add_risk(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Operational"), analysis.operational);
+    add_risk(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Market"), analysis.market);
 
     // Topics
     while (topics_layout_->count() > 0) {
@@ -563,6 +621,40 @@ void NewsDetailPanel::show_analysis(const services::NewsAnalysis& analysis) {
     }
     topics_flow->addStretch();
     topics_layout_->addWidget(topics_row);
+
+    analysis_section_->show();
+}
+
+void NewsDetailPanel::show_analysis_failed(const QString& reason) {
+    analyze_btn_->setText(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "ANALYZE"));
+    analyze_btn_->setEnabled(true);
+    analyze_timeout_->stop();
+
+    QString msg = reason.isEmpty()
+        ? QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Analysis failed. Please try again.")
+        : QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Analysis failed: %1").arg(reason);
+    ai_summary_->setText(msg);
+    ai_sentiment_->clear();
+    ai_urgency_->clear();
+
+    while (key_points_layout_->count() > 0) {
+        auto* item = key_points_layout_->takeAt(0);
+        if (item->widget())
+            item->widget()->deleteLater();
+        delete item;
+    }
+    while (risk_layout_->count() > 0) {
+        auto* item = risk_layout_->takeAt(0);
+        if (item->widget())
+            item->widget()->deleteLater();
+        delete item;
+    }
+    while (topics_layout_->count() > 0) {
+        auto* item = topics_layout_->takeAt(0);
+        if (item->widget())
+            item->widget()->deleteLater();
+        delete item;
+    }
 
     analysis_section_->show();
 }
@@ -639,19 +731,19 @@ void NewsDetailPanel::show_entities(const services::EntityResult& entities) {
     bool has_data = false;
 
     for (const auto& [name, code] : entities.countries) {
-        auto* lbl = new QLabel(QString("Country: %1 (%2)").arg(name, code), entities_section_);
+        auto* lbl = new QLabel(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Country: %1 (%2)").arg(name, code), entities_section_);
         lbl->setObjectName("newsDetailKeyPoint");
         entities_detail_layout_->addWidget(lbl);
         has_data = true;
     }
     for (const auto& org : entities.organizations) {
-        auto* lbl = new QLabel(QString("Org: %1").arg(org), entities_section_);
+        auto* lbl = new QLabel(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Org: %1").arg(org), entities_section_);
         lbl->setObjectName("newsDetailKeyPoint");
         entities_detail_layout_->addWidget(lbl);
         has_data = true;
     }
     for (const auto& person : entities.people) {
-        auto* lbl = new QLabel(QString("Person: %1").arg(person), entities_section_);
+        auto* lbl = new QLabel(QCoreApplication::translate("fincept::screens::NewsDetailPanel", "Person: %1").arg(person), entities_section_);
         lbl->setObjectName("newsDetailKeyPoint");
         entities_detail_layout_->addWidget(lbl);
         has_data = true;
@@ -676,8 +768,8 @@ void NewsDetailPanel::show_infrastructure(const QVector<services::Infrastructure
 
     for (const auto& inf : items) {
         QString type_icon = inf.type == "airport"
-                                ? "AIR"
-                                : (inf.type == "military" ? "MIL" : (inf.type == "power_plant" ? "PWR" : "PRT"));
+                                ? QCoreApplication::translate("fincept::screens::NewsDetailPanel", "AIR")
+                                : (inf.type == "military" ? QCoreApplication::translate("fincept::screens::NewsDetailPanel", "MIL") : (inf.type == "power_plant" ? QCoreApplication::translate("fincept::screens::NewsDetailPanel", "PWR") : QCoreApplication::translate("fincept::screens::NewsDetailPanel", "PRT")));
         auto* lbl =
             new QLabel(QString("[%1] %2 — %3 km").arg(type_icon, inf.name.left(20)).arg(inf.distance_km, 0, 'f', 1),
                        infra_section_);

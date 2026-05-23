@@ -62,7 +62,7 @@ MarketsScreen::MarketsScreen(QWidget* parent) : QWidget(parent) {
         refresh_in_progress_ = false;
         pending_refreshes_   = 0;
         if (status_label_) {
-            status_label_->setText("● TIMEOUT");
+            status_label_->setText(tr("● TIMEOUT"));
             status_label_->setStyleSheet(lbl_ss(ui::colors::NEGATIVE(), true));
         }
     });
@@ -244,8 +244,8 @@ void MarketsScreen::open_editor_for_new_panel(int col_index) {
 
 void MarketsScreen::on_panel_delete(const QString& panel_id) {
     QMessageBox mb(this);
-    mb.setWindowTitle("Remove Panel");
-    mb.setText("Remove this panel?");
+    mb.setWindowTitle(tr("Remove Panel"));
+    mb.setText(tr("Remove this panel?"));
     mb.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
     mb.setDefaultButton(QMessageBox::Cancel);
     mb.setStyleSheet(QString("background:%1;color:%2;")
@@ -285,7 +285,7 @@ QWidget* MarketsScreen::build_header_bar() {
     };
 
     // Branding
-    auto* brand = new QLabel("FINCEPT MARKETS");
+    auto* brand = new QLabel(tr("FINCEPT MARKETS"));
     brand->setStyleSheet(lbl_ss(ui::colors::TEXT_PRIMARY(), true));
     h->addWidget(brand);
 
@@ -337,14 +337,14 @@ QWidget* MarketsScreen::build_header_bar() {
         return b;
     };
 
-    auto* refresh_btn = make_ctrl_btn("[F5] REFRESH");
+    auto* refresh_btn = make_ctrl_btn(tr("[F5] REFRESH"));
     connect(refresh_btn, &QPushButton::clicked, this, &MarketsScreen::refresh_all);
     h->addWidget(refresh_btn);
 
     // AUTO toggle — amber when ON
-    auto* auto_btn = make_ctrl_btn(auto_update_ ? "[F9] AUTO: ON" : "[F9] AUTO: OFF");
+    auto* auto_btn = make_ctrl_btn(auto_update_ ? tr("[F9] AUTO: ON") : tr("[F9] AUTO: OFF"));
     auto update_auto_style = [this, auto_btn]() {
-        auto_btn->setText(auto_update_ ? "[F9] AUTO: ON" : "[F9] AUTO: OFF");
+        auto_btn->setText(auto_update_ ? tr("[F9] AUTO: ON") : tr("[F9] AUTO: OFF"));
         auto_btn->setStyleSheet(
             QString("QPushButton{background:transparent;color:%1;border:none;"
                     "font-size:%3px;font-family:'%4';padding:0 6px;}"
@@ -393,7 +393,7 @@ QWidget* MarketsScreen::build_header_bar() {
     h->addWidget(iv);
 
     // [+] PANEL — column picker menu
-    auto* add_btn = make_ctrl_btn("[+] PANEL");
+    auto* add_btn = make_ctrl_btn(tr("[+] PANEL"));
     connect(add_btn, &QPushButton::clicked, this, [this, add_btn]() {
         auto* menu = new QMenu(this);
         menu->setStyleSheet(
@@ -406,7 +406,7 @@ QWidget* MarketsScreen::build_header_bar() {
                 .arg(ui::fonts::font_px(-3))
                 .arg(ui::fonts::DATA_FAMILY()));
         for (int i = 0; i < kNumColumns; ++i) {
-            auto* act = menu->addAction(QString("ADD TO COL %1").arg(i + 1));
+            auto* act = menu->addAction(tr("ADD TO COL %1").arg(i + 1));
             connect(act, &QAction::triggered, this, [this, i]() {
                 open_editor_for_new_panel(i);
             });
@@ -417,11 +417,11 @@ QWidget* MarketsScreen::build_header_bar() {
     h->addWidget(add_btn);
 
     // RESET
-    auto* reset_btn = make_ctrl_btn("RESET");
+    auto* reset_btn = make_ctrl_btn(tr("RESET"));
     connect(reset_btn, &QPushButton::clicked, this, [this]() {
         QMessageBox mb(this);
-        mb.setWindowTitle("Reset Panels");
-        mb.setText("Reset all panels to defaults?");
+        mb.setWindowTitle(tr("Reset Panels"));
+        mb.setText(tr("Reset all panels to defaults?"));
         mb.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
         mb.setStyleSheet(QString("background:%1;color:%2;")
                              .arg(ui::colors::BG_BASE(), ui::colors::TEXT_PRIMARY()));
@@ -435,13 +435,13 @@ QWidget* MarketsScreen::build_header_bar() {
 
     h->addStretch();
 
-    last_upd_label_ = new QLabel("LAST UPDATE  --:--:--");
+    last_upd_label_ = new QLabel(tr("LAST UPDATE  --:--:--"));
     last_upd_label_->setStyleSheet(lbl_ss(ui::colors::TEXT_DIM(), false, 11));
     h->addWidget(last_upd_label_);
 
     h->addWidget(new QLabel("   "));
 
-    status_label_ = new QLabel("● READY");
+    status_label_ = new QLabel(tr("● READY"));
     status_label_->setStyleSheet(lbl_ss(ui::colors::POSITIVE(), true));
     h->addWidget(status_label_);
 
@@ -462,13 +462,13 @@ void MarketsScreen::update_session_status() {
 
     QString label, color;
     if (!weekday || hhmm < 400 || hhmm >= 2000) {
-        label = "NYSE: CLOSED";    color = ui::colors::TEXT_DIM();
+        label = tr("NYSE: CLOSED");    color = ui::colors::TEXT_DIM();
     } else if (hhmm < 930) {
-        label = "NYSE: PRE-MKT";   color = ui::colors::AMBER();
+        label = tr("NYSE: PRE-MKT");   color = ui::colors::AMBER();
     } else if (hhmm < 1600) {
-        label = "NYSE: OPEN";      color = ui::colors::POSITIVE();
+        label = tr("NYSE: OPEN");      color = ui::colors::POSITIVE();
     } else {
-        label = "NYSE: AFTER-HRS"; color = ui::colors::AMBER();
+        label = tr("NYSE: AFTER-HRS"); color = ui::colors::AMBER();
     }
 
     if (session_label_) {
@@ -542,7 +542,7 @@ void MarketsScreen::refresh_all() {
     pending_refreshes_   = panels_.size();
 
     if (status_label_) {
-        status_label_->setText("● LOADING");
+        status_label_->setText(tr("● LOADING"));
         status_label_->setStyleSheet(lbl_ss(ui::colors::AMBER(), true));
     }
 
@@ -558,12 +558,12 @@ void MarketsScreen::refresh_all() {
             last_refresh_time_   = QDateTime::currentDateTime();
             counter->deleteLater();
             if (status_label_) {
-                status_label_->setText("● READY");
+                status_label_->setText(tr("● READY"));
                 status_label_->setStyleSheet(lbl_ss(ui::colors::POSITIVE(), true));
             }
             if (last_upd_label_) {
                 last_upd_label_->setText(
-                    QString("LAST UPDATE  %1")
+                    tr("LAST UPDATE  %1")
                         .arg(QDateTime::currentDateTime().toString("HH:mm:ss")));
                 last_upd_label_->setStyleSheet(lbl_ss(ui::colors::TEXT_SECONDARY(), false, 11));
             }

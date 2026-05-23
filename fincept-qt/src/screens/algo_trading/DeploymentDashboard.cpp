@@ -189,30 +189,30 @@ QWidget* DeploymentDashboard::build_deployment_card(const AlgoDeployment& d, QWi
 
     // P&L — larger font to match Quant Lab KPI style
     double total_pnl = d.total_pnl + d.unrealized_pnl;
-    add_metric("P&L", QString("%1$%2").arg(total_pnl >= 0 ? "+" : "-").arg(std::abs(total_pnl), 0, 'f', 2),
+    add_metric(tr("P&L"), QString("%1$%2").arg(total_pnl >= 0 ? "+" : "-").arg(std::abs(total_pnl), 0, 'f', 2),
                total_pnl >= 0 ? fincept::ui::colors::POSITIVE : fincept::ui::colors::NEGATIVE,
                fincept::ui::fonts::TITLE);
 
     // Win Rate
-    add_metric("WIN RATE", QString("%1%").arg(d.win_rate, 0, 'f', 1), fincept::ui::colors::TEXT_PRIMARY);
+    add_metric(tr("WIN RATE"), QString("%1%").arg(d.win_rate, 0, 'f', 1), fincept::ui::colors::TEXT_PRIMARY);
 
     // Position
     if (d.position_qty != 0) {
-        add_metric("POSITION",
+        add_metric(tr("POSITION"),
                    QString("%1 %2 @ %3")
                        .arg(d.position_qty, 0, 'f', 2)
                        .arg(d.position_side.toUpper())
                        .arg(d.position_entry, 0, 'f', 2),
                    fincept::ui::colors::TEXT_PRIMARY);
     } else {
-        add_metric("POSITION", "FLAT", fincept::ui::colors::TEXT_TERTIARY);
+        add_metric(tr("POSITION"), tr("FLAT"), fincept::ui::colors::TEXT_TERTIARY);
     }
 
     // Trades
-    add_metric("TRADES", QString::number(d.total_trades), fincept::ui::colors::TEXT_PRIMARY);
+    add_metric(tr("TRADES"), QString::number(d.total_trades), fincept::ui::colors::TEXT_PRIMARY);
 
     // Max Drawdown
-    add_metric("MAX DD", QString("-%1%").arg(std::abs(d.max_drawdown), 0, 'f', 2), fincept::ui::colors::NEGATIVE);
+    add_metric(tr("MAX DD"), QString("-%1%").arg(std::abs(d.max_drawdown), 0, 'f', 2), fincept::ui::colors::NEGATIVE);
 
     metrics->addStretch();
 
@@ -247,7 +247,7 @@ QWidget* DeploymentDashboard::build_deployment_card(const AlgoDeployment& d, QWi
     btn_row->addStretch();
 
     if (d.status == "running" || d.status == "starting") {
-        auto* stop_btn = new QPushButton("STOP", card);
+        auto* stop_btn = new QPushButton(tr("STOP"), card);
         stop_btn->setCursor(Qt::PointingHandCursor);
         stop_btn->setFixedHeight(26);
         stop_btn->setStyleSheet(QString("QPushButton { background: transparent; color: %1; border: 1px solid %1;"
@@ -338,12 +338,12 @@ void DeploymentDashboard::build_ui() {
     summary_row->setSpacing(8);
 
     summary_row->addWidget(
-        build_stat_card("ACTIVE DEPLOYMENTS", "0", fincept::ui::colors::CYAN, &active_count_, content));
-    summary_row->addWidget(build_stat_card("TOTAL P&L", "$0.00", fincept::ui::colors::POSITIVE, &total_pnl_, content));
+        build_stat_card(tr("ACTIVE DEPLOYMENTS"), "0", fincept::ui::colors::CYAN, &active_count_, content));
+    summary_row->addWidget(build_stat_card(tr("TOTAL P&L"), "$0.00", fincept::ui::colors::POSITIVE, &total_pnl_, content));
     summary_row->addWidget(
-        build_stat_card("TOTAL TRADES", "0", fincept::ui::colors::TEXT_PRIMARY, &total_trades_, content));
+        build_stat_card(tr("TOTAL TRADES"), "0", fincept::ui::colors::TEXT_PRIMARY, &total_trades_, content));
     summary_row->addWidget(
-        build_stat_card("AVG WIN RATE", "0.0%", fincept::ui::colors::TEXT_PRIMARY, &avg_win_rate_, content));
+        build_stat_card(tr("AVG WIN RATE"), "0.0%", fincept::ui::colors::TEXT_PRIMARY, &avg_win_rate_, content));
 
     vl->addLayout(summary_row);
 
@@ -360,7 +360,7 @@ void DeploymentDashboard::build_ui() {
         eq_vl->setSpacing(4);
 
         auto* eq_header_row = new QHBoxLayout;
-        auto* eq_title = new QLabel("EQUITY CURVE", equity_placeholder_);
+        auto* eq_title = new QLabel(tr("EQUITY CURVE"), equity_placeholder_);
         eq_title->setStyleSheet(kSectionLabel());
         eq_header_row->addWidget(eq_title);
         eq_header_row->addStretch();
@@ -368,7 +368,7 @@ void DeploymentDashboard::build_ui() {
 
         eq_vl->addStretch();
 
-        auto* eq_hint = new QLabel("Select a deployment to view curve", equity_placeholder_);
+        auto* eq_hint = new QLabel(tr("Select a deployment to view curve"), equity_placeholder_);
         eq_hint->setAlignment(Qt::AlignCenter);
         eq_hint->setStyleSheet(
             QString("color: %1; font-size: %2px; %3 background: transparent; border: none;")
@@ -384,7 +384,7 @@ void DeploymentDashboard::build_ui() {
     auto* control_bar = new QHBoxLayout;
     control_bar->setSpacing(8);
 
-    auto* refresh_btn = new QPushButton("REFRESH", content);
+    auto* refresh_btn = new QPushButton(tr("REFRESH"), content);
     refresh_btn->setCursor(Qt::PointingHandCursor);
     refresh_btn->setFixedHeight(30);
     refresh_btn->setStyleSheet(
@@ -400,7 +400,7 @@ void DeploymentDashboard::build_ui() {
 
     control_bar->addStretch();
 
-    auto* stop_all_btn = new QPushButton("STOP ALL", content);
+    auto* stop_all_btn = new QPushButton(tr("STOP ALL"), content);
     stop_all_btn->setCursor(Qt::PointingHandCursor);
     stop_all_btn->setFixedHeight(30);
     stop_all_btn->setStyleSheet(
@@ -420,12 +420,12 @@ void DeploymentDashboard::build_ui() {
     vl->addLayout(control_bar);
 
     // ── Deployments section ─────────────────────────────────────────────────
-    auto* dep_title = new QLabel("DEPLOYMENTS", content);
+    auto* dep_title = new QLabel(tr("DEPLOYMENTS"), content);
     dep_title->setStyleSheet(kSectionLabel());
     vl->addWidget(dep_title);
 
     // Status label
-    status_label_ = new QLabel("No deployments loaded.", content);
+    status_label_ = new QLabel(tr("No deployments loaded."), content);
     status_label_->setStyleSheet(QString("color: %1; font-size: %2px; %3 background: transparent; border: none;")
                                      .arg(fincept::ui::colors::TEXT_TERTIARY())
                                      .arg(fincept::ui::fonts::SMALL)
@@ -459,10 +459,10 @@ void DeploymentDashboard::on_deployments_loaded(QVector<AlgoDeployment> deployme
     update_summary(deployments);
 
     if (deployments.isEmpty()) {
-        status_label_->setText("No active deployments.");
+        status_label_->setText(tr("No active deployments."));
         status_label_->setVisible(true);
     } else {
-        status_label_->setText(QString("%1 deployment(s)").arg(deployments.size()));
+        status_label_->setText(tr("%1 deployment(s)").arg(deployments.size()));
         status_label_->setStyleSheet(QString("color: %1; font-size: %2px; %3 background: transparent; border: none;")
                                          .arg(fincept::ui::colors::TEXT_SECONDARY())
                                          .arg(fincept::ui::fonts::SMALL)
@@ -478,7 +478,7 @@ void DeploymentDashboard::on_deployments_loaded(QVector<AlgoDeployment> deployme
 
 void DeploymentDashboard::on_error(const QString& context, const QString& msg) {
     if (status_label_) {
-        status_label_->setText(QString("Error [%1]: %2").arg(context, msg));
+        status_label_->setText(tr("Error [%1]: %2").arg(context, msg));
         status_label_->setStyleSheet(QString("color: %1; font-size: %2px; %3 background: transparent; border: none;")
                                          .arg(fincept::ui::colors::NEGATIVE())
                                          .arg(fincept::ui::fonts::SMALL)

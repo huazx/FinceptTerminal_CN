@@ -6,6 +6,7 @@
 #include <QHeaderView>
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QTimer>
 #include <QVBoxLayout>
 
 namespace fincept::screens::devtools {
@@ -41,8 +42,10 @@ DataHubInspector::DataHubInspector(QWidget* parent) : QWidget(parent) {
 
 void DataHubInspector::showEvent(QShowEvent* e) {
     QWidget::showEvent(e);
-    refresh();
-    refresh_timer_.start();
+    QTimer::singleShot(0, this, [this]() {
+        refresh();
+        refresh_timer_.start();
+    });
 }
 
 void DataHubInspector::hideEvent(QHideEvent* e) {
@@ -52,20 +55,32 @@ void DataHubInspector::hideEvent(QHideEvent* e) {
 
 void DataHubInspector::refresh() {
     const auto stats = datahub::DataHub::instance().stats();
-    table_->setRowCount(stats.size());
+    table_->setUpdatesEnabled(false);
+    if (table_->rowCount() != stats.size())
+        table_->setRowCount(stats.size());
     for (int row = 0; row < stats.size(); ++row) {
         const auto& s = stats[row];
-        table_->setItem(row, 0, new QTableWidgetItem(s.topic));
-        table_->setItem(row, 1, new QTableWidgetItem(QString::number(s.subscriber_count)));
-        table_->setItem(row, 2, new QTableWidgetItem(QString::number(s.total_publishes)));
-        table_->setItem(row, 3, new QTableWidgetItem(format_age(s.last_publish_ms)));
-        table_->setItem(row, 4, new QTableWidgetItem(format_age(s.last_refresh_request_ms)));
+        auto set_or_create = [&](int col, const QString& text) {
+            auto* item = table_->item(row, col);
+            if (!item) {
+                item = new QTableWidgetItem(text);
+                table_->setItem(row, col, item);
+            } else {
+                item->setText(text);
+            }
+        };
+        set_or_create(0, s.topic);
+        set_or_create(1, QString::number(s.subscriber_count));
+        set_or_create(2, QString::number(s.total_publishes));
+        set_or_create(3, format_age(s.last_publish_ms));
+        set_or_create(4, format_age(s.last_refresh_request_ms));
         QString state_label;
         if (s.push_only) state_label = QStringLiteral("push");
         else if (s.in_flight) state_label = QStringLiteral("in-flight");
         else state_label = QStringLiteral("idle");
-        table_->setItem(row, 5, new QTableWidgetItem(state_label));
+        set_or_create(5, state_label);
     }
+    table_->setUpdatesEnabled(true);
 }
 
 } // namespace fincept::screens::devtools

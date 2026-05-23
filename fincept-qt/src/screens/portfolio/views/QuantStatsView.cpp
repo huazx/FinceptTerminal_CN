@@ -101,7 +101,7 @@ void QuantStatsView::build_ui() {
     h_lay->setContentsMargins(12, 0, 12, 0);
     h_lay->setSpacing(8);
 
-    auto* title_lbl = new QLabel("QUANTSTATS ANALYSIS");
+    auto* title_lbl = new QLabel(tr("QUANTSTATS ANALYSIS"));
     title_lbl->setStyleSheet(
         QString("color:%1; font-size:11px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     h_lay->addWidget(title_lbl);
@@ -111,7 +111,7 @@ void QuantStatsView::build_ui() {
     qs_status_->setStyleSheet(QString("color:%1; font-size:9px;").arg(ui::colors::TEXT_TERTIARY()));
     h_lay->addWidget(qs_status_);
 
-    qs_run_btn_ = new QPushButton("\u25B6 RUN QUANTSTATS");
+    qs_run_btn_ = new QPushButton(tr("\u25B6 RUN QUANTSTATS"));
     qs_run_btn_->setFixedHeight(22);
     qs_run_btn_->setCursor(Qt::PointingHandCursor);
     qs_run_btn_->setStyleSheet(
@@ -144,20 +144,20 @@ void QuantStatsView::build_ui() {
         ml->setContentsMargins(12, 8, 12, 8);
         ml->setSpacing(4);
 
-        auto* section_lbl = new QLabel("KEY PERFORMANCE INDICATORS");
+        auto* section_lbl = new QLabel(tr("KEY PERFORMANCE INDICATORS"));
         section_lbl->setStyleSheet(
             QString("color:%1; font-size:11px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
         ml->addWidget(section_lbl);
 
         metrics_table_ = new QTableWidget;
         metrics_table_->setColumnCount(3);
-        metrics_table_->setHorizontalHeaderLabels({"METRIC", "VALUE", "BENCHMARK"});
+        metrics_table_->setHorizontalHeaderLabels({tr("METRIC"), tr("VALUE"), tr("BENCHMARK")});
         metrics_table_->setColumnWidth(0, 220);
         metrics_table_->setColumnWidth(1, 130);
         style_table(metrics_table_);
         ml->addWidget(metrics_table_, 1);
 
-        tabs_->addTab(metrics_w, "METRICS");
+        tabs_->addTab(metrics_w, tr("METRICS"));
     }
 
     // ── RETURNS tab ───────────────────────────────────────────────────────────
@@ -169,11 +169,11 @@ void QuantStatsView::build_ui() {
         rl->setSpacing(0);
 
         returns_stack_ = new QStackedWidget;
-        returns_stack_->addWidget(make_placeholder("Run QuantStats Analysis for return distribution"));
+        returns_stack_->addWidget(make_placeholder(tr("Run QuantStats Analysis for return distribution")));
         // Index 1 is added lazily in update_returns()
         rl->addWidget(returns_stack_);
 
-        tabs_->addTab(returns_w, "RETURNS");
+        tabs_->addTab(returns_w, tr("RETURNS"));
     }
 
     // ── DRAWDOWN tab ──────────────────────────────────────────────────────────
@@ -185,10 +185,10 @@ void QuantStatsView::build_ui() {
         dl->setSpacing(0);
 
         drawdown_stack_ = new QStackedWidget;
-        drawdown_stack_->addWidget(make_placeholder("Run QuantStats Analysis for drawdown metrics"));
+        drawdown_stack_->addWidget(make_placeholder(tr("Run QuantStats Analysis for drawdown metrics")));
         dl->addWidget(drawdown_stack_);
 
-        tabs_->addTab(dd_w, "DRAWDOWN");
+        tabs_->addTab(dd_w, tr("DRAWDOWN"));
     }
 
     // ── ROLLING tab ───────────────────────────────────────────────────────────
@@ -200,10 +200,10 @@ void QuantStatsView::build_ui() {
         rll->setSpacing(0);
 
         rolling_stack_ = new QStackedWidget;
-        rolling_stack_->addWidget(make_placeholder("Run QuantStats Analysis for rolling metrics"));
+        rolling_stack_->addWidget(make_placeholder(tr("Run QuantStats Analysis for rolling metrics")));
         rll->addWidget(rolling_stack_);
 
-        tabs_->addTab(roll_w, "ROLLING");
+        tabs_->addTab(roll_w, tr("ROLLING"));
     }
 
     // ── MONTE CARLO tab ───────────────────────────────────────────────────────
@@ -214,13 +214,13 @@ void QuantStatsView::build_ui() {
         mcl->setContentsMargins(16, 12, 16, 12);
         mcl->setSpacing(8);
 
-        auto* mc_title = new QLabel("MONTE CARLO SIMULATION");
+        auto* mc_title = new QLabel(tr("MONTE CARLO SIMULATION"));
         mc_title->setStyleSheet(
             QString("color:%1; font-size:12px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
         mcl->addWidget(mc_title);
 
-        auto* mc_desc = new QLabel("Simulate 1,000 portfolio return paths using GBM to estimate probability\n"
-                                   "distributions of future returns, drawdowns, and terminal wealth.");
+        auto* mc_desc = new QLabel(tr("Simulate 1,000 portfolio return paths using GBM to estimate probability\n"
+                                    "distributions of future returns, drawdowns, and terminal wealth."));
         mc_desc->setWordWrap(true);
         mc_desc->setStyleSheet(QString("color:%1; font-size:11px;").arg(ui::colors::TEXT_TERTIARY()));
         mcl->addWidget(mc_desc);
@@ -229,7 +229,7 @@ void QuantStatsView::build_ui() {
         auto* mc_btn_row = new QHBoxLayout;
         mc_btn_row->setSpacing(8);
 
-        mc_run_btn_ = new QPushButton("\u25B6 RUN MONTE CARLO (1000 paths)");
+        mc_run_btn_ = new QPushButton(tr("\u25B6 RUN MONTE CARLO (1000 paths)"));
         mc_run_btn_->setFixedHeight(28);
         mc_run_btn_->setCursor(Qt::PointingHandCursor);
         mc_run_btn_->setStyleSheet(
@@ -249,7 +249,7 @@ void QuantStatsView::build_ui() {
 
         // Stacked area: placeholder vs live content
         mc_stack_ = new QStackedWidget;
-        mc_stack_->addWidget(make_placeholder("Press RUN MONTE CARLO to simulate 1,000 return paths"));
+        mc_stack_->addWidget(make_placeholder(tr("Press RUN MONTE CARLO to simulate 1,000 return paths")));
         // Index 1 is built lazily in update_monte_carlo_chart()
         mcl->addWidget(mc_stack_, 1);
 
@@ -257,7 +257,7 @@ void QuantStatsView::build_ui() {
         mc_results_ = new QWidget(this);
         mc_results_->setVisible(false);
 
-        tabs_->addTab(mc_w, "MONTE CARLO");
+        tabs_->addTab(mc_w, tr("MONTE CARLO"));
     }
 
     root->addWidget(tabs_, 1);
@@ -414,7 +414,7 @@ void QuantStatsView::update_metrics() {
         rows.push_back({"", "Avg Loss", "--", "--", true});
 
         // Prompt row when pre-run
-        rows.push_back({"", "Run QuantStats for full metrics \u2192", "", "--", true});
+        rows.push_back({"", tr("Run QuantStats for full metrics \u2192"), "", "--", true});
     }
 
     // ── Populate table ────────────────────────────────────────────────────────
@@ -479,7 +479,7 @@ void QuantStatsView::update_returns() {
     cl->setContentsMargins(16, 12, 16, 12);
     cl->setSpacing(12);
 
-    auto* title = new QLabel("RETURN DISTRIBUTION");
+    auto* title = new QLabel(tr("RETURN DISTRIBUTION"));
     title->setStyleSheet(
         QString("color:%1; font-size:11px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     cl->addWidget(title);
@@ -544,7 +544,7 @@ void QuantStatsView::update_returns() {
     // Win/Loss bar chart (simple table-based visual)
     auto* dist_table = new QTableWidget;
     dist_table->setColumnCount(2);
-    dist_table->setHorizontalHeaderLabels({"METRIC", "VALUE"});
+    dist_table->setHorizontalHeaderLabels({tr("METRIC"), tr("VALUE")});
     dist_table->setColumnWidth(0, 200);
     style_table(dist_table);
 
@@ -599,7 +599,7 @@ void QuantStatsView::update_drawdown() {
     cl->setContentsMargins(16, 12, 16, 12);
     cl->setSpacing(12);
 
-    auto* title = new QLabel("DRAWDOWN & RISK METRICS");
+    auto* title = new QLabel(tr("DRAWDOWN & RISK METRICS"));
     title->setStyleSheet(
         QString("color:%1; font-size:11px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     cl->addWidget(title);
@@ -615,7 +615,7 @@ void QuantStatsView::update_drawdown() {
     hero_l->setContentsMargins(16, 12, 16, 12);
     hero_l->setSpacing(2);
 
-    auto* hero_label = new QLabel("MAX DRAWDOWN");
+    auto* hero_label = new QLabel(tr("MAX DRAWDOWN"));
     hero_label->setStyleSheet(
         QString("color:%1; font-size:9px; font-weight:700; letter-spacing:1px;").arg(ui::colors::TEXT_TERTIARY()));
     hero_l->addWidget(hero_label);
@@ -629,7 +629,7 @@ void QuantStatsView::update_drawdown() {
     // Drawdown metrics table
     auto* dd_table = new QTableWidget;
     dd_table->setColumnCount(2);
-    dd_table->setHorizontalHeaderLabels({"RISK METRIC", "VALUE"});
+    dd_table->setHorizontalHeaderLabels({tr("RISK METRIC"), tr("VALUE")});
     dd_table->setColumnWidth(0, 220);
     style_table(dd_table);
 
@@ -684,7 +684,7 @@ void QuantStatsView::update_rolling() {
     cl->setContentsMargins(16, 12, 16, 12);
     cl->setSpacing(12);
 
-    auto* title = new QLabel("RISK-ADJUSTED RATIOS & WIN/LOSS BREAKDOWN");
+    auto* title = new QLabel(tr("RISK-ADJUSTED RATIOS & WIN/LOSS BREAKDOWN"));
     title->setStyleSheet(
         QString("color:%1; font-size:11px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     cl->addWidget(title);
@@ -692,7 +692,7 @@ void QuantStatsView::update_rolling() {
     // Ratios table
     auto* ratios_table = new QTableWidget;
     ratios_table->setColumnCount(2);
-    ratios_table->setHorizontalHeaderLabels({"RATIO", "VALUE"});
+    ratios_table->setHorizontalHeaderLabels({tr("RATIO"), tr("VALUE")});
     ratios_table->setColumnWidth(0, 220);
     style_table(ratios_table);
 
@@ -725,7 +725,7 @@ void QuantStatsView::update_rolling() {
     cl->addWidget(ratios_table);
 
     // Win/Loss breakdown
-    auto* wl_title = new QLabel("WIN / LOSS BREAKDOWN");
+    auto* wl_title = new QLabel(tr("WIN / LOSS BREAKDOWN"));
     wl_title->setStyleSheet(QString("color:%1; font-size:10px; font-weight:700; letter-spacing:0.5px;"
                                     " margin-top:8px;")
                                 .arg(ui::colors::TEXT_SECONDARY()));
@@ -740,7 +740,7 @@ void QuantStatsView::update_rolling() {
 
     auto* wl_table = new QTableWidget;
     wl_table->setColumnCount(2);
-    wl_table->setHorizontalHeaderLabels({"METRIC", "VALUE"});
+    wl_table->setHorizontalHeaderLabels({tr("METRIC"), tr("VALUE")});
     wl_table->setColumnWidth(0, 220);
     style_table(wl_table);
 
@@ -933,9 +933,9 @@ void QuantStatsView::update_monte_carlo_chart() {
 
     // Caption
     int n_shown = mc_data_["num_paths_shown"].toInt();
-    auto* caption = new QLabel(QString("Showing %1 of 1000 simulated paths over 252 trading days (GBM)."
-                                       " Bright line = median path.")
-                                   .arg(n_shown));
+    auto* caption = new QLabel(tr("Showing %1 of 1000 simulated paths over 252 trading days (GBM)."
+                                        " Bright line = median path.")
+                                    .arg(n_shown));
     caption->setStyleSheet(QString("color:%1; font-size:9px; padding:4px 16px;").arg(ui::colors::TEXT_TERTIARY()));
     cl->addWidget(caption);
 
@@ -968,7 +968,7 @@ void QuantStatsView::run_quantstats() {
         return;
     qs_running_ = true;
     qs_run_btn_->setEnabled(false);
-    qs_status_->setText("Fetching 1-year price history...");
+    qs_status_->setText(tr("Fetching 1-year price history..."));
     qs_status_->setStyleSheet(QString("color:%1; font-size:9px;").arg(ui::colors::AMBER()));
 
     QStringList symbols;
@@ -999,7 +999,7 @@ void QuantStatsView::run_quantstats() {
                     }
 
                     self->qs_data_ = r.data;
-                    self->qs_status_->setText("Complete");
+                    self->qs_status_->setText(tr("Complete"));
                     self->qs_status_->setStyleSheet(
                         QString("color:%1; font-size:9px;").arg(ui::colors::POSITIVE()));
                     self->update_metrics();
@@ -1018,7 +1018,7 @@ void QuantStatsView::run_monte_carlo() {
         return;
     mc_running_ = true;
     mc_run_btn_->setEnabled(false);
-    mc_status_->setText("Running 1000 simulation paths...");
+    mc_status_->setText(tr("Running 1000 simulation paths..."));
     mc_status_->setStyleSheet(QString("color:%1; font-size:10px;").arg(ui::colors::AMBER()));
 
     QStringList symbols;
@@ -1050,7 +1050,7 @@ void QuantStatsView::run_monte_carlo() {
 
                     self->mc_data_ = r.data;
                     self->mc_status_->setText(
-                        QString("Complete — %1 paths simulated")
+                        tr("Complete — %1 paths simulated")
                             .arg(r.data["num_paths_shown"].toInt() > 0 ? "1000" : "0"));
                     self->mc_status_->setStyleSheet(
                         QString("color:%1; font-size:10px;").arg(ui::colors::POSITIVE()));

@@ -2,8 +2,10 @@
 
 #include "datahub/DataHub.h"
 #include "datahub/DataHubMetaTypes.h"
+#include "screens/markets/MarketPanelConfig.h"
 #include "services/markets/MarketDataService.h"
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -21,7 +23,7 @@ const QStringList kDefaultSymbols = {"AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"};
 } // namespace
 
 MarketQuoteStripWidget::MarketQuoteStripWidget(const QJsonObject& cfg, QWidget* parent)
-    : BaseWidget("QUOTE STRIP", parent) {
+    : BaseWidget(QCoreApplication::translate("MarketQuoteStripWidget", "QUOTE STRIP"), parent) {
     auto* vl = content_layout();
     vl->setContentsMargins(10, 8, 10, 8);
     vl->setSpacing(4);
@@ -85,7 +87,7 @@ void MarketQuoteStripWidget::build_rows() {
     for (int i = 0; i < symbols_.size(); ++i) {
         const QString& sym = symbols_[i];
         Row r;
-        r.symbol = new QLabel(sym);
+        r.symbol = new QLabel(market_symbol_display_name(sym));
         r.symbol->setObjectName("quoteStripSymbol");
         r.price = new QLabel("—");
         r.price->setObjectName("quoteStripPrice");
@@ -156,13 +158,13 @@ void MarketQuoteStripWidget::on_quote(const fincept::services::QuoteData& q) {
 
 QDialog* MarketQuoteStripWidget::make_config_dialog(QWidget* parent) {
     auto* dlg = new QDialog(parent);
-    dlg->setWindowTitle("Configure — Quote Strip");
+    dlg->setWindowTitle(QCoreApplication::translate("MarketQuoteStripWidget", "Configure — Quote Strip"));
     auto* form = new QFormLayout(dlg);
 
     auto* edit = new QLineEdit(dlg);
     edit->setText(symbols_.join(", "));
-    edit->setPlaceholderText("e.g. AAPL, MSFT, GOOGL");
-    form->addRow("Symbols", edit);
+    edit->setPlaceholderText(QCoreApplication::translate("MarketQuoteStripWidget", "e.g. AAPL, MSFT, GOOGL"));
+    form->addRow(QCoreApplication::translate("MarketQuoteStripWidget", "Symbols"), edit);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, dlg);
     form->addRow(buttons);

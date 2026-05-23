@@ -56,25 +56,25 @@ void RiskManagementView::build_ui() {
     // ── Risk Overview tab ────────────────────────────────────────────────────
     overview_panel_ = new QWidget(this);
     overview_panel_->setStyleSheet(QString("background:%1;").arg(ui::colors::BG_BASE()));
-    tabs_->addTab(overview_panel_, "RISK OVERVIEW");
+    tabs_->addTab(overview_panel_, tr("RISK OVERVIEW"));
 
     // ── Stress Test tab ──────────────────────────────────────────────────────
     auto* stress_w = new QWidget(this);
     auto* stress_layout = new QVBoxLayout(stress_w);
     stress_layout->setContentsMargins(12, 8, 12, 8);
 
-    auto* stress_title = new QLabel("PORTFOLIO STRESS TESTING");
+    auto* stress_title = new QLabel(tr("PORTFOLIO STRESS TESTING"));
     stress_title->setStyleSheet(
         QString("color:%1; font-size:12px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     stress_layout->addWidget(stress_title);
 
-    auto* stress_note = new QLabel("Estimated impact of historical and hypothetical market scenarios");
+    auto* stress_note = new QLabel(tr("Estimated impact of historical and hypothetical market scenarios"));
     stress_note->setStyleSheet(QString("color:%1; font-size:9px;").arg(ui::colors::TEXT_TERTIARY()));
     stress_layout->addWidget(stress_note);
 
     stress_table_ = new QTableWidget;
     stress_table_->setColumnCount(5);
-    stress_table_->setHorizontalHeaderLabels({"SCENARIO", "DESCRIPTION", "EQUITY SHOCK", "PORTFOLIO IMPACT", "LOSS"});
+    stress_table_->setHorizontalHeaderLabels({tr("SCENARIO"), tr("DESCRIPTION"), tr("EQUITY SHOCK"), tr("PORTFOLIO IMPACT"), tr("LOSS")});
     stress_table_->setSelectionMode(QAbstractItemView::NoSelection);
     stress_table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     stress_table_->setShowGrid(false);
@@ -92,14 +92,14 @@ void RiskManagementView::build_ui() {
                                      .arg(ui::colors::BG_BASE(), ui::colors::TEXT_PRIMARY(), ui::colors::BORDER_DIM(),
                                           ui::colors::BG_SURFACE(), ui::colors::TEXT_SECONDARY(), ui::colors::AMBER()));
     stress_layout->addWidget(stress_table_, 1);
-    tabs_->addTab(stress_w, "STRESS TEST");
+    tabs_->addTab(stress_w, tr("STRESS TEST"));
 
     // ── Risk Contribution tab ────────────────────────────────────────────────
     auto* contrib_w = new QWidget(this);
     auto* contrib_layout = new QVBoxLayout(contrib_w);
     contrib_layout->setContentsMargins(12, 8, 12, 8);
 
-    auto* contrib_title = new QLabel("RISK CONTRIBUTION BY HOLDING");
+    auto* contrib_title = new QLabel(tr("RISK CONTRIBUTION BY HOLDING"));
     contrib_title->setStyleSheet(
         QString("color:%1; font-size:12px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     contrib_layout->addWidget(contrib_title);
@@ -107,7 +107,7 @@ void RiskManagementView::build_ui() {
     contrib_table_ = new QTableWidget;
     contrib_table_->setColumnCount(6);
     contrib_table_->setHorizontalHeaderLabels(
-        {"SYMBOL", "WEIGHT", "VOL PROXY", "RISK CONTRIB", "VAR CONTRIB", "CONCENTRATION"});
+        {tr("SYMBOL"), tr("WEIGHT"), tr("VOL PROXY"), tr("RISK CONTRIB"), tr("VAR CONTRIB"), tr("CONCENTRATION")});
     contrib_table_->setSelectionMode(QAbstractItemView::NoSelection);
     contrib_table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     contrib_table_->setShowGrid(false);
@@ -121,7 +121,7 @@ void RiskManagementView::build_ui() {
                                       .arg(ui::colors::BG_BASE(), ui::colors::TEXT_PRIMARY(), ui::colors::BORDER_DIM(),
                                            ui::colors::BG_SURFACE(), ui::colors::TEXT_SECONDARY(), ui::colors::AMBER()));
     contrib_layout->addWidget(contrib_table_, 1);
-    tabs_->addTab(contrib_w, "RISK CONTRIBUTION");
+    tabs_->addTab(contrib_w, tr("RISK CONTRIBUTION"));
 
     layout->addWidget(tabs_);
 }
@@ -147,7 +147,7 @@ void RiskManagementView::update_overview() {
     layout->setContentsMargins(16, 12, 16, 12);
     layout->setSpacing(12);
 
-    auto* title = new QLabel("PORTFOLIO RISK OVERVIEW");
+    auto* title = new QLabel(tr("PORTFOLIO RISK OVERVIEW"));
     title->setStyleSheet(
         QString("color:%1; font-size:12px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     layout->addWidget(title);
@@ -223,23 +223,23 @@ void RiskManagementView::update_overview() {
 
     auto fmt = [](double v, int dp = 2) { return QString::number(v, 'f', dp); };
 
-    add_card(0, 0, "PORTFOLIO VALUE", QString("%1 %2").arg(currency_, fmt(total_mv)), ui::colors::WARNING,
-             "Total market value");
-    add_card(0, 1, "ANNUALIZED VOLATILITY", QString("%1%").arg(fmt(ann_vol, 1)), ui::colors::AMBER,
-             "Based on day-change proxy");
-    add_card(0, 2, "VALUE AT RISK (95%)", QString("%1 %2").arg(currency_, fmt(var95)), ui::colors::NEGATIVE,
-             "1-day parametric");
-    add_card(0, 3, "CONDITIONAL VaR", QString("%1 %2").arg(currency_, fmt(cvar95)), ui::colors::NEGATIVE,
-             "Expected shortfall");
+    add_card(0, 0, tr("PORTFOLIO VALUE"), QString("%1 %2").arg(currency_, fmt(total_mv)), ui::colors::WARNING,
+             tr("Total market value"));
+    add_card(0, 1, tr("ANNUALIZED VOLATILITY"), QString("%1%").arg(fmt(ann_vol, 1)), ui::colors::AMBER,
+             tr("Based on day-change proxy"));
+    add_card(0, 2, tr("VALUE AT RISK (95%)"), QString("%1 %2").arg(currency_, fmt(var95)), ui::colors::NEGATIVE,
+             tr("1-day parametric"));
+    add_card(0, 3, tr("CONDITIONAL VaR"), QString("%1 %2").arg(currency_, fmt(cvar95)), ui::colors::NEGATIVE,
+             tr("Expected shortfall"));
 
-    add_card(1, 0, "TOP HOLDING CONC.", QString("%1%").arg(fmt(conc_top1, 1)),
-             conc_top1 > 30 ? ui::colors::NEGATIVE : ui::colors::POSITIVE, "Largest position");
-    add_card(1, 1, "TOP 3 CONCENTRATION", QString("%1%").arg(fmt(conc_top3, 1)),
-             conc_top3 > 60 ? ui::colors::NEGATIVE : ui::colors::WARNING, "Sum of top 3");
-    add_card(1, 2, "TOP 5 CONCENTRATION", QString("%1%").arg(fmt(conc_top5, 1)), ui::colors::CYAN, "Sum of top 5");
-    add_card(1, 3, "DIVERSIFICATION", QString("%1 holdings").arg(summary_.total_positions),
+    add_card(1, 0, tr("TOP HOLDING CONC."), QString("%1%").arg(fmt(conc_top1, 1)),
+             conc_top1 > 30 ? ui::colors::NEGATIVE : ui::colors::POSITIVE, tr("Largest position"));
+    add_card(1, 1, tr("TOP 3 CONCENTRATION"), QString("%1%").arg(fmt(conc_top3, 1)),
+             conc_top3 > 60 ? ui::colors::NEGATIVE : ui::colors::WARNING, tr("Sum of top 3"));
+    add_card(1, 2, tr("TOP 5 CONCENTRATION"), QString("%1%").arg(fmt(conc_top5, 1)), ui::colors::CYAN, tr("Sum of top 5"));
+    add_card(1, 3, tr("DIVERSIFICATION"), tr("%1 holdings").arg(summary_.total_positions),
              summary_.total_positions >= 10 ? ui::colors::POSITIVE : ui::colors::WARNING,
-             summary_.total_positions >= 10 ? "Well diversified" : "Consider adding more");
+             summary_.total_positions >= 10 ? tr("Well diversified") : tr("Consider adding more"));
 
     layout->addLayout(grid);
     layout->addStretch();
@@ -361,7 +361,7 @@ void RiskManagementView::update_contribution() {
         const char* conc_color = h.weight > 20   ? ui::colors::NEGATIVE
                                  : h.weight > 10 ? ui::colors::WARNING
                                                  : ui::colors::POSITIVE;
-        QString conc_text = h.weight > 20 ? "HIGH" : h.weight > 10 ? "MEDIUM" : "LOW";
+        QString conc_text = h.weight > 20 ? tr("HIGH") : h.weight > 10 ? tr("MEDIUM") : tr("LOW");
         set_cell(5, conc_text, conc_color);
     }
 }

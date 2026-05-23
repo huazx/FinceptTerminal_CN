@@ -1,6 +1,8 @@
 #include "screens/dashboard/widgets/WatchlistWidget.h"
 
+#include "screens/markets/MarketPanelConfig.h"
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #    include "datahub/DataHub.h"
 #    include "datahub/DataHubMetaTypes.h"
@@ -10,7 +12,7 @@
 namespace fincept::screens::widgets {
 
 WatchlistWidget::WatchlistWidget(QWidget* parent)
-    : BaseWidget("WATCHLIST", parent, ui::colors::INFO),
+    : BaseWidget(QCoreApplication::translate("WatchlistWidget", "WATCHLIST"), parent, ui::colors::INFO),
       symbols_({"AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META", "JPM"}) {
 
     auto* vl = content_layout();
@@ -21,13 +23,13 @@ WatchlistWidget::WatchlistWidget(QWidget* parent)
     irl->setContentsMargins(4, 4, 4, 4);
     irl->setSpacing(4);
 
-    symbols_label_ = new QLabel("SYMBOLS:");
+    symbols_label_ = new QLabel(QCoreApplication::translate("WatchlistWidget", "SYMBOLS:"));
     irl->addWidget(symbols_label_);
 
     symbols_input_ = new QLineEdit(symbols_.join(", "));
     irl->addWidget(symbols_input_, 1);
 
-    go_btn_ = new QPushButton("GO");
+    go_btn_ = new QPushButton(QCoreApplication::translate("WatchlistWidget", "GO"));
     go_btn_->setFixedWidth(32);
     connect(go_btn_, &QPushButton::clicked, this, [this]() {
         QString text = symbols_input_->text().trimmed().toUpper();
@@ -48,7 +50,7 @@ WatchlistWidget::WatchlistWidget(QWidget* parent)
 
     // Table
     table_ = new ui::DataTable;
-    table_->set_headers({"SYMBOL", "PRICE", "CHG", "CHG%"});
+    table_->set_headers({QCoreApplication::translate("WatchlistWidget", "SYMBOL"), QCoreApplication::translate("WatchlistWidget", "PRICE"), QCoreApplication::translate("WatchlistWidget", "CHG"), QCoreApplication::translate("WatchlistWidget", "CHG%")});
     table_->set_column_widths({100, 90, 80, 70});
     vl->addWidget(table_);
 
@@ -137,7 +139,7 @@ void WatchlistWidget::render_from_cache() {
         if (it == row_cache_.constEnd())
             continue;
         const auto& q = it.value();
-        table_->add_row({q.symbol, QString("$%1").arg(q.price, 0, 'f', 2),
+        table_->add_row({market_symbol_display_name(q.symbol), QString("$%1").arg(q.price, 0, 'f', 2),
                          QString("%1%2").arg(q.change >= 0 ? "+" : "").arg(q.change, 0, 'f', 2),
                          QString("%1%2%").arg(q.change_pct >= 0 ? "+" : "").arg(q.change_pct, 0, 'f', 2)});
         int row = table_->rowCount() - 1;
@@ -151,7 +153,7 @@ void WatchlistWidget::populate(const QVector<services::QuoteData>& quotes) {
     table_->clear_data();
 
     for (const auto& q : quotes) {
-        table_->add_row({q.symbol, QString("$%1").arg(q.price, 0, 'f', 2),
+        table_->add_row({market_symbol_display_name(q.symbol), QString("$%1").arg(q.price, 0, 'f', 2),
                          QString("%1%2").arg(q.change >= 0 ? "+" : "").arg(q.change, 0, 'f', 2),
                          QString("%1%2%").arg(q.change_pct >= 0 ? "+" : "").arg(q.change_pct, 0, 'f', 2)});
         int row = table_->rowCount() - 1;

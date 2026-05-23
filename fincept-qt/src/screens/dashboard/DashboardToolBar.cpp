@@ -48,17 +48,17 @@ DashboardToolBar::DashboardToolBar(QWidget* parent) : QWidget(parent) {
         layout->addWidget(s);
     };
 
-    auto* brand = new QLabel("FINCEPT");
+    auto* brand = new QLabel(tr("FINCEPT"));
     brand->setObjectName("dtBrand");
     ll->addWidget(brand);
 
-    auto* sub = new QLabel("TERMINAL");
+    auto* sub = new QLabel(tr("TERMINAL"));
     sub->setObjectName("dtSub");
     ll->addWidget(sub);
 
     make_sep(ll);
 
-    status_text_ = new QLabel("LIVE");
+    status_text_ = new QLabel(tr("LIVE"));
     status_text_->setObjectName("dtStatus");
     ll->addWidget(status_text_);
 
@@ -71,7 +71,7 @@ DashboardToolBar::DashboardToolBar(QWidget* parent) : QWidget(parent) {
 
     make_sep(ll);
 
-    widget_count_ = new QLabel("0 WIDGETS");
+    widget_count_ = new QLabel(tr("0 WIDGETS"));
     widget_count_->setObjectName("dtWidgetCount");
     ll->addWidget(widget_count_);
 
@@ -86,13 +86,13 @@ DashboardToolBar::DashboardToolBar(QWidget* parent) : QWidget(parent) {
     rl->setContentsMargins(0, 0, 0, 0);
     rl->setSpacing(4);
 
-    compact_btn_ = new QPushButton("COMPACT");
+    compact_btn_ = new QPushButton(tr("COMPACT"));
     compact_btn_->setFixedHeight(20);
     compact_btn_->setObjectName("dtBtn");
     connect(compact_btn_, &QPushButton::clicked, this, &DashboardToolBar::toggle_compact_clicked);
     rl->addWidget(compact_btn_);
 
-    pulse_btn_ = new QPushButton("PULSE");
+    pulse_btn_ = new QPushButton(tr("PULSE"));
     pulse_btn_->setFixedHeight(20);
     pulse_btn_->setObjectName("dtBtn");
     connect(pulse_btn_, &QPushButton::clicked, this, &DashboardToolBar::toggle_pulse_clicked);
@@ -100,26 +100,26 @@ DashboardToolBar::DashboardToolBar(QWidget* parent) : QWidget(parent) {
 
     make_sep(rl);
 
-    auto* refresh_btn = new QPushButton("REFRESH");
+    auto* refresh_btn = new QPushButton(tr("REFRESH"));
     refresh_btn->setFixedHeight(20);
     refresh_btn->setObjectName("dtBtn");
-    refresh_btn->setToolTip(QStringLiteral("Force-refresh all live data on the dashboard"));
+    refresh_btn->setToolTip(tr("Force-refresh all live data on the dashboard"));
     connect(refresh_btn, &QPushButton::clicked, this, &DashboardToolBar::refresh_clicked);
     rl->addWidget(refresh_btn);
 
-    auto* add_btn = new QPushButton("+ ADD");
+    auto* add_btn = new QPushButton(tr("+ ADD"));
     add_btn->setFixedHeight(20);
     add_btn->setObjectName("dtAddBtn");
     connect(add_btn, &QPushButton::clicked, this, &DashboardToolBar::add_widget_clicked);
     rl->addWidget(add_btn);
 
-    auto* save_btn = new QPushButton("SAVE");
+    auto* save_btn = new QPushButton(tr("SAVE"));
     save_btn->setFixedHeight(20);
     save_btn->setObjectName("dtBtn");
     connect(save_btn, &QPushButton::clicked, this, &DashboardToolBar::save_layout_clicked);
     rl->addWidget(save_btn);
 
-    auto* reset_btn = new QPushButton("RESET");
+    auto* reset_btn = new QPushButton(tr("RESET"));
     reset_btn->setFixedHeight(20);
     reset_btn->setObjectName("dtResetBtn");
     connect(reset_btn, &QPushButton::clicked, this, &DashboardToolBar::reset_layout_clicked);
@@ -201,15 +201,26 @@ void DashboardToolBar::showEvent(QShowEvent* event) {
 }
 
 void DashboardToolBar::update_clock() {
-    clock_label_->setText(QDateTime::currentDateTimeUtc().toString("yyyy-MM-dd HH:mm:ss") + " UTC");
+    auto now = QDateTime::currentDateTimeUtc();
+    QString weekday;
+    switch (now.date().dayOfWeek()) {
+        case 1: weekday = tr("周一"); break;
+        case 2: weekday = tr("周二"); break;
+        case 3: weekday = tr("周三"); break;
+        case 4: weekday = tr("周四"); break;
+        case 5: weekday = tr("周五"); break;
+        case 6: weekday = tr("周六"); break;
+        case 7: weekday = tr("周日"); break;
+    }
+    clock_label_->setText(now.toString(QStringLiteral("yyyy年MM月dd日")) + weekday + now.toString(QStringLiteral(" HH:mm:ss")) + tr(" UTC"));
 }
 
 void DashboardToolBar::set_widget_count(int count) {
-    widget_count_->setText(QString("%1 WIDGETS").arg(count));
+    widget_count_->setText(tr("%1 WIDGETS").arg(count));
 }
 
 void DashboardToolBar::set_connected(bool connected) {
-    status_text_->setText(connected ? "LIVE" : "OFFLINE");
+    status_text_->setText(connected ? tr("LIVE") : tr("OFFLINE"));
     // refresh_theme handles the base color; override just this label dynamically
     status_text_->setStyleSheet(QString("color:%1;font-weight:bold;background:transparent;")
                                     .arg(connected ? ui::colors::POSITIVE() : ui::colors::NEGATIVE()));

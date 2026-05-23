@@ -1,6 +1,7 @@
 #include "screens/dashboard/widgets/StockQuoteWidget.h"
 
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #    include "datahub/DataHub.h"
 #    include "datahub/DataHubMetaTypes.h"
@@ -10,7 +11,7 @@
 namespace fincept::screens::widgets {
 
 StockQuoteWidget::StockQuoteWidget(const QString& symbol, QWidget* parent)
-    : BaseWidget(QString("QUOTE: %1").arg(symbol.toUpper()), parent), symbol_(symbol.toUpper()) {
+    : BaseWidget(QCoreApplication::translate("StockQuoteWidget", "QUOTE: %1").arg(symbol.toUpper()), parent), symbol_(symbol.toUpper()) {
     auto* vl = content_layout();
     vl->setContentsMargins(12, 8, 12, 8);
     vl->setSpacing(8);
@@ -72,11 +73,11 @@ StockQuoteWidget::StockQuoteWidget(const QString& symbol, QWidget* parent)
         gl->addWidget(cell, row, col);
     };
 
-    make_stat(0, 0, "OPEN", open_val_);
-    make_stat(0, 1, "PREV CLOSE", prev_val_);
-    make_stat(1, 0, "HIGH", high_val_);
-    make_stat(1, 1, "LOW", low_val_);
-    make_stat(2, 0, "VOLUME", volume_val_);
+    make_stat(0, 0, QCoreApplication::translate("StockQuoteWidget", "OPEN"), open_val_);
+    make_stat(0, 1, QCoreApplication::translate("StockQuoteWidget", "PREV CLOSE"), prev_val_);
+    make_stat(1, 0, QCoreApplication::translate("StockQuoteWidget", "HIGH"), high_val_);
+    make_stat(1, 1, QCoreApplication::translate("StockQuoteWidget", "LOW"), low_val_);
+    make_stat(2, 0, QCoreApplication::translate("StockQuoteWidget", "VOLUME"), volume_val_);
 
     vl->addWidget(stats);
     vl->addStretch();

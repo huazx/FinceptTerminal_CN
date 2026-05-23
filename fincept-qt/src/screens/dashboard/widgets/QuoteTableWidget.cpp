@@ -1,9 +1,11 @@
 #include "screens/dashboard/widgets/QuoteTableWidget.h"
 
+#include "screens/markets/MarketPanelConfig.h"
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
-#    include "datahub/DataHub.h"
-#    include "datahub/DataHubMetaTypes.h"
+#include "datahub/DataHub.h"
+#include "datahub/DataHubMetaTypes.h"
 
 #include <cmath>
 
@@ -17,15 +19,13 @@ QuoteTableWidget::QuoteTableWidget(const QString& title, const QStringList& symb
       label_map_(label_map),
       price_decimals_(price_decimals) {
     table_ = new ui::DataTable;
-    table_->set_headers({"SYMBOL", "PRICE", "CHG", "CHG%"});
+    table_->set_headers({QCoreApplication::translate("QuoteTableWidget", "SYMBOL"), QCoreApplication::translate("QuoteTableWidget", "PRICE"), QCoreApplication::translate("QuoteTableWidget", "CHG"), QCoreApplication::translate("QuoteTableWidget", "CHG%")});
     table_->set_column_widths({130, 100, 80, 70});
     content_layout()->addWidget(table_);
 
     connect(this, &BaseWidget::refresh_requested, this, &QuoteTableWidget::refresh_data);
 
     apply_styles();
-    set_loading(true);
-
 }
 
 void QuoteTableWidget::apply_styles() {
@@ -67,8 +67,9 @@ void QuoteTableWidget::hub_subscribe_all() {
     for (const auto& sym : symbols_) {
         const QString topic = QStringLiteral("market:quote:") + sym;
         hub.subscribe(this, topic, [this, sym](const QVariant& v) {
-            if (!v.canConvert<services::QuoteData>())
+            if (!v.canConvert<services::QuoteData>()) {
                 return;
+            }
             row_cache_.insert(sym, v.value<services::QuoteData>());
             set_loading_progress(row_cache_.size(), symbols_.size());
             render_from_cache();
@@ -91,7 +92,7 @@ void QuoteTableWidget::render_from_cache() {
         if (it == row_cache_.constEnd())
             continue;
         const auto& q = it.value();
-        QString display_name = label_map_.value(q.symbol, q.symbol);
+        QString display_name = label_map_.value(q.symbol, market_symbol_display_name(q.symbol));
         QString price_str = QString::number(q.price, 'f', price_decimals_);
         double chg_abs = q.change;
         QString chg_str = QString("%1%2").arg(chg_abs >= 0 ? "+" : "").arg(chg_abs, 0, 'f', price_decimals_);
@@ -109,7 +110,7 @@ void QuoteTableWidget::populate(const QVector<services::QuoteData>& quotes) {
     table_->clear_data();
 
     for (const auto& q : quotes) {
-        QString display_name = label_map_.value(q.symbol, q.symbol);
+        QString display_name = label_map_.value(q.symbol, market_symbol_display_name(q.symbol));
         QString price_str = QString::number(q.price, 'f', price_decimals_);
         double chg_abs = q.change;
         QString chg_str = QString("%1%2").arg(chg_abs >= 0 ? "+" : "").arg(chg_abs, 0, 'f', price_decimals_);

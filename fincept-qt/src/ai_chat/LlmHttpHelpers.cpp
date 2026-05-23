@@ -55,12 +55,26 @@ LlmService::HttpResult LlmService::eventloop_request(const QString& method, cons
     timer.start(timeout_ms);
     QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    QObject::connect(&nam, &QNetworkAccessManager::authenticationRequired,
+                     &loop, [&loop](QNetworkReply* reply, QAuthenticator* authenticator) {
+        Q_UNUSED(authenticator)
+        reply->abort();
+        loop.quit();
+    });
     loop.exec();
 
     if (!reply->isFinished()) {
         reply->abort();
         reply->deleteLater();
         result.error = "Request timed out";
+        return result;
+    }
+
+    if (reply->error() == QNetworkReply::AuthenticationRequiredError) {
+        result.status = 401;
+        result.error = "Authentication failed: API key is missing or invalid. "
+                       "Please check your API key in LLM settings.";
+        reply->deleteLater();
         return result;
     }
 

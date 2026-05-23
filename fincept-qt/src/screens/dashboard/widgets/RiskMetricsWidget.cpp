@@ -1,6 +1,8 @@
 #include "screens/dashboard/widgets/RiskMetricsWidget.h"
 
+#include "screens/markets/MarketPanelConfig.h"
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #    include "datahub/DataHub.h"
 #    include "datahub/DataHubMetaTypes.h"
@@ -16,7 +18,7 @@ namespace fincept::screens::widgets {
 static const QStringList kRiskSymbols = {"^VIX", "SPY", "QQQ",  "IWM",  "TLT", "NVDA",
                                          "TSLA", "AMD", "META", "PLTR", "COIN"};
 
-RiskMetricsWidget::RiskMetricsWidget(QWidget* parent) : BaseWidget("RISK METRICS", parent, ui::colors::NEGATIVE()) {
+RiskMetricsWidget::RiskMetricsWidget(QWidget* parent) : BaseWidget(QCoreApplication::translate("RiskMetricsWidget", "RISK METRICS"), parent, ui::colors::NEGATIVE()) {
     auto* vl = content_layout();
     vl->setContentsMargins(8, 8, 8, 8);
     vl->setSpacing(6);
@@ -28,7 +30,7 @@ RiskMetricsWidget::RiskMetricsWidget(QWidget* parent) : BaseWidget("RISK METRICS
     vcl->setSpacing(4);
 
     auto* vix_header = new QHBoxLayout;
-    vix_header_lbl_ = new QLabel("VIX FEAR GAUGE");
+    vix_header_lbl_ = new QLabel(QCoreApplication::translate("RiskMetricsWidget", "VIX FEAR GAUGE"));
     vix_header->addWidget(vix_header_lbl_);
     vix_header->addStretch();
 
@@ -65,7 +67,7 @@ RiskMetricsWidget::RiskMetricsWidget(QWidget* parent) : BaseWidget("RISK METRICS
     vl->addWidget(sep1_);
 
     // ── Volatile stocks section ──
-    stocks_hdr_ = new QLabel("HIGH-BETA STOCKS");
+    stocks_hdr_ = new QLabel(QCoreApplication::translate("RiskMetricsWidget", "HIGH-BETA STOCKS"));
     vl->addWidget(stocks_hdr_);
 
     static const QStringList kVolatile = {"NVDA", "TSLA", "AMD", "META", "PLTR", "COIN"};
@@ -75,8 +77,8 @@ RiskMetricsWidget::RiskMetricsWidget(QWidget* parent) : BaseWidget("RISK METRICS
         rl->setContentsMargins(0, 2, 0, 2);
 
         StockRisk sr;
-        sr.symbol = new QLabel(sym);
-        sr.symbol->setFixedWidth(48);
+        sr.symbol = new QLabel(market_symbol_display_name(sym));
+        sr.symbol->setFixedWidth(64);
         rl->addWidget(sr.symbol);
 
         sr.chg_pct = new QLabel("--");
@@ -96,7 +98,7 @@ RiskMetricsWidget::RiskMetricsWidget(QWidget* parent) : BaseWidget("RISK METRICS
     sep2_->setFixedHeight(1);
     vl->addWidget(sep2_);
 
-    corr_hdr_ = new QLabel("SPREAD PROXIES");
+    corr_hdr_ = new QLabel(QCoreApplication::translate("RiskMetricsWidget", "SPREAD PROXIES"));
     vl->addWidget(corr_hdr_);
 
     auto make_spread_row = [&](const QString& label, QLabel*& out) {
@@ -112,9 +114,9 @@ RiskMetricsWidget::RiskMetricsWidget(QWidget* parent) : BaseWidget("RISK METRICS
         vl->addWidget(row);
     };
 
-    make_spread_row("SPY vs QQQ spread", spy_qqq_spread_);
-    make_spread_row("SPY vs IWM spread", spy_iwm_spread_);
-    make_spread_row("Equity/Bond (SPY-TLT)", equity_bond_lbl_);
+    make_spread_row(QCoreApplication::translate("RiskMetricsWidget", "SPY vs QQQ spread"), spy_qqq_spread_);
+    make_spread_row(QCoreApplication::translate("RiskMetricsWidget", "SPY vs IWM spread"), spy_iwm_spread_);
+    make_spread_row(QCoreApplication::translate("RiskMetricsWidget", "Equity/Bond (SPY-TLT)"), equity_bond_lbl_);
 
     vl->addStretch();
 
@@ -250,19 +252,19 @@ void RiskMetricsWidget::populate(const QVector<services::QuoteData>& quotes) {
         vix_value_->setText(QString::number(vix, 'f', 2));
         QString regime, color;
         if (vix < 15) {
-            regime = "LOW VOLATILITY";
+            regime = QCoreApplication::translate("RiskMetricsWidget", "LOW VOLATILITY");
             color = ui::colors::POSITIVE();
         } else if (vix < 20) {
-            regime = "NORMAL";
+            regime = QCoreApplication::translate("RiskMetricsWidget", "NORMAL");
             color = ui::colors::TEXT_PRIMARY();
         } else if (vix < 30) {
-            regime = "ELEVATED";
+            regime = QCoreApplication::translate("RiskMetricsWidget", "ELEVATED");
             color = ui::colors::WARNING();
         } else if (vix < 40) {
-            regime = "HIGH STRESS";
+            regime = QCoreApplication::translate("RiskMetricsWidget", "HIGH STRESS");
             color = ui::colors::NEGATIVE();
         } else {
-            regime = "EXTREME FEAR";
+            regime = QCoreApplication::translate("RiskMetricsWidget", "EXTREME FEAR");
             color = ui::colors::NEGATIVE();
         }
         vix_value_->setStyleSheet(

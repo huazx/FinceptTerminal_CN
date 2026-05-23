@@ -6,6 +6,7 @@
 #include "trading/BrokerTopic.h"
 #include "trading/DataStreamManager.h"
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #include <QComboBox>
 #include <QDialog>
@@ -29,7 +30,7 @@ QString fmt_pnl(double v) {
 } // namespace
 
 TodayPnLWidget::TodayPnLWidget(const QJsonObject& cfg, QWidget* parent)
-    : BaseWidget("TODAY P&L", parent) {
+    : BaseWidget(QCoreApplication::translate("TodayPnLWidget", "TODAY P&L"), parent) {
     auto* vl = content_layout();
     vl->setContentsMargins(10, 8, 10, 8);
     vl->setSpacing(6);
@@ -57,9 +58,9 @@ TodayPnLWidget::TodayPnLWidget(const QJsonObject& cfg, QWidget* parent)
         grid->addWidget(value_out, row, 1);
     };
 
-    make_row(0, "Day", day_pnl_label_, day_pnl_value_);
-    make_row(1, "Realized", realized_pnl_label_, realized_pnl_value_);
-    make_row(2, "Positions", positions_label_, positions_value_);
+    make_row(0, QCoreApplication::translate("TodayPnLWidget", "Day"), day_pnl_label_, day_pnl_value_);
+    make_row(1, QCoreApplication::translate("TodayPnLWidget", "Realized"), realized_pnl_label_, realized_pnl_value_);
+    make_row(2, QCoreApplication::translate("TodayPnLWidget", "Positions"), positions_label_, positions_value_);
 
     vl->addLayout(grid);
     vl->addStretch(1);
@@ -87,7 +88,7 @@ void TodayPnLWidget::apply_config(const QJsonObject& cfg) {
         broker_id_ = acct.broker_id;
         header_hint_->setText(acct.display_name.isEmpty() ? account_id_ : acct.display_name);
     } else {
-        header_hint_->setText("No active account — click gear to configure");
+        header_hint_->setText(QCoreApplication::translate("TodayPnLWidget", "No active account — click gear to configure"));
     }
 
     if (isVisible() && !broker_id_.isEmpty() && !account_id_.isEmpty()) {
@@ -182,7 +183,7 @@ void TodayPnLWidget::populate(const QVector<trading::BrokerPosition>& rows) {
 
 QDialog* TodayPnLWidget::make_config_dialog(QWidget* parent) {
     auto* dlg = new QDialog(parent);
-    dlg->setWindowTitle("Configure — Today P&L");
+    dlg->setWindowTitle(QCoreApplication::translate("TodayPnLWidget", "Configure — Today P&L"));
     auto* form = new QFormLayout(dlg);
 
     auto* combo = new QComboBox(dlg);
@@ -193,7 +194,7 @@ QDialog* TodayPnLWidget::make_config_dialog(QWidget* parent) {
         if (a.account_id == account_id_)
             combo->setCurrentIndex(combo->count() - 1);
     }
-    form->addRow("Broker account", combo);
+    form->addRow(QCoreApplication::translate("TodayPnLWidget", "Broker account"), combo);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, dlg);
     form->addRow(buttons);

@@ -40,6 +40,9 @@ class ChatModeScreen : public QWidget, public fincept::screens::IStatefulScreen 
     TerminalToolBridge* tool_bridge_ = nullptr;
 
     QString active_session_uuid_;
+    QString last_message_;
+    StreamMode last_mode_ = StreamMode::Lite;
+    bool retrying_after_credit_refresh_ = false;
 
     void build_ui();
     void wire_signals();
@@ -49,6 +52,7 @@ class ChatModeScreen : public QWidget, public fincept::screens::IStatefulScreen 
     void on_delete_session(const QString& uuid);
     void on_rename_session(const QString& uuid, const QString& title);
     void on_send_requested(const QString& message, StreamMode mode);
+    void on_insufficient_credits();
     void ensure_active_session(std::function<void(const QString& uuid)> then);
 };
 

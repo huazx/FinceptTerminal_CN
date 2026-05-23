@@ -104,14 +104,14 @@ void EquityResearchScreen::build_ui() {
     news_tab_ = new EquityNewsTab;
     sentiment_tab_ = new EquitySentimentTab;
 
-    tab_widget_->addTab(overview_tab_, "Overview");
-    tab_widget_->addTab(financials_tab_, "Financials");
-    tab_widget_->addTab(analysis_tab_, "Analysis");
-    tab_widget_->addTab(technicals_tab_, "Technicals");
-    tab_widget_->addTab(talipp_tab_, "TALIpp");
-    tab_widget_->addTab(peers_tab_, "Peers");
-    tab_widget_->addTab(news_tab_, "News");
-    tab_widget_->addTab(sentiment_tab_, "Sentiment");
+    tab_widget_->addTab(overview_tab_, tr("Overview"));
+    tab_widget_->addTab(financials_tab_, tr("Financials"));
+    tab_widget_->addTab(analysis_tab_, tr("Analysis"));
+    tab_widget_->addTab(technicals_tab_, tr("Technicals"));
+    tab_widget_->addTab(talipp_tab_, tr("TALIpp"));
+    tab_widget_->addTab(peers_tab_, tr("Peers"));
+    tab_widget_->addTab(news_tab_, tr("News"));
+    tab_widget_->addTab(sentiment_tab_, tr("Sentiment"));
 
     connect(tab_widget_, &QTabWidget::currentChanged, this, &EquityResearchScreen::on_tab_changed);
 
@@ -128,7 +128,7 @@ QWidget* EquityResearchScreen::build_title_bar() {
     hl->setContentsMargins(16, 8, 16, 8);
     hl->setSpacing(12);
 
-    auto* title = new QLabel("EQUITY RESEARCH");
+    auto* title = new QLabel(tr("EQUITY RESEARCH"));
     title->setStyleSheet(
         QString("color:%1; font-size:14px; font-weight:700; letter-spacing:2px;").arg(ui::colors::AMBER()));
     hl->addWidget(title);
@@ -136,7 +136,7 @@ QWidget* EquityResearchScreen::build_title_bar() {
     symbol_label_ = new QLabel;
     symbol_label_->setStyleSheet(QString("color:%1; font-size:14px; font-weight:600;").arg(ui::colors::TEXT_PRIMARY()));
     symbol_label_->setCursor(Qt::OpenHandCursor);
-    symbol_label_->setToolTip("Drag to broadcast this symbol to any panel");
+    symbol_label_->setToolTip(tr("Drag to broadcast this symbol to any panel"));
     // Drag-out: pull the current symbol from the live member so the filter
     // always ships the most recent ticker, not whatever was loaded at build.
     symbol_dnd::installDragSource(
@@ -147,7 +147,7 @@ QWidget* EquityResearchScreen::build_title_bar() {
 
     hl->addStretch();
 
-    auto* hint = new QLabel("Use /stock, /fund, /index... in command bar to search");
+    auto* hint = new QLabel(tr("Use /stock, /fund, /index... in command bar to search"));
     hint->setStyleSheet(QString("color:%1; font-size:12px;").arg(ui::colors::TEXT_TERTIARY()));
     hl->addWidget(hint);
 

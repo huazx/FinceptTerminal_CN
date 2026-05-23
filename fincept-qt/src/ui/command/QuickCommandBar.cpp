@@ -40,7 +40,7 @@ QuickCommandBar::QuickCommandBar(QWidget* parent) : QFrame(parent) {
     hl->addWidget(prompt);
 
     input_ = new QLineEdit(this);
-    input_->setPlaceholderText("Type a command (e.g. 'layout switch \"Morning\"', AAPL, ?). Esc to dismiss.");
+    input_->setPlaceholderText(tr("输入命令 (如 'layout switch \"Morning\"'，AAPL，?)。Esc 关闭。"));
     connect(input_, &QLineEdit::returnPressed, this, &QuickCommandBar::on_submit);
     hl->addWidget(input_, /*stretch=*/1);
 
@@ -85,7 +85,7 @@ void QuickCommandBar::on_submit() {
         case ParsedCommand::Kind::Empty:
             return;
         case ParsedCommand::Kind::Help:
-            show_hint("Help: type any verb (e.g. 'layout switch') or a ticker (AAPL).", false);
+            show_hint(tr("帮助: 输入任意动词 (如 'layout switch') 或股票代码 (AAPL)。"), false);
             return;
         case ParsedCommand::Kind::Symbol: {
             // Route to link.publish_to_group with the first enabled group
@@ -102,7 +102,7 @@ void QuickCommandBar::on_submit() {
             if (r.is_err()) {
                 show_hint(QString::fromStdString(r.error()), true);
             } else {
-                show_hint(QString("Published %1 to group A").arg(parsed.args.value("symbol").toString()), false);
+                show_hint(tr("Published %1 to group A").arg(parsed.args.value("symbol").toString()), false);
                 input_->clear();
             }
             return;
@@ -120,13 +120,13 @@ void QuickCommandBar::on_submit() {
                     QString::fromStdString(r.error()),
                     "command_bar");
             } else {
-                show_hint(QString("✓ %1").arg(parsed.action_id), false);
+                show_hint(QStringLiteral("✓ ") + parsed.action_id, false);
                 input_->clear();
             }
             return;
         }
         case ParsedCommand::Kind::Unknown:
-            show_hint(parsed.error.isEmpty() ? "Unknown command" : parsed.error, true);
+            show_hint(tr("未知命令"), true);
             return;
     }
 }

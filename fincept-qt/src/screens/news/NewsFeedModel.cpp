@@ -1,6 +1,7 @@
 #include "screens/news/NewsFeedModel.h"
 
 #include "core/logging/Logger.h"
+#include "services/news/NewsNlpService.h"
 #include "services/news/NewsService.h"
 
 #include <QStringList>
@@ -10,6 +11,11 @@ namespace fincept::screens {
 NewsFeedModel::NewsFeedModel(QObject* parent) : QAbstractListModel(parent) {
     qRegisterMetaType<services::NewsArticle>("NewsArticle");
     qRegisterMetaType<services::NewsCluster>("NewsCluster");
+
+    translate_timer_ = new QTimer(this);
+    translate_timer_->setSingleShot(true);
+    translate_timer_->setInterval(kTranslateDelayMs);
+    connect(translate_timer_, &QTimer::timeout, this, &NewsFeedModel::translate_next_batch);
 }
 
 int NewsFeedModel::rowCount(const QModelIndex& parent) const {
@@ -54,6 +60,10 @@ QVariant NewsFeedModel::data(const QModelIndex& index, int role) const {
                 return geo_article_ids_.contains(article.id);
             case PulsePhaseRole:
                 return (!seen_ids_.contains(article.id)) ? pulse_phase_ : -1;
+            case HeadlineZhRole:
+                return headline_zh_cache_.value(article.id);
+            case SummaryZhRole:
+                return summary_zh_cache_.value(article.id);
             // Pre-formatted display strings — no allocation in paint()
             case FormattedSourceRole:
                 return row < formatted_rows_.size() ? formatted_rows_[row].source : QVariant{};
@@ -140,6 +150,8 @@ void NewsFeedModel::set_wire_articles(const QVector<services::NewsArticle>& arti
     }
 
     endResetModel();
+
+    translate_headlines();
 }
 
 void NewsFeedModel::set_clusters(const QVector<services::NewsCluster>& clusters) {
@@ -267,13 +279,98 @@ void NewsFeedModel::set_geo_articles(const QSet<QString>& geolocated_ids) {
 
 void NewsFeedModel::advance_pulse() {
     pulse_phase_ = (pulse_phase_ + 1) % 4;
-    // Only emit for unseen articles (optimization)
     for (int i = 0; i < rowCount(); ++i) {
         QString aid = (view_mode_ == "WIRE" && i < articles_.size())
                           ? articles_[i].id
                           : (i < clusters_.size() ? clusters_[i].lead_article.id : QString());
         if (!aid.isEmpty() && !seen_ids_.contains(aid))
             emit dataChanged(index(i, 0), index(i, 0), {PulsePhaseRole});
+    }
+}
+
+void NewsFeedModel::translate_headlines() {
+    translate_batch_idx_ = 0;
+    translate_next_batch();
+}
+
+void NewsFeedModel::translate_next_batch() {
+    if (translate_in_progress_)
+        return;
+
+    static constexpr int kBatchSize = kTranslateBatchSize;
+    int translated = 0;
+    int started = 0;
+
+    while (translate_batch_idx_ < articles_.size() && started < kBatchSize) {
+        auto& article = articles_[translate_batch_idx_];
+
+        if (headline_zh_cache_.contains(article.id)) {
+            article.headline_zh = headline_zh_cache_[article.id];
+            if (summary_zh_cache_.contains(article.id))
+                article.summary_zh = summary_zh_cache_[article.id];
+            ++translate_batch_idx_;
+            ++translated;
+            continue;
+        }
+
+        bool is_chinese = false;
+        if (!article.headline.isEmpty()) {
+            int cjk = 0;
+            for (const QChar& c : article.headline) {
+                if (c.unicode() >= 0x4e00 && c.unicode() <= 0x9fff)
+                    ++cjk;
+            }
+            is_chinese = (cjk * 100 / article.headline.size()) > 10;
+        }
+
+        if (is_chinese || article.headline.isEmpty()) {
+            headline_zh_cache_[article.id] = article.headline;
+            summary_zh_cache_[article.id] = article.summary;
+            article.headline_zh = article.headline;
+            article.summary_zh = article.summary;
+            ++translate_batch_idx_;
+            ++translated;
+            continue;
+        }
+
+        int row = translate_batch_idx_;
+        QString article_id = article.id;
+        QString headline = article.headline;
+        QString summary = article.summary;
+
+        translate_in_progress_ = true;
+        ++started;
+
+        services::NewsNlpService::instance().translate_article(
+            headline, summary, "zh",
+            [this, article_id, row](bool ok, QString headline_zh, QString summary_zh,
+                                     QString /*detected_lang*/, QString /*translator*/) {
+                translate_in_progress_ = false;
+
+                if (ok && !headline_zh.isEmpty()) {
+                    if (headline_zh_cache_.size() >= kMaxCacheSize) {
+                        auto it = headline_zh_cache_.begin();
+                        headline_zh_cache_.erase(it);
+                    }
+                    headline_zh_cache_[article_id] = headline_zh;
+                    summary_zh_cache_[article_id] = summary_zh;
+
+                    if (row < articles_.size() && articles_[row].id == article_id) {
+                        articles_[row].headline_zh = headline_zh;
+                        articles_[row].summary_zh = summary_zh;
+                        auto idx = index(row, 0);
+                        emit dataChanged(idx, idx, {HeadlineZhRole, SummaryZhRole});
+                    }
+                }
+
+                translate_next_batch();
+            });
+
+        ++translate_batch_idx_;
+    }
+
+    if (translated > 0 && started == 0 && translate_batch_idx_ < articles_.size()) {
+        translate_timer_->start();
     }
 }
 

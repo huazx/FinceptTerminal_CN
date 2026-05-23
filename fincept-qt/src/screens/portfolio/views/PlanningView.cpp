@@ -31,9 +31,9 @@ void PlanningView::build_ui() {
                              .arg(ui::colors::BG_BASE(), ui::colors::BG_SURFACE(), ui::colors::TEXT_SECONDARY(),
                                   ui::colors::AMBER(), ui::colors::TEXT_PRIMARY()));
 
-    tabs_->addTab(build_retirement_tab(), "RETIREMENT");
-    tabs_->addTab(build_goals_tab(), "GOALS");
-    tabs_->addTab(build_savings_tab(), "SAVINGS");
+    tabs_->addTab(build_retirement_tab(), tr("RETIREMENT"));
+    tabs_->addTab(build_goals_tab(), tr("GOALS"));
+    tabs_->addTab(build_savings_tab(), tr("SAVINGS"));
 
     layout->addWidget(tabs_);
 }
@@ -53,7 +53,7 @@ QWidget* PlanningView::build_retirement_tab() {
     input_layout->setContentsMargins(16, 12, 16, 12);
     input_layout->setSpacing(8);
 
-    auto* input_title = new QLabel("RETIREMENT CALCULATOR");
+    auto* input_title = new QLabel(tr("RETIREMENT CALCULATOR"));
     input_title->setStyleSheet(
         QString("color:%1; font-size:11px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     input_layout->addWidget(input_title);
@@ -77,7 +77,7 @@ QWidget* PlanningView::build_retirement_tab() {
     current_age_->setValue(30);
     current_age_->setDecimals(0);
     style_spin(current_age_);
-    auto* l1 = new QLabel("Current Age:");
+    auto* l1 = new QLabel(tr("Current Age:"));
     l1->setStyleSheet(label_style);
     form->addRow(l1, current_age_);
 
@@ -86,7 +86,7 @@ QWidget* PlanningView::build_retirement_tab() {
     retire_age_->setValue(65);
     retire_age_->setDecimals(0);
     style_spin(retire_age_);
-    auto* l2 = new QLabel("Retire Age:");
+    auto* l2 = new QLabel(tr("Retire Age:"));
     l2->setStyleSheet(label_style);
     form->addRow(l2, retire_age_);
 
@@ -96,7 +96,7 @@ QWidget* PlanningView::build_retirement_tab() {
     annual_expense_->setPrefix("$ ");
     annual_expense_->setDecimals(0);
     style_spin(annual_expense_);
-    auto* l3 = new QLabel("Annual Expense:");
+    auto* l3 = new QLabel(tr("Annual Expense:"));
     l3->setStyleSheet(label_style);
     form->addRow(l3, annual_expense_);
 
@@ -106,7 +106,7 @@ QWidget* PlanningView::build_retirement_tab() {
     monthly_contrib_->setPrefix("$ ");
     monthly_contrib_->setDecimals(0);
     style_spin(monthly_contrib_);
-    auto* l4 = new QLabel("Monthly Savings:");
+    auto* l4 = new QLabel(tr("Monthly Savings:"));
     l4->setStyleSheet(label_style);
     form->addRow(l4, monthly_contrib_);
 
@@ -116,7 +116,7 @@ QWidget* PlanningView::build_retirement_tab() {
     expected_return_->setSuffix(" %");
     expected_return_->setDecimals(1);
     style_spin(expected_return_);
-    auto* l5 = new QLabel("Exp. Return:");
+    auto* l5 = new QLabel(tr("Exp. Return:"));
     l5->setStyleSheet(label_style);
     form->addRow(l5, expected_return_);
 
@@ -126,7 +126,7 @@ QWidget* PlanningView::build_retirement_tab() {
     inflation_->setSuffix(" %");
     inflation_->setDecimals(1);
     style_spin(inflation_);
-    auto* l6 = new QLabel("Inflation:");
+    auto* l6 = new QLabel(tr("Inflation:"));
     l6->setStyleSheet(label_style);
     form->addRow(l6, inflation_);
 
@@ -137,13 +137,13 @@ QWidget* PlanningView::build_retirement_tab() {
     withdrawal_rate_->setDecimals(1);
     withdrawal_rate_->setSingleStep(0.5);
     style_spin(withdrawal_rate_);
-    auto* l7 = new QLabel("Withdrawal Rate:");
+    auto* l7 = new QLabel(tr("Withdrawal Rate:"));
     l7->setStyleSheet(label_style);
     form->addRow(l7, withdrawal_rate_);
 
     input_layout->addLayout(form);
 
-    auto* calc_btn = new QPushButton("CALCULATE");
+    auto* calc_btn = new QPushButton(tr("CALCULATE"));
     calc_btn->setFixedHeight(28);
     calc_btn->setCursor(Qt::PointingHandCursor);
     calc_btn->setStyleSheet(
@@ -162,7 +162,7 @@ QWidget* PlanningView::build_retirement_tab() {
     res_layout->setContentsMargins(0, 0, 0, 0);
     res_layout->setSpacing(12);
 
-    auto* res_title = new QLabel("PROJECTION RESULTS");
+    auto* res_title = new QLabel(tr("PROJECTION RESULTS"));
     res_title->setStyleSheet(
         QString("color:%1; font-size:12px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     res_layout->addWidget(res_title);
@@ -190,10 +190,10 @@ QWidget* PlanningView::build_retirement_tab() {
         grid->addWidget(card, r, c);
     };
 
-    add_card(0, 0, "YEARS TO RETIREMENT", years_label_, ui::colors::CYAN);
-    add_card(0, 1, "TARGET NEST EGG", target_label_, ui::colors::WARNING);
-    add_card(1, 0, "PROJECTED VALUE", projected_label_, ui::colors::POSITIVE);
-    add_card(1, 1, "SURPLUS / GAP", gap_label_, ui::colors::TEXT_PRIMARY);
+    add_card(0, 0, tr("YEARS TO RETIREMENT"), years_label_, ui::colors::CYAN);
+    add_card(0, 1, tr("TARGET NEST EGG"), target_label_, ui::colors::WARNING);
+    add_card(1, 0, tr("PROJECTED VALUE"), projected_label_, ui::colors::POSITIVE);
+    add_card(1, 1, tr("SURPLUS / GAP"), gap_label_, ui::colors::TEXT_PRIMARY);
 
     res_layout->addLayout(grid);
 
@@ -214,14 +214,14 @@ QWidget* PlanningView::build_goals_tab() {
     layout->setContentsMargins(16, 12, 16, 12);
     layout->setAlignment(Qt::AlignCenter);
 
-    auto* title = new QLabel("GOAL-BASED PLANNING");
+    auto* title = new QLabel(tr("GOAL-BASED PLANNING"));
     title->setAlignment(Qt::AlignCenter);
     title->setStyleSheet(
         QString("color:%1; font-size:12px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     layout->addWidget(title);
 
-    auto* desc = new QLabel("Define financial goals (house, education, emergency fund)\n"
-                            "and track your progress toward each target.");
+    auto* desc = new QLabel(tr("Define financial goals (house, education, emergency fund)\n"
+                            "and track your progress toward each target."));
     desc->setAlignment(Qt::AlignCenter);
     desc->setWordWrap(true);
     desc->setStyleSheet(QString("color:%1; font-size:11px;").arg(ui::colors::TEXT_TERTIARY()));
@@ -236,14 +236,14 @@ QWidget* PlanningView::build_savings_tab() {
     layout->setContentsMargins(16, 12, 16, 12);
     layout->setAlignment(Qt::AlignCenter);
 
-    auto* title = new QLabel("SAVINGS RATE ANALYSIS");
+    auto* title = new QLabel(tr("SAVINGS RATE ANALYSIS"));
     title->setAlignment(Qt::AlignCenter);
     title->setStyleSheet(
         QString("color:%1; font-size:12px; font-weight:700; letter-spacing:1px;").arg(ui::colors::AMBER()));
     layout->addWidget(title);
 
-    auto* desc = new QLabel("Analyze how different savings rates and contribution schedules\n"
-                            "affect your long-term wealth accumulation.");
+    auto* desc = new QLabel(tr("Analyze how different savings rates and contribution schedules\n"
+                            "affect your long-term wealth accumulation."));
     desc->setAlignment(Qt::AlignCenter);
     desc->setWordWrap(true);
     desc->setStyleSheet(QString("color:%1; font-size:11px;").arg(ui::colors::TEXT_TERTIARY()));
@@ -294,7 +294,7 @@ void PlanningView::recalculate() {
     gap_label_->setStyleSheet(QString("color:%1; font-size:18px; font-weight:700;").arg(gap_color));
 
     if (gap >= 0) {
-        status_label_->setText(QString("\u2713 On track! Your projected retirement fund of %1 %2 "
+        status_label_->setText(tr("\u2713 On track! Your projected retirement fund of %1 %2 "
                                        "exceeds your target of %1 %3 by %1 %4.")
                                    .arg(currency_)
                                    .arg(QString::number(projected, 'f', 0))
@@ -303,7 +303,7 @@ void PlanningView::recalculate() {
         status_label_->setStyleSheet(QString("color:%1; font-size:12px; padding:12px;").arg(ui::colors::POSITIVE()));
     } else {
         double needed_monthly = (-gap) / ((std::pow(1.0 + monthly_rate, months) - 1.0) / monthly_rate);
-        status_label_->setText(QString("\u26A0 Shortfall of %1 %2. Consider increasing monthly savings "
+        status_label_->setText(tr("\u26A0 Shortfall of %1 %2. Consider increasing monthly savings "
                                        "by %1 %3 to close the gap.")
                                    .arg(currency_)
                                    .arg(QString::number(std::abs(gap), 'f', 0))

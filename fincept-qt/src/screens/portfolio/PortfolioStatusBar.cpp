@@ -52,12 +52,12 @@ PortfolioStatusBar::PortfolioStatusBar(QWidget* parent) : QWidget(parent) {
 
     // Live indicator
     live_label_ = make_label(ui::colors::POSITIVE, true);
-    live_label_->setText("\u25CF LIVE");
+    live_label_->setText("\u25CF " + tr("LIVE"));
 
     add_divider();
 
     positions_label_ = make_label(ui::colors::TEXT_SECONDARY);
-    positions_label_->setText("0 positions");
+    positions_label_->setText(tr("0 positions"));
 
     layout->addStretch();
 
@@ -103,7 +103,7 @@ void PortfolioStatusBar::set_summary(const portfolio::PortfolioSummary& s) {
     auto fmt = [](double v) { return QString::number(v, 'f', 2); };
 
     set_portfolio_name(s.portfolio.name);
-    positions_label_->setText(QString("%1 positions").arg(s.total_positions));
+    positions_label_->setText(tr("%1 positions").arg(s.total_positions));
 
     nav_label_->setText(QString("NAV %1 %2").arg(s.portfolio.currency, fmt(s.total_market_value)));
 

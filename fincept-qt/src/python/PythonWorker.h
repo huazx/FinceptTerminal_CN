@@ -12,13 +12,17 @@
 
 namespace fincept::python {
 
-/// Persistent yfinance worker — long-lived Python process running
-/// `yfinance_data.py --daemon`. Avoids the 2–3 second yfinance/pandas import
-/// cost that every `PythonRunner::run()` spawn pays.
+/// Persistent Python worker — long-lived Python process running
+/// `script_name --daemon`. Avoids the import cost that every
+/// `PythonRunner::run()` spawn pays.
 ///
-/// Scope: yfinance_data.py ONLY. Do NOT route agent/framework/numpy1 scripts
-/// through here — those need PythonRunner's per-script venv routing (numpy1
-/// vs numpy2 selection in PythonRunner.cpp::select_venv_for_script).
+/// Currently supports two scripts: yfinance_data.py (default) and
+/// akshare_market_data.py. Use `instance()` for yfinance, `akshare_instance()`
+/// for AkShare. Each maintains its own persistent process.
+///
+/// Do NOT route agent/framework/numpy1 scripts through here — those need
+/// PythonRunner's per-script venv routing (numpy1 vs numpy2 selection in
+/// PythonRunner.cpp::select_venv_for_script).
 ///
 /// Framing: 4-byte big-endian length prefix, UTF-8 JSON body. Matches
 /// `run_daemon()` in scripts/yfinance_data.py.
@@ -35,6 +39,7 @@ class PythonWorker : public QObject {
     using Callback = std::function<void(bool ok, QJsonObject result, QString error)>;
 
     static PythonWorker& instance();
+    static PythonWorker& akshare_instance();
 
     /// True once the daemon has sent its `{"ready": true}` handshake and
     /// is accepting requests. Requests submitted before this queue up and
@@ -51,7 +56,7 @@ class PythonWorker : public QObject {
     void stop();
 
   private:
-    PythonWorker();
+    PythonWorker(const QString& script_name);
     ~PythonWorker() override;
 
     void ensure_started();
@@ -67,6 +72,7 @@ class PythonWorker : public QObject {
     bool ready_ = false;
     bool shutting_down_ = false;
     int restart_count_ = 0;
+    QString script_name_;
     static constexpr int kMaxRestarts = 5;
     static constexpr int kReadyTimeoutMs = 15'000;  // import yfinance+pandas
 

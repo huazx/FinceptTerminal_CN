@@ -1,4 +1,5 @@
 #include "services/markets/MarketDataService.h"
+#include <QCoreApplication>
 
 #include "core/logging/Logger.h"
 #include "python/PythonRunner.h"
@@ -26,6 +27,12 @@ MarketDataService& MarketDataService::instance() {
 }
 
 MarketDataService::MarketDataService() {}
+
+void MarketDataService::set_data_source(MarketDataSource source) {
+    data_source_ = source;
+    LOG_INFO("MarketData", QString("Data source changed to: %1")
+        .arg(source == MarketDataSource::AkShare ? "AkShare" : "YFinance"));
+}
 
 
 // ── DataHub Producer integration ────────────────────────────────────────────
@@ -107,13 +114,132 @@ void MarketDataService::refresh(const QStringList& topics) {
     }
 
     QPointer<MarketDataService> self = this;
+    
+    // Check data source and use appropriate script
+    if (data_source_ == MarketDataSource::AkShare) {
+        // Use AkShare via persistent daemon — same pattern as YFinance
+        LOG_INFO("MarketData", "Using AkShare data source (persistent worker)");
+        python::PythonWorker::akshare_instance().submit(
+            "batch_all", payload,
+            [self, quote_syms, spark_syms, hist_reqs, refresh_t0](bool ok, QJsonObject root, QString err) {
+            if (!self)
+                return;
 
-    // Route via PythonWorker (persistent daemon) instead of PythonRunner so
-    // we don't pay the 2–3s yfinance/pandas import cost per refresh tick. See
-    // PythonWorker docs — scope is yfinance_data.py only.
-    python::PythonWorker::instance().submit(
-        "batch_all", payload,
-        [self, quote_syms, spark_syms, hist_reqs, refresh_t0](bool ok, QJsonObject root, QString err) {
+            const qint64 elapsed = QDateTime::currentMSecsSinceEpoch() - refresh_t0;
+
+            if (!ok) {
+                LOG_WARN("MarketData",
+                         QString("AkShare batch_all failed in %1ms: %2").arg(elapsed).arg(err.left(200)));
+                auto& hub = datahub::DataHub::instance();
+                const QString msg = err.isEmpty()
+                                        ? QStringLiteral("Market data refresh failed")
+                                        : err.left(200);
+                for (const auto& s : quote_syms)
+                    hub.publish_error(QStringLiteral("market:quote:") + s, msg);
+                for (const auto& s : spark_syms)
+                    hub.publish_error(QStringLiteral("market:sparkline:") + s, msg);
+                for (const auto& h : hist_reqs)
+                    hub.publish_error(h.topic, msg);
+                return;
+            }
+                // Process results same as yfinance
+                const QJsonArray quotes_arr = root.value("quotes").toArray();
+                int quotes_ok = 0;
+                for (const auto& v : quotes_arr) {
+                    const QJsonObject q = v.toObject();
+                    if (q.isEmpty() || q.contains("error"))
+                        continue;
+                    QuoteData qd{
+                        q["symbol"].toString(),
+                        q["name"].toString(q["symbol"].toString()),
+                        q["price"].toDouble(),
+                        q["change"].toDouble(),
+                        q["change_percent"].toDouble(),
+                        q["high"].toDouble(),
+                        q["low"].toDouble(),
+                        q["volume"].toDouble()};
+                    QJsonObject co;
+                    co["symbol"] = qd.symbol;
+                    co["name"] = qd.name;
+                    co["price"] = qd.price;
+                    co["change"] = qd.change;
+                    co["change_pct"] = qd.change_pct;
+                    co["high"] = qd.high;
+                    co["low"] = qd.low;
+                    co["volume"] = qd.volume;
+                    fincept::CacheManager::instance().put(
+                        "market:" + qd.symbol,
+                        QVariant(QString::fromUtf8(QJsonDocument(co).toJson(QJsonDocument::Compact))),
+                        kQuoteCacheTtlSec, "market_data");
+                    self->publish_quote_to_hub(qd);
+                    ++quotes_ok;
+                }
+                
+                const QJsonObject sparks = root.value("sparklines").toObject();
+                int sparks_ok = 0;
+                for (auto it = sparks.begin(); it != sparks.end(); ++it) {
+                    const QJsonArray closes = it.value().toArray();
+                    if (closes.isEmpty())
+                        continue;
+                    QVector<double> prices;
+                    prices.reserve(closes.size());
+                    for (const auto& c : closes)
+                        prices.append(c.toDouble());
+                    self->publish_sparkline_to_hub(it.key(), prices);
+                    ++sparks_ok;
+                }
+
+                const QJsonArray hists = root.value("histories").toArray();
+                int hists_ok = 0;
+                for (const auto& hv : hists) {
+                    const QJsonObject h = hv.toObject();
+                    if (h.contains("error"))
+                        continue;
+                    const QString sym = h.value("symbol").toString();
+                    const QString per = h.value("period").toString();
+                    const QString ivl = h.value("interval").toString();
+                    const QJsonArray pts = h.value("points").toArray();
+                    QVector<HistoryPoint> points;
+                    points.reserve(pts.size());
+                    for (const auto& pv : pts) {
+                        const QJsonObject p = pv.toObject();
+                        HistoryPoint pt;
+                        pt.timestamp = static_cast<qint64>(p["timestamp"].toDouble());
+                        pt.open = p["open"].toDouble();
+                        pt.high = p["high"].toDouble();
+                        pt.low = p["low"].toDouble();
+                        pt.close = p["close"].toDouble();
+                        pt.volume = static_cast<qint64>(p["volume"].toDouble());
+                        points.append(pt);
+                    }
+                    self->publish_history_to_hub(sym, per, ivl, points);
+                    ++hists_ok;
+                }
+                
+                LOG_INFO("MarketData", QString("AkShare batch_all completed in %1ms: %2 quotes, %3 sparklines, %4 histories")
+                    .arg(elapsed).arg(quotes_ok).arg(sparks_ok).arg(hists_ok));
+
+                QSet<QString> ak_received;
+                for (const auto& v : root.value("quotes").toArray()) {
+                    const QJsonObject q = v.toObject();
+                    if (!q.isEmpty() && !q.contains("error"))
+                        ak_received.insert(q["symbol"].toString());
+                }
+                for (const auto& s : quote_syms) {
+                    if (!ak_received.contains(s))
+                        datahub::DataHub::instance().publish_error(
+                            QStringLiteral("market:quote:") + s,
+                            QStringLiteral("No data returned"));
+                }
+            });
+    } else {
+        // Use YFinance (default)
+        // Route via PythonWorker (persistent daemon) instead of PythonRunner so
+        // we don't pay the 2–3s yfinance/pandas import cost per refresh tick. See
+        // PythonWorker docs — scope is yfinance_data.py only.
+        python::PythonWorker::instance().submit(
+            "batch_all", payload,
+            [self, quote_syms, spark_syms, hist_reqs, refresh_t0](bool ok, QJsonObject root, QString err) {
             if (!self)
                 return;
 
@@ -228,7 +354,24 @@ void MarketDataService::refresh(const QStringList& topics) {
                          .arg(quotes_ok).arg(quote_syms.size())
                          .arg(sparks_ok).arg(spark_syms.size())
                          .arg(hists_ok).arg(hist_reqs.size()));
-        });
+
+                // Publish errors for symbols that received no data so
+                // subscribers (e.g. MarketPanel) can clear their pending
+                // counters instead of spinning forever.
+                QSet<QString> received;
+                for (const auto& v : quotes_arr) {
+                    const QJsonObject q = v.toObject();
+                    if (!q.isEmpty() && !q.contains("error"))
+                        received.insert(q["symbol"].toString());
+                }
+                for (const auto& s : quote_syms) {
+                    if (!received.contains(s))
+                        datahub::DataHub::instance().publish_error(
+                            QStringLiteral("market:quote:") + s,
+                            QStringLiteral("No data returned"));
+                }
+            });
+    }
 }
 
 void MarketDataService::publish_quote_to_hub(const QuoteData& q) {
@@ -268,6 +411,7 @@ void MarketDataService::ensure_registered_with_hub() {
     datahub::TopicPolicy quote_p;
     quote_p.ttl_ms = 30'000;
     quote_p.min_interval_ms = 2'000;
+    quote_p.refresh_timeout_ms = 60'000;
     quote_p.pause_when_inactive = true;
     hub.set_policy_pattern(QStringLiteral("market:quote:*"), quote_p);
 
@@ -634,18 +778,18 @@ QStringList MarketDataService::global_snapshot_symbols() {
 
 QVector<MarketCategory> MarketDataService::default_global_markets() {
     return {
-        {"Stock Indices",
+        {QCoreApplication::translate("MarketDataService", "Stock Indices"),
          {"^GSPC", "^IXIC", "^DJI", "^RUT", "^VIX", "^FTSE", "^GDAXI", "^N225", "^FCHI", "^HSI", "^AXJO", "^BSESN",
-          "^NSEI", "^STOXX50E", "^NYA", "^SOX", "^IBEX", "^AEX"}},
-        {"Forex",
+          "^NSEI", "^STOXX50E", "^NYA", "^SOX", "^IBEX", "^AEX", "000001", "000300", "399001", "399006"}},
+        {QCoreApplication::translate("MarketDataService", "Forex"),
          {"EURUSD=X", "GBPUSD=X", "USDJPY=X", "USDCHF=X", "USDCAD=X", "AUDUSD=X", "NZDUSD=X", "EURGBP=X", "EURJPY=X",
           "GBPJPY=X", "USDCNY=X", "USDINR=X"}},
-        {"Commodities",
+        {QCoreApplication::translate("MarketDataService", "Commodities"),
          {"GC=F", "SI=F", "PL=F", "PA=F", "HG=F", "CL=F", "BZ=F", "NG=F", "RB=F", "HO=F", "ZC=F", "ZW=F", "ZS=F",
           "KC=F", "CT=F", "SB=F", "CC=F", "LBS=F"}},
-        {"Bonds", {"^TNX", "^TYX", "^IRX", "^FVX", "TLT", "IEF", "SHY", "BND", "AGG", "LQD", "HYG", "JNK"}},
-        {"ETFs", {"SPY", "QQQ", "DIA", "EEM", "GLD", "XLK", "XLE", "XLF", "XLV", "VNQ", "IWM", "VTI"}},
-        {"Cryptocurrencies",
+        {QCoreApplication::translate("MarketDataService", "Bonds"), {"^TNX", "^TYX", "^IRX", "^FVX", "TLT", "IEF", "SHY", "BND", "AGG", "LQD", "HYG", "JNK"}},
+        {QCoreApplication::translate("MarketDataService", "ETFs"), {"SPY", "QQQ", "DIA", "EEM", "GLD", "XLK", "XLE", "XLF", "XLV", "VNQ", "IWM", "VTI"}},
+        {QCoreApplication::translate("MarketDataService", "Cryptocurrencies"),
          {"BTC-USD", "ETH-USD", "BNB-USD", "SOL-USD", "XRP-USD", "ADA-USD", "DOGE-USD", "LINK-USD", "DOT-USD",
           "AVAX-USD", "UNI-USD", "ATOM-USD"}},
     };
@@ -653,7 +797,7 @@ QVector<MarketCategory> MarketDataService::default_global_markets() {
 
 QVector<RegionalMarket> MarketDataService::default_regional_markets() {
     return {
-        {"India",
+        {QCoreApplication::translate("MarketDataService", "India"),
          {
              {"RELIANCE.NS", "Reliance Industries"},
              {"TCS.NS", "Tata Consultancy"},
@@ -668,7 +812,7 @@ QVector<RegionalMarket> MarketDataService::default_regional_markets() {
              {"LT.NS", "Larsen & Toubro"},
              {"WIPRO.NS", "Wipro Limited"},
          }},
-        {"China",
+        {QCoreApplication::translate("MarketDataService", "China"),
          {
              {"BABA", "Alibaba Group"},
              {"PDD", "PDD Holdings"},
@@ -683,7 +827,7 @@ QVector<RegionalMarket> MarketDataService::default_regional_markets() {
              {"VNET", "VNET Group"},
              {"TAL", "TAL Education"},
          }},
-        {"United States",
+        {QCoreApplication::translate("MarketDataService", "United States"),
          {
              {"AAPL", "Apple Inc"},
              {"MSFT", "Microsoft Corp"},

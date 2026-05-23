@@ -1,6 +1,7 @@
 #include "screens/dashboard/widgets/MarketSentimentWidget.h"
 
 #include "ui/theme/Theme.h"
+#include <QCoreApplication>
 
 #    include "datahub/DataHub.h"
 #    include "datahub/DataHubMetaTypes.h"
@@ -14,7 +15,7 @@ inline const QStringList kSentimentSymbols = {
     "CVX",  "COIN", "PLTR", "SOFI",  "NKE",  "PFE",  "PYPL"};
 }
 
-MarketSentimentWidget::MarketSentimentWidget(QWidget* parent) : BaseWidget("MARKET SENTIMENT", parent) {
+MarketSentimentWidget::MarketSentimentWidget(QWidget* parent) : BaseWidget(QCoreApplication::translate("MarketSentimentWidget", "MARKET SENTIMENT"), parent) {
     auto* vl = content_layout();
     vl->setContentsMargins(8, 8, 8, 8);
     vl->setSpacing(8);
@@ -40,7 +41,7 @@ MarketSentimentWidget::MarketSentimentWidget(QWidget* parent) : BaseWidget("MARK
 
     bl->addWidget(score_row);
 
-    verdict_label_ = new QLabel("LOADING...");
+    verdict_label_ = new QLabel(QCoreApplication::translate("MarketSentimentWidget", "LOADING..."));
     verdict_label_->setAlignment(Qt::AlignCenter);
     bl->addWidget(verdict_label_);
 
@@ -69,15 +70,15 @@ MarketSentimentWidget::MarketSentimentWidget(QWidget* parent) : BaseWidget("MARK
     auto* bll = new QHBoxLayout(bar_labels);
     bll->setContentsMargins(0, 0, 0, 0);
 
-    bull_label_ = new QLabel("-- BULL");
+    bull_label_ = new QLabel(QCoreApplication::translate("MarketSentimentWidget", "-- BULL"));
     bll->addWidget(bull_label_);
     bll->addStretch();
 
-    neutral_label_ = new QLabel("-- NEUTRAL");
+    neutral_label_ = new QLabel(QCoreApplication::translate("MarketSentimentWidget", "-- NEUTRAL"));
     bll->addWidget(neutral_label_);
     bll->addStretch();
 
-    bear_label_ = new QLabel("-- BEAR");
+    bear_label_ = new QLabel(QCoreApplication::translate("MarketSentimentWidget", "-- BEAR"));
     bll->addWidget(bear_label_);
 
     vl->addWidget(bar_labels);
@@ -107,8 +108,8 @@ MarketSentimentWidget::MarketSentimentWidget(QWidget* parent) : BaseWidget("MARK
         stl->addWidget(row);
     };
 
-    make_stat_row("VIX (Fear Gauge)", vix_title_label_, vix_label_);
-    make_stat_row("Advance/Decline", breadth_title_label_, breadth_label_);
+    make_stat_row(QCoreApplication::translate("MarketSentimentWidget", "VIX (Fear Gauge)"), vix_title_label_, vix_label_);
+    make_stat_row(QCoreApplication::translate("MarketSentimentWidget", "Advance/Decline"), breadth_title_label_, breadth_label_);
 
     vl->addWidget(stats);
     vl->addStretch();
@@ -253,11 +254,11 @@ void MarketSentimentWidget::populate(const QVector<services::QuoteData>& quotes)
     QString score_color = score > 20    ? ui::colors::POSITIVE()
                           : score < -20 ? ui::colors::NEGATIVE()
                                         : ui::colors::WARNING();
-    QString verdict = score > 40    ? "STRONGLY BULLISH"
-                      : score > 20  ? "BULLISH"
-                      : score > -20 ? "NEUTRAL"
-                      : score > -40 ? "BEARISH"
-                                    : "STRONGLY BEARISH";
+    QString verdict = score > 40    ? QCoreApplication::translate("MarketSentimentWidget", "STRONGLY BULLISH")
+                      : score > 20  ? QCoreApplication::translate("MarketSentimentWidget", "BULLISH")
+                      : score > -20 ? QCoreApplication::translate("MarketSentimentWidget", "NEUTRAL")
+                      : score > -40 ? QCoreApplication::translate("MarketSentimentWidget", "BEARISH")
+                                    : QCoreApplication::translate("MarketSentimentWidget", "STRONGLY BEARISH");
 
     score_label_->setText(QString("%1%2").arg(score > 0 ? "+" : "").arg(score));
     score_label_->setStyleSheet(
@@ -275,9 +276,9 @@ void MarketSentimentWidget::populate(const QVector<services::QuoteData>& quotes)
         bar_layout->setStretch(2, bearish);
     }
 
-    bull_label_->setText(QString("%1 %2 BULL").arg(QChar(0x25B2)).arg(bullish));
-    neutral_label_->setText(QString("%1 NEUTRAL").arg(neutral));
-    bear_label_->setText(QString("%1 %2 BEAR").arg(QChar(0x25BC)).arg(bearish));
+    bull_label_->setText(QString(QCoreApplication::translate("MarketSentimentWidget", "%1 %2 BULL")).arg(QChar(0x25B2)).arg(bullish));
+    neutral_label_->setText(QString(QCoreApplication::translate("MarketSentimentWidget", "%1 NEUTRAL")).arg(neutral));
+    bear_label_->setText(QString(QCoreApplication::translate("MarketSentimentWidget", "%1 %2 BEAR")).arg(QChar(0x25BC)).arg(bearish));
 
     // VIX
     if (vix_price > 0) {

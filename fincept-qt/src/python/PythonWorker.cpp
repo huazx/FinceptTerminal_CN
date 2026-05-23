@@ -32,11 +32,16 @@ QByteArray encode_frame(const QJsonObject& obj) {
 } // namespace
 
 PythonWorker& PythonWorker::instance() {
-    static PythonWorker s;
+    static PythonWorker s("yfinance_data.py");
     return s;
 }
 
-PythonWorker::PythonWorker() {
+PythonWorker& PythonWorker::akshare_instance() {
+    static PythonWorker s("akshare_market_data.py");
+    return s;
+}
+
+PythonWorker::PythonWorker(const QString& script_name) : script_name_(script_name) {
     ready_watchdog_.setSingleShot(true);
     ready_watchdog_.setInterval(kReadyTimeoutMs);
     connect(&ready_watchdog_, &QTimer::timeout, this, [this]() {
@@ -102,9 +107,9 @@ void PythonWorker::ensure_started() {
 void PythonWorker::launch_process() {
     auto& runner = PythonRunner::instance();
     const QString scripts_dir = runner.scripts_dir();
-    const QString script_path = scripts_dir + "/yfinance_data.py";
+    const QString script_path = scripts_dir + "/" + script_name_;
     if (!QFileInfo::exists(script_path)) {
-        LOG_WARN("PythonWorker", "yfinance_data.py not found — worker disabled");
+        LOG_WARN("PythonWorker", QString("%1 not found — worker disabled").arg(script_name_));
         return;
     }
 

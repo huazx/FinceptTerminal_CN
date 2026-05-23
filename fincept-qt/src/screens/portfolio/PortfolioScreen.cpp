@@ -251,7 +251,7 @@ void PortfolioScreen::build_ui() {
     connect(command_bar_, &PortfolioCommandBar::export_csv_requested, this, [this]() {
         if (selected_id_.isEmpty())
             return;
-        QString path = QFileDialog::getSaveFileName(this, "Export CSV", "portfolio.csv", "CSV Files (*.csv)");
+        QString path = QFileDialog::getSaveFileName(this, tr("Export CSV"), "portfolio.csv", "CSV Files (*.csv)");
         if (!path.isEmpty()) {
             services::PortfolioService::instance().export_csv(selected_id_, path);
             services::FileManagerService::instance().import_file(path, "portfolio");
@@ -260,7 +260,7 @@ void PortfolioScreen::build_ui() {
     connect(command_bar_, &PortfolioCommandBar::export_json_requested, this, [this]() {
         if (selected_id_.isEmpty())
             return;
-        QString path = QFileDialog::getSaveFileName(this, "Export JSON", "portfolio.json", "JSON Files (*.json)");
+        QString path = QFileDialog::getSaveFileName(this, tr("Export JSON"), "portfolio.json", "JSON Files (*.json)");
         if (!path.isEmpty()) {
             services::PortfolioService::instance().export_json(selected_id_, path);
             services::FileManagerService::instance().import_file(path, "portfolio");
@@ -297,11 +297,11 @@ void PortfolioScreen::build_ui() {
             [this](portfolio::ImportResult result) {
                 if (result.portfolio_id.isEmpty()) {
                     QString detail = result.errors.isEmpty()
-                                         ? QString("Import failed with no details.")
+                                         ? tr("Import failed with no details.")
                                          : result.errors.join("\n");
-                    QMessageBox::warning(this, "Portfolio Import Failed",
-                                         "Could not import the portfolio.\n\n" + detail +
-                                             "\n\nExpected format:\n"
+                    QMessageBox::warning(this, tr("Portfolio Import Failed"),
+                                         tr("Could not import the portfolio.\n\n") + detail +
+                                             "\n\n" + tr("Expected format:\n"
                                              "{\n"
                                              "  \"portfolio_name\": \"My Portfolio\",\n"
                                              "  \"currency\": \"USD\",\n"
@@ -310,7 +310,7 @@ void PortfolioScreen::build_ui() {
                                              "    {\"date\": \"YYYY-MM-DD\", \"symbol\": \"AAPL\", \"type\": \"BUY\",\n"
                                              "     \"quantity\": 10, \"price\": 150.0}\n"
                                              "  ]\n"
-                                             "}");
+                                             "}"));
                     return;
                 }
                 on_portfolio_selected(result.portfolio_id);
@@ -391,13 +391,13 @@ QWidget* PortfolioScreen::build_empty_state() {
     accent_dot->setStyleSheet(QString("color:%1; font-size:14px; letter-spacing:4px;").arg(ui::colors::AMBER()));
     layout->addWidget(accent_dot);
 
-    auto* title = new QLabel("PORTFOLIO WORKSPACE");
+    auto* title = new QLabel(tr("PORTFOLIO WORKSPACE"));
     title->setAlignment(Qt::AlignCenter);
     title->setStyleSheet(
         QString("color:%1; font-size:18px; font-weight:700; letter-spacing:2px;").arg(ui::colors::TEXT_PRIMARY()));
     layout->addWidget(title);
 
-    auto* sub = new QLabel("Create, import, or explore a sample portfolio to get started.");
+    auto* sub = new QLabel(tr("Create, import, or explore a sample portfolio to get started."));
     sub->setAlignment(Qt::AlignCenter);
     sub->setStyleSheet(QString("color:%1; font-size:12px; letter-spacing:0.2px;").arg(ui::colors::TEXT_SECONDARY()));
     layout->addWidget(sub);
@@ -409,21 +409,21 @@ QWidget* PortfolioScreen::build_empty_state() {
     card_row->setAlignment(Qt::AlignCenter);
     card_row->setSpacing(14);
 
-    auto* create_card = make_cta_card("\u25A2", "CREATE NEW",
-                                      "Start a fresh portfolio. Name it, pick a currency, "
-                                      "and add holdings one at a time.",
+    auto* create_card = make_cta_card("\u25A2", tr("CREATE NEW"),
+                                      tr("Start a fresh portfolio. Name it, pick a currency, "
+                                      "and add holdings one at a time."),
                                       ui::colors::AMBER(), content);
     connect(create_card, &QPushButton::clicked, this, &PortfolioScreen::on_create_requested);
 
-    auto* import_card = make_cta_card("\u2913", "IMPORT JSON",
-                                      "Load an existing portfolio from an exported JSON file. "
-                                      "Merge into an existing portfolio or create a new one.",
+    auto* import_card = make_cta_card("\u2913", tr("IMPORT JSON"),
+                                      tr("Load an existing portfolio from an exported JSON file. "
+                                      "Merge into an existing portfolio or create a new one."),
                                       ui::colors::CYAN(), content);
     connect(import_card, &QPushButton::clicked, command_bar_, &PortfolioCommandBar::import_requested);
 
-    auto* demo_card = make_cta_card("\u25B6", "LOAD DEMO",
-                                    "Preview the workspace with a sample diversified portfolio "
-                                    "of 12 major equities.",
+    auto* demo_card = make_cta_card("\u25B6", tr("LOAD DEMO"),
+                                    tr("Preview the workspace with a sample diversified portfolio "
+                                    "of 12 major equities."),
                                     ui::colors::POSITIVE(), content);
     connect(demo_card, &QPushButton::clicked, this, [this]() { load_demo_portfolio(); });
 
@@ -481,7 +481,7 @@ QWidget* PortfolioScreen::build_loading_state() {
     outer->addLayout(row4);
 
     // Subtle label beneath skeleton
-    auto* text = new QLabel("Loading portfolio data…");
+    auto* text = new QLabel(tr("Loading portfolio data…"));
     text->setAlignment(Qt::AlignCenter);
     text->setStyleSheet(
         QString("color:%1; font-size:11px; font-weight:600; letter-spacing:0.8px;").arg(ui::colors::AMBER()));
@@ -855,7 +855,7 @@ QWidget* PortfolioScreen::build_main_view() {
     blotter_layout->setContentsMargins(0, 0, 0, 0);
     blotter_layout->setSpacing(0);
 
-    auto pos_header = make_panel_header("POSITIONS", this);
+    auto pos_header = make_panel_header(tr("POSITIONS"), this);
     auto* header_hl = pos_header.controls_slot->layout();
 
     // Count badge — square hairline rectangle.
@@ -888,7 +888,7 @@ QWidget* PortfolioScreen::build_main_view() {
     filter_hl->addWidget(filter_icon);
 
     auto* filter_edit = new QLineEdit;
-    filter_edit->setPlaceholderText("Filter positions…");
+    filter_edit->setPlaceholderText(tr("Filter positions…"));
     filter_edit->setStyleSheet(QString("QLineEdit { background:transparent; color:%1; border:none;"
                                        "  font-size:11px; font-family:%2; }"
                                        "QLineEdit:focus { color:%3; }")

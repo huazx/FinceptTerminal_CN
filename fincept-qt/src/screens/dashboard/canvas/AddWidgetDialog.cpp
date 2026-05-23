@@ -16,17 +16,17 @@ namespace fincept::screens {
 // ── Category accent colors ──────────────────────────────────────────────────
 
 QString AddWidgetDialog::accent_for_category(const QString& category) {
-    if (category == "Markets")
+    if (category == "市场")
         return ui::colors::AMBER();
-    if (category == "Research")
+    if (category == "研究")
         return ui::colors::CYAN();
-    if (category == "Portfolio")
+    if (category == "投资组合")
         return ui::colors::POSITIVE();
-    if (category == "Trading")
+    if (category == "交易")
         return ui::colors::NEGATIVE();
-    if (category == "Tools")
+    if (category == "工具")
         return ui::colors::AMBER();
-    if (category == "Geopolitics")
+    if (category == "地缘政治")
         return ui::colors::NEGATIVE();
     return ui::colors::TEXT_SECONDARY();
 }
@@ -63,7 +63,7 @@ QString AddWidgetDialog::icon_for_widget(const QString& type_id) {
 // ── Constructor ─────────────────────────────────────────────────────────────
 
 AddWidgetDialog::AddWidgetDialog(QWidget* parent) : QDialog(parent) {
-    setWindowTitle("Add Widget");
+    setWindowTitle(tr("添加组件"));
     setFixedSize(620, 520);
     setStyleSheet(QString("QDialog { background: %1; }").arg(ui::colors::BG_BASE()));
 
@@ -73,20 +73,20 @@ AddWidgetDialog::AddWidgetDialog(QWidget* parent) : QDialog(parent) {
 
     // ── Title row ──
     auto* title_row = new QHBoxLayout;
-    auto* title = new QLabel("ADD WIDGET");
+    auto* title = new QLabel(tr("添加组件"));
     title->setStyleSheet(
         QString("color: %1; font-size: 12px; font-weight: bold; letter-spacing: 1px;").arg(ui::colors::AMBER()));
     title_row->addWidget(title);
     title_row->addStretch();
 
-    auto* subtitle = new QLabel(QString("%1 AVAILABLE").arg(WidgetRegistry::instance().all().size()));
+    auto* subtitle = new QLabel(tr("%1 个可用组件").arg(WidgetRegistry::instance().all().size()));
     subtitle->setStyleSheet(QString("color: %1; font-size: 10px;").arg(ui::colors::TEXT_TERTIARY()));
     title_row->addWidget(subtitle);
     root->addLayout(title_row);
 
     // ── Search ──
     search_bar_ = new QLineEdit;
-    search_bar_->setPlaceholderText("Search widgets...");
+    search_bar_->setPlaceholderText(tr("搜索组件..."));
     search_bar_->setFixedHeight(30);
     search_bar_->setStyleSheet(
         QString("QLineEdit { background: %1; border: 1px solid %2; color: %3; "
@@ -123,7 +123,7 @@ AddWidgetDialog::AddWidgetDialog(QWidget* parent) : QDialog(parent) {
     bot->setSpacing(8);
     bot->addStretch();
 
-    auto* cancel_btn = new QPushButton("CANCEL");
+    auto* cancel_btn = new QPushButton(tr("取消"));
     cancel_btn->setFixedSize(90, 30);
     cancel_btn->setCursor(Qt::PointingHandCursor);
     cancel_btn->setStyleSheet(
@@ -134,7 +134,7 @@ AddWidgetDialog::AddWidgetDialog(QWidget* parent) : QDialog(parent) {
     connect(cancel_btn, &QPushButton::clicked, this, &QDialog::reject);
     bot->addWidget(cancel_btn);
 
-    add_btn_ = new QPushButton("ADD WIDGET");
+    add_btn_ = new QPushButton(tr("添加"));
     add_btn_->setFixedSize(110, 30);
     add_btn_->setCursor(Qt::PointingHandCursor);
     add_btn_->setEnabled(false);
@@ -163,7 +163,7 @@ void AddWidgetDialog::build_category_bar(QVBoxLayout* root) {
 
     // Gather unique categories from registry
     QStringList categories;
-    categories << "All";
+    categories << tr("全部");
     QSet<QString> seen;
     for (const auto& meta : WidgetRegistry::instance().all()) {
         if (!seen.contains(meta.category)) {
@@ -173,12 +173,12 @@ void AddWidgetDialog::build_category_bar(QVBoxLayout* root) {
     }
 
     for (const auto& cat : categories) {
-        auto* btn = new QPushButton(cat.toUpper());
+        auto* btn = new QPushButton(cat);
         btn->setCheckable(true);
         btn->setFixedHeight(24);
         btn->setCursor(Qt::PointingHandCursor);
 
-        QString accent = (cat == "All") ? ui::colors::AMBER() : accent_for_category(cat);
+        QString accent = (cat == tr("全部")) ? ui::colors::AMBER() : accent_for_category(cat);
         btn->setStyleSheet(QString("QPushButton { background: %1; border: 1px solid %2; color: %3; "
                                    "padding: 2px 12px; font-size: 10px; font-weight: bold; "
                                    "letter-spacing: 0.5px; border-radius: 2px; }"
@@ -187,13 +187,13 @@ void AddWidgetDialog::build_category_bar(QVBoxLayout* root) {
                                .arg(ui::colors::BG_SURFACE(), ui::colors::BORDER_MED(), ui::colors::TEXT_PRIMARY(),
                                     accent, ui::colors::BG_BASE()));
 
-        if (cat == "All")
+        if (cat == tr("全部"))
             btn->setChecked(true);
 
         cat_group_->addButton(btn);
         cat_buttons_.append(btn);
 
-        connect(btn, &QPushButton::clicked, this, [this, c = cat]() { category_clicked(c == "All" ? QString{} : c); });
+        connect(btn, &QPushButton::clicked, this, [this, c = cat]() { category_clicked(c == tr("全部") ? QString{} : c); });
 
         cat_row->addWidget(btn);
     }
@@ -329,7 +329,7 @@ void AddWidgetDialog::populate_cards(const QString& filter, const QString& categ
         cl->addLayout(text_col, 1);
 
         // ── Right: category badge ──
-        auto* badge = new QLabel(meta.category.toUpper());
+        auto* badge = new QLabel(meta.category);
         badge->setAlignment(Qt::AlignCenter);
         badge->setFixedHeight(16);
         badge->setStyleSheet(QString("color: %1; font-size: 8px; font-weight: bold; letter-spacing: 0.5px; "

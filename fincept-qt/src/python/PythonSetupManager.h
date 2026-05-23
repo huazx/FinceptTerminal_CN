@@ -73,10 +73,11 @@ class PythonSetupManager : public QObject {
     void emit_progress(const QString& step, int pct, const QString& msg, bool err = false);
 
     // Installation steps
-    bool download_uv();
-    bool install_python_via_uv();
-    bool create_venv(const QString& venv_name);
-    bool install_packages(const QString& venv_name, const QString& requirements_file);
+    bool download_uv(QString* error_detail = nullptr);
+    bool install_python_via_uv(QString* error_detail = nullptr);
+    bool create_venv(const QString& venv_name, QString* error_detail = nullptr);
+    bool install_packages(const QString& venv_name, const QString& requirements_file,
+                          QString* error_detail = nullptr);
     QString find_requirements_file(const QString& filename) const;
 
     // Helpers

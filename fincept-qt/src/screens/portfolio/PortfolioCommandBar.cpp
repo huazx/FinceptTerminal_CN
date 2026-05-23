@@ -94,14 +94,14 @@ void PortfolioCommandBar::build_row1(QHBoxLayout* layout) {
     refresh_btn_ = new QPushButton("\u21BB");
     refresh_btn_->setFixedSize(24, 22);
     refresh_btn_->setCursor(Qt::PointingHandCursor);
-    refresh_btn_->setToolTip("Refresh portfolio data");
+    refresh_btn_->setToolTip(tr("Refresh portfolio data"));
     refresh_btn_->setObjectName("pfIconBtn");
     connect(refresh_btn_, &QPushButton::clicked, this, &PortfolioCommandBar::refresh_requested);
     layout->addWidget(refresh_btn_);
 
     interval_cb_ = new QComboBox;
     interval_cb_->setFixedHeight(22);
-    interval_cb_->setToolTip("Auto-refresh interval");
+    interval_cb_->setToolTip(tr("Auto-refresh interval"));
     interval_cb_->addItem("1m", 60000);
     interval_cb_->addItem("5m", 300000);
     interval_cb_->addItem("10m", 600000);
@@ -121,7 +121,7 @@ void PortfolioCommandBar::build_row1(QHBoxLayout* layout) {
 }
 
 void PortfolioCommandBar::build_portfolio_selector() {
-    selector_btn_ = new QPushButton("SELECT PORTFOLIO \u25BE");
+    selector_btn_ = new QPushButton(tr("SELECT PORTFOLIO \u25BE"));
     selector_btn_->setFixedHeight(24);
     selector_btn_->setMinimumWidth(180);
     selector_btn_->setMaximumWidth(260);
@@ -140,7 +140,7 @@ void PortfolioCommandBar::build_portfolio_selector() {
     dd_layout->setSpacing(2);
 
     search_edit_ = new QLineEdit;
-    search_edit_->setPlaceholderText("Search portfolios...");
+    search_edit_->setPlaceholderText(tr("Search portfolios..."));
     search_edit_->setFixedHeight(26);
     search_edit_->setStyleSheet(QString("QLineEdit { background:%1; color:%2; border:1px solid %3;"
                                         "  padding:0 8px; font-size:11px; }"
@@ -181,7 +181,7 @@ void PortfolioCommandBar::build_portfolio_selector() {
     auto* btn_row = new QHBoxLayout;
     btn_row->setSpacing(4);
 
-    auto* create_btn = new QPushButton("+ CREATE NEW");
+    auto* create_btn = new QPushButton(tr("+ CREATE NEW"));
     create_btn->setFixedHeight(24);
     create_btn->setCursor(Qt::PointingHandCursor);
     create_btn->setStyleSheet(QString("QPushButton { background:%1; color:%3; border:none;"
@@ -195,7 +195,7 @@ void PortfolioCommandBar::build_portfolio_selector() {
     });
     btn_row->addWidget(create_btn);
 
-    auto* delete_btn = new QPushButton("DELETE");
+    auto* delete_btn = new QPushButton(tr("DELETE"));
     delete_btn->setFixedHeight(24);
     delete_btn->setCursor(Qt::PointingHandCursor);
     delete_btn->setStyleSheet(QString("QPushButton { background:transparent; color:%1; border:1px solid %1;"
@@ -220,7 +220,7 @@ void PortfolioCommandBar::build_overflow_menu() {
     overflow_btn_->setText("\u22EF"); // horizontal ellipsis
     overflow_btn_->setFixedSize(24, 22);
     overflow_btn_->setCursor(Qt::PointingHandCursor);
-    overflow_btn_->setToolTip("More actions");
+    overflow_btn_->setToolTip(tr("More actions"));
     overflow_btn_->setPopupMode(QToolButton::InstantPopup);
     overflow_btn_->setObjectName("pfOverflowBtn");
 
@@ -233,11 +233,11 @@ void PortfolioCommandBar::build_overflow_menu() {
                                       .arg(ui::colors::BG_SURFACE(), ui::colors::TEXT_PRIMARY(), ui::colors::BORDER_DIM(),
                                            ui::colors::AMBER_DIM(), ui::colors::AMBER()));
 
-    auto* export_csv = overflow_menu_->addAction("Export CSV");
-    auto* export_json = overflow_menu_->addAction("Export JSON");
-    auto* import_action = overflow_menu_->addAction("Import JSON…");
+    auto* export_csv = overflow_menu_->addAction(tr("Export CSV"));
+    auto* export_json = overflow_menu_->addAction(tr("Export JSON"));
+    auto* import_action = overflow_menu_->addAction(tr("Import JSON…"));
     overflow_menu_->addSeparator();
-    ffn_action_ = overflow_menu_->addAction("FFN Analysis");
+    ffn_action_ = overflow_menu_->addAction(tr("FFN Analysis"));
     ffn_action_->setCheckable(true);
 
     connect(export_csv, &QAction::triggered, this, &PortfolioCommandBar::export_csv_requested);
@@ -424,7 +424,7 @@ void PortfolioCommandBar::update_selector_label() {
             return;
         }
     }
-    selector_btn_->setText("SELECT PORTFOLIO  \u25BE");
+    selector_btn_->setText(tr("SELECT PORTFOLIO  \u25BE"));
 }
 
 // ── Public setters ───────────────────────────────────────────────────────────
@@ -479,7 +479,7 @@ void PortfolioCommandBar::set_has_portfolios(bool has) {
     tabs_container_->setVisible(false);
     tools_cluster_->setVisible(false);
     if (!has) {
-        selector_btn_->setText("NO PORTFOLIOS \u2014 CREATE ONE  \u25BE");
+        selector_btn_->setText(tr("NO PORTFOLIOS \u2014 CREATE ONE  \u25BE"));
     }
 }
 

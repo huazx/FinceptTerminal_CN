@@ -110,10 +110,10 @@ void QuantModulePanel::display_rl_trading_result(const QString& command, const Q
     // ── train: minimal final-result card row ─────────────────────────────────
     if (command == "train") {
         QList<QWidget*> top = {
-            gs_make_card("ALGORITHM", payload.value("algorithm").toString().toUpper(), this, ui::colors::POSITIVE()),
-            gs_make_card("TIMESTEPS", fmt_int_safe(payload.value("timesteps")), this),
-            gs_make_card("STATUS", "TRAINED", this, ui::colors::POSITIVE()),
-            gs_make_card("MESSAGE", payload.value("message").toString().left(40), this, ui::colors::INFO()),
+            gs_make_card(tr("ALGORITHM"), payload.value("algorithm").toString().toUpper(), this, ui::colors::POSITIVE()),
+            gs_make_card(tr("TIMESTEPS"), fmt_int_safe(payload.value("timesteps")), this),
+            gs_make_card(tr("STATUS"), tr("TRAINED"), this, ui::colors::POSITIVE()),
+            gs_make_card(tr("MESSAGE"), payload.value("message").toString().left(40), this, ui::colors::INFO()),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
@@ -125,7 +125,7 @@ void QuantModulePanel::display_rl_trading_result(const QString& command, const Q
                                    .arg(ui::colors::TEXT_PRIMARY(), ui::colors::BG_SURFACE(), accent));
             results_layout_->addWidget(lbl);
         }
-        status_label_->setText(QString("Trained %1 — %2 steps")
+        status_label_->setText(QString(tr("Trained %1 — %2 steps"))
                                    .arg(payload.value("algorithm").toString())
                                    .arg(payload.value("timesteps").toInt()));
         return;
@@ -141,12 +141,12 @@ void QuantModulePanel::display_rl_trading_result(const QString& command, const Q
         const double mean_len = payload.value("mean_length").toDouble();
 
         QList<QWidget*> top = {
-            gs_make_card("EPISODES", QString::number(n_eps), this, ui::colors::POSITIVE()),
-            gs_make_card("MEAN REWARD",
+            gs_make_card(tr("EPISODES"), QString::number(n_eps), this, ui::colors::POSITIVE()),
+            gs_make_card(tr("MEAN REWARD"),
                          QString::number(mean_reward, 'f', 4) + " ± " + QString::number(std_reward, 'f', 4),
                          this, gs_pos_neg_color(mean_reward)),
-            gs_make_card("PORTFOLIO RETURN", fmt_pct_safe(QJsonValue(port_ret), 2), this, gs_pos_neg_color(port_ret)),
-            gs_make_card("MEAN PORTFOLIO VAL", QString::number(mean_pv, 'f', 2), this),
+            gs_make_card(tr("PORTFOLIO RETURN"), fmt_pct_safe(QJsonValue(port_ret), 2), this, gs_pos_neg_color(port_ret)),
+            gs_make_card(tr("MEAN PORTFOLIO VAL"), QString::number(mean_pv, 'f', 2), this),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
@@ -162,12 +162,12 @@ void QuantModulePanel::display_rl_trading_result(const QString& command, const Q
         const bool has_eps = !rewards.isEmpty();
 
         QList<QWidget*> stats = {
-            gs_make_card("MEAN EP LENGTH", QString::number(mean_len, 'f', 1) + " steps", this),
-            gs_make_card("REWARD STD", QString::number(std_reward, 'f', 4), this),
-            gs_make_card("BEST EP",
+            gs_make_card(tr("MEAN EP LENGTH"), QString::number(mean_len, 'f', 1) + tr(" steps"), this),
+            gs_make_card(tr("REWARD STD"), QString::number(std_reward, 'f', 4), this),
+            gs_make_card(tr("BEST EP"),
                          has_eps ? QString::number(best_ep, 'f', 4) : QString("—"),
                          this, ui::colors::POSITIVE()),
-            gs_make_card("WORST EP",
+            gs_make_card(tr("WORST EP"),
                          has_eps ? QString::number(worst_ep, 'f', 4) : QString("—"),
                          this, ui::colors::NEGATIVE()),
         };
@@ -178,7 +178,7 @@ void QuantModulePanel::display_rl_trading_result(const QString& command, const Q
             const int rows = std::min<int>(15, rewards.size());
             const int step = std::max<int>(1, rewards.size() / rows);
             auto* table = new QTableWidget(rows, 2, this);
-            table->setHorizontalHeaderLabels({"Episode", "Reward"});
+            table->setHorizontalHeaderLabels({tr("Episode"), tr("Reward")});
             table->verticalHeader()->setVisible(false);
             table->setEditTriggers(QAbstractItemView::NoEditTriggers);
             table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -222,19 +222,19 @@ void QuantModulePanel::display_online_learning_result(const QString& command, co
         const bool qlib_online = payload.value("qlib_online_available").toBool();
 
         QList<QWidget*> top = {
-            gs_make_card("MODELS", QString::number(models.size()), this,
+            gs_make_card(tr("MODELS"), QString::number(models.size()), this,
                          models.isEmpty() ? ui::colors::TEXT_TERTIARY() : ui::colors::POSITIVE()),
-            gs_make_card("RIVER", river ? "AVAILABLE" : "MISSING", this,
+            gs_make_card(tr("RIVER"), river ? tr("AVAILABLE") : tr("MISSING"), this,
                          river ? ui::colors::POSITIVE() : ui::colors::NEGATIVE()),
-            gs_make_card("QLIB ONLINE", qlib_online ? "AVAILABLE" : "MISSING", this,
+            gs_make_card(tr("QLIB ONLINE"), qlib_online ? tr("AVAILABLE") : tr("MISSING"), this,
                          qlib_online ? ui::colors::POSITIVE() : ui::colors::NEGATIVE()),
-            gs_make_card("COUNT", fmt_int_safe(payload.value("count")), this),
+            gs_make_card(tr("COUNT"), fmt_int_safe(payload.value("count")), this),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
         if (!models.isEmpty()) {
             auto* table = new QTableWidget(models.size(), 5, this);
-            table->setHorizontalHeaderLabels({"Model ID", "Type", "Samples", "Created", "Last Updated"});
+            table->setHorizontalHeaderLabels({tr("Model ID"), tr("Type"), tr("Samples"), tr("Created"), tr("Last Updated")});
             table->verticalHeader()->setVisible(false);
             table->setEditTriggers(QAbstractItemView::NoEditTriggers);
             table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -249,7 +249,7 @@ void QuantModulePanel::display_online_learning_result(const QString& command, co
                 table->setItem(i, 2, s);
                 table->setItem(i, 3, new QTableWidgetItem(m.value("created_at").toString()));
                 const QJsonValue lu = m.value("last_updated");
-                table->setItem(i, 4, new QTableWidgetItem(lu.isNull() ? "never" : lu.toString()));
+                table->setItem(i, 4, new QTableWidgetItem(lu.isNull() ? tr("never") : lu.toString()));
                 table->setRowHeight(i, 26);
             }
             results_layout_->addWidget(table);
@@ -260,13 +260,13 @@ void QuantModulePanel::display_online_learning_result(const QString& command, co
 
     if (command == "create_model") {
         QList<QWidget*> top = {
-            gs_make_card("MODEL ID", payload.value("model_id").toString(), this, ui::colors::POSITIVE()),
-            gs_make_card("TYPE", payload.value("model_type").toString().toUpper(), this),
-            gs_make_card("STATUS", "CREATED", this, ui::colors::POSITIVE()),
-            gs_make_card("MESSAGE", payload.value("message").toString("OK"), this, ui::colors::INFO()),
+            gs_make_card(tr("MODEL ID"), payload.value("model_id").toString(), this, ui::colors::POSITIVE()),
+            gs_make_card(tr("TYPE"), payload.value("model_type").toString().toUpper(), this),
+            gs_make_card(tr("STATUS"), tr("CREATED"), this, ui::colors::POSITIVE()),
+            gs_make_card(tr("MESSAGE"), payload.value("message").toString(tr("OK")), this, ui::colors::INFO()),
         };
         results_layout_->addWidget(gs_card_row(top, this));
-        status_label_->setText(payload.value("message").toString("Online model created"));
+        status_label_->setText(payload.value("message").toString(tr("Online model created")));
         return;
     }
 
@@ -279,31 +279,31 @@ void QuantModulePanel::display_online_learning_result(const QString& command, co
         const bool drift = payload.value("drift_detected").toBool();
 
         QList<QWidget*> top = {
-            gs_make_card("MODEL", payload.value("model_id").toString(), this),
-            gs_make_card("SAMPLES", QString::number(samples), this, ui::colors::POSITIVE()),
-            gs_make_card("CURRENT MAE", QString::number(mae, 'f', 6), this,
+            gs_make_card(tr("MODEL"), payload.value("model_id").toString(), this),
+            gs_make_card(tr("SAMPLES"), QString::number(samples), this, ui::colors::POSITIVE()),
+            gs_make_card(tr("CURRENT MAE"), QString::number(mae, 'f', 6), this,
                          mae < 0.01 ? ui::colors::POSITIVE() : ui::colors::WARNING()),
-            gs_make_card("DRIFT", drift ? "DETECTED" : "NONE", this,
+            gs_make_card(tr("DRIFT"), drift ? tr("DETECTED") : tr("NONE"), this,
                          drift ? ui::colors::NEGATIVE() : ui::colors::POSITIVE()),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
         if (!pred.isNull() && !actual.isNull()) {
             QList<QWidget*> pred_row = {
-                gs_make_card("PREDICTION", QString::number(pred.toDouble(), 'f', 6), this,
+                gs_make_card(tr("PREDICTION"), QString::number(pred.toDouble(), 'f', 6), this,
                              gs_pos_neg_color(pred.toDouble())),
-                gs_make_card("ACTUAL", QString::number(actual.toDouble(), 'f', 6), this,
+                gs_make_card(tr("ACTUAL"), QString::number(actual.toDouble(), 'f', 6), this,
                              gs_pos_neg_color(actual.toDouble())),
-                gs_make_card("ERROR", QString::number(err, 'f', 6), this,
+                gs_make_card(tr("ERROR"), QString::number(err, 'f', 6), this,
                              std::abs(err) < std::abs(actual.toDouble()) * 0.1
                                  ? ui::colors::POSITIVE()
                                  : ui::colors::WARNING()),
-                gs_make_card("ABS ERROR", QString::number(std::abs(err), 'f', 6), this),
+                gs_make_card(tr("ABS ERROR"), QString::number(std::abs(err), 'f', 6), this),
             };
             results_layout_->addWidget(gs_card_row(pred_row, this));
         }
-        status_label_->setText(drift ? "⚠ Drift detected"
-                                     : QString("MAE: %1").arg(mae, 0, 'f', 6));
+        status_label_->setText(drift ? tr("⚠ Drift detected")
+                                     : QString(tr("MAE: %1")).arg(mae, 0, 'f', 6));
         return;
     }
 
@@ -315,12 +315,12 @@ void QuantModulePanel::display_online_learning_result(const QString& command, co
         if (preds.isEmpty() && !pred.isNull()) {
             // Single prediction
             QList<QWidget*> top = {
-                gs_make_card("MODEL", payload.value("model_id").toString(), this),
-                gs_make_card("PREDICTION", QString::number(pred.toDouble(), 'f', 6), this,
+                gs_make_card(tr("MODEL"), payload.value("model_id").toString(), this),
+                gs_make_card(tr("PREDICTION"), QString::number(pred.toDouble(), 'f', 6), this,
                              gs_pos_neg_color(pred.toDouble())),
             };
             results_layout_->addWidget(gs_card_row(top, this));
-            status_label_->setText("Prediction ready");
+            status_label_->setText(tr("Prediction ready"));
             return;
         }
 
@@ -336,11 +336,11 @@ void QuantModulePanel::display_online_learning_result(const QString& command, co
         const double mean = preds.isEmpty() ? 0.0 : sum / preds.size();
 
         QList<QWidget*> top = {
-            gs_make_card("MODEL", payload.value("model_id").toString(), this),
-            gs_make_card("PREDICTIONS", QString::number(count > 0 ? count : preds.size()), this,
+            gs_make_card(tr("MODEL"), payload.value("model_id").toString(), this),
+            gs_make_card(tr("PREDICTIONS"), QString::number(count > 0 ? count : preds.size()), this,
                          ui::colors::POSITIVE()),
-            gs_make_card("MEAN", QString::number(mean, 'f', 6), this, gs_pos_neg_color(mean)),
-            gs_make_card("RANGE",
+            gs_make_card(tr("MEAN"), QString::number(mean, 'f', 6), this, gs_pos_neg_color(mean)),
+            gs_make_card(tr("RANGE"),
                          preds.isEmpty() ? "—"
                              : QString("[%1, %2]").arg(mn, 0, 'f', 4).arg(mx, 0, 'f', 4),
                          this),
@@ -351,7 +351,7 @@ void QuantModulePanel::display_online_learning_result(const QString& command, co
             const int rows = std::min<int>(12, preds.size());
             const int step = std::max<int>(1, preds.size() / rows);
             auto* table = new QTableWidget(rows, 2, this);
-            table->setHorizontalHeaderLabels({"Index", "Prediction"});
+            table->setHorizontalHeaderLabels({tr("Index"), tr("Prediction")});
             table->verticalHeader()->setVisible(false);
             table->setEditTriggers(QAbstractItemView::NoEditTriggers);
             table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -379,20 +379,20 @@ void QuantModulePanel::display_online_learning_result(const QString& command, co
         const QJsonValue lu = payload.value("last_updated");
 
         QList<QWidget*> top = {
-            gs_make_card("MODEL", payload.value("model_id").toString(), this),
-            gs_make_card("TYPE", payload.value("model_type").toString().toUpper(), this),
-            gs_make_card("SAMPLES", QString::number(samples), this, ui::colors::POSITIVE()),
-            gs_make_card("CURRENT MAE", QString::number(mae, 'f', 6), this,
+            gs_make_card(tr("MODEL"), payload.value("model_id").toString(), this),
+            gs_make_card(tr("TYPE"), payload.value("model_type").toString().toUpper(), this),
+            gs_make_card(tr("SAMPLES"), QString::number(samples), this, ui::colors::POSITIVE()),
+            gs_make_card(tr("CURRENT MAE"), QString::number(mae, 'f', 6), this,
                          mae < 0.01 ? ui::colors::POSITIVE() : ui::colors::WARNING()),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
         QList<QWidget*> meta = {
-            gs_make_card("DRIFT", drift ? "DETECTED" : "NONE", this,
+            gs_make_card(tr("DRIFT"), drift ? tr("DETECTED") : tr("NONE"), this,
                          drift ? ui::colors::NEGATIVE() : ui::colors::POSITIVE()),
-            gs_make_card("LAST UPDATED", lu.isNull() ? "never" : lu.toString(), this),
-            gs_make_card("CREATED", payload.value("created_at").toString(), this),
-            gs_make_card("HEALTH", drift ? "RETRAIN ADVISED" : "OK", this,
+            gs_make_card(tr("LAST UPDATED"), lu.isNull() ? tr("never") : lu.toString(), this),
+            gs_make_card(tr("CREATED"), payload.value("created_at").toString(), this),
+            gs_make_card(tr("HEALTH"), drift ? tr("RETRAIN ADVISED") : tr("OK"), this,
                          drift ? ui::colors::WARNING() : ui::colors::POSITIVE()),
         };
         results_layout_->addWidget(gs_card_row(meta, this));
@@ -424,23 +424,23 @@ void QuantModulePanel::display_meta_learning_result(const QString& command, cons
         const bool cat = payload.value("catboost_available").toBool();
 
         QList<QWidget*> top = {
-            gs_make_card("MODELS", QString::number(models.size()), this, ui::colors::POSITIVE()),
-            gs_make_card("SKLEARN", sk ? "OK" : "MISSING", this,
+            gs_make_card(tr("MODELS"), QString::number(models.size()), this, ui::colors::POSITIVE()),
+            gs_make_card(tr("SKLEARN"), sk ? tr("OK") : tr("MISSING"), this,
                          sk ? ui::colors::POSITIVE() : ui::colors::NEGATIVE()),
-            gs_make_card("LIGHTGBM", lgbm ? "OK" : "MISSING", this,
+            gs_make_card(tr("LIGHTGBM"), lgbm ? tr("OK") : tr("MISSING"), this,
                          lgbm ? ui::colors::POSITIVE() : ui::colors::WARNING()),
-            gs_make_card("XGBOOST", xgb ? "OK" : "MISSING", this,
+            gs_make_card(tr("XGBOOST"), xgb ? tr("OK") : tr("MISSING"), this,
                          xgb ? ui::colors::POSITIVE() : ui::colors::WARNING()),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
         QList<QWidget*> extras = {
-            gs_make_card("CATBOOST", cat ? "OK" : "MISSING", this,
+            gs_make_card(tr("CATBOOST"), cat ? tr("OK") : tr("MISSING"), this,
                          cat ? ui::colors::POSITIVE() : ui::colors::WARNING()),
-            gs_make_card("QLIB", payload.value("qlib_available").toBool() ? "OK" : "MISSING", this,
+            gs_make_card(tr("QLIB"), payload.value("qlib_available").toBool() ? tr("OK") : tr("MISSING"), this,
                          payload.value("qlib_available").toBool() ? ui::colors::POSITIVE() : ui::colors::WARNING()),
-            gs_make_card("COUNT", fmt_int_safe(payload.value("count")), this),
-            gs_make_card("LIBRARIES",
+            gs_make_card(tr("COUNT"), fmt_int_safe(payload.value("count")), this),
+            gs_make_card(tr("LIBRARIES"),
                          QString::number(int(sk) + int(lgbm) + int(xgb) + int(cat)
                                          + int(payload.value("qlib_available").toBool())),
                          this, ui::colors::INFO()),
@@ -449,7 +449,7 @@ void QuantModulePanel::display_meta_learning_result(const QString& command, cons
 
         if (!models.isEmpty()) {
             auto* table = new QTableWidget(models.size(), 4, this);
-            table->setHorizontalHeaderLabels({"ID", "Name", "Type", "Library"});
+            table->setHorizontalHeaderLabels({tr("ID"), tr("Name"), tr("Type"), tr("Library")});
             table->verticalHeader()->setVisible(false);
             table->setEditTriggers(QAbstractItemView::NoEditTriggers);
             table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -476,10 +476,10 @@ void QuantModulePanel::display_meta_learning_result(const QString& command, cons
         const auto ranking = payload.value("ranking").toArray();
 
         QList<QWidget*> top = {
-            gs_make_card("BEST MODEL", best.isEmpty() ? "—" : best, this, ui::colors::POSITIVE()),
-            gs_make_card("TRAINED", QString::number(trained), this),
-            gs_make_card("TASK TYPE", task.toUpper(), this, ui::colors::INFO()),
-            gs_make_card("RANKED", QString::number(ranking.size()), this),
+            gs_make_card(tr("BEST MODEL"), best.isEmpty() ? "—" : best, this, ui::colors::POSITIVE()),
+            gs_make_card(tr("TRAINED"), QString::number(trained), this),
+            gs_make_card(tr("TASK TYPE"), task.toUpper(), this, ui::colors::INFO()),
+            gs_make_card(tr("RANKED"), QString::number(ranking.size()), this),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
@@ -492,8 +492,8 @@ void QuantModulePanel::display_meta_learning_result(const QString& command, cons
 
         if (!ranking.isEmpty()) {
             QStringList headers = is_classification
-                ? QStringList{"Rank", "Model ID", "Score", "Accuracy", "F1", "AUC-ROC"}
-                : QStringList{"Rank", "Model ID", "Score", "R²", "RMSE", "MSE"};
+                ? QStringList{tr("Rank"), tr("Model ID"), tr("Score"), tr("Accuracy"), tr("F1"), tr("AUC-ROC")}
+                : QStringList{tr("Rank"), tr("Model ID"), tr("Score"), tr("R²"), tr("RMSE"), tr("MSE")};
             QStringList metric_keys = is_classification
                 ? QStringList{"accuracy", "f1_score", "auc_roc"}
                 : QStringList{"r2_score", "rmse", "mse"};
@@ -550,22 +550,22 @@ void QuantModulePanel::display_meta_learning_result(const QString& command, cons
         for (const auto& v : keys) key_list << v.toString();
 
         QList<QWidget*> top = {
-            gs_make_card("ENSEMBLE ID", payload.value("ensemble_id").toString(), this, ui::colors::POSITIVE()),
-            gs_make_card("METHOD", payload.value("method").toString().toUpper(), this, ui::colors::INFO()),
-            gs_make_card("MODELS", fmt_int_safe(payload.value("n_models")), this, ui::colors::POSITIVE()),
-            gs_make_card("STATUS", "CREATED", this, ui::colors::POSITIVE()),
+            gs_make_card(tr("ENSEMBLE ID"), payload.value("ensemble_id").toString(), this, ui::colors::POSITIVE()),
+            gs_make_card(tr("METHOD"), payload.value("method").toString().toUpper(), this, ui::colors::INFO()),
+            gs_make_card(tr("MODELS"), fmt_int_safe(payload.value("n_models")), this, ui::colors::POSITIVE()),
+            gs_make_card(tr("STATUS"), tr("CREATED"), this, ui::colors::POSITIVE()),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
         if (!key_list.isEmpty()) {
-            auto* lbl = new QLabel("Composition: " + key_list.join("  +  "));
+            auto* lbl = new QLabel(tr("Composition: ") + key_list.join("  +  "));
             lbl->setWordWrap(true);
             lbl->setStyleSheet(QString("color:%1; font-family:'Courier New'; font-size:11px;"
                                        "padding:8px 10px; background:%2; border-left:3px solid %3;")
                                    .arg(ui::colors::TEXT_PRIMARY(), ui::colors::BG_SURFACE(), accent));
             results_layout_->addWidget(lbl);
         }
-        status_label_->setText("Ensemble created");
+        status_label_->setText(tr("Ensemble created"));
         return;
     }
 
@@ -575,20 +575,20 @@ void QuantModulePanel::display_meta_learning_result(const QString& command, cons
         const QString method = payload.value("search_method").toString();
 
         QList<QWidget*> top = {
-            gs_make_card("MODEL", payload.value("model_id").toString(), this),
-            gs_make_card("BEST SCORE", QString::number(best_score, 'f', 4), this,
+            gs_make_card(tr("MODEL"), payload.value("model_id").toString(), this),
+            gs_make_card(tr("BEST SCORE"), QString::number(best_score, 'f', 4), this,
                          best_score > 0.7 ? ui::colors::POSITIVE()
                                           : best_score > 0 ? ui::colors::WARNING()
                                                            : ui::colors::NEGATIVE()),
-            gs_make_card("SEARCH METHOD", method.toUpper(), this, ui::colors::INFO()),
-            gs_make_card("CV FOLDS", fmt_int_safe(payload.value("cv_folds")), this),
+            gs_make_card(tr("SEARCH METHOD"), method.toUpper(), this, ui::colors::INFO()),
+            gs_make_card(tr("CV FOLDS"), fmt_int_safe(payload.value("cv_folds")), this),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
         if (!best_params.isEmpty()) {
-            results_layout_->addWidget(gs_section_header("BEST PARAMETERS", accent));
+            results_layout_->addWidget(gs_section_header(tr("BEST PARAMETERS"), accent));
             auto* table = new QTableWidget(best_params.size(), 2, this);
-            table->setHorizontalHeaderLabels({"Hyperparameter", "Value"});
+            table->setHorizontalHeaderLabels({tr("Hyperparameter"), tr("Value")});
             table->verticalHeader()->setVisible(false);
             table->setEditTriggers(QAbstractItemView::NoEditTriggers);
             table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
@@ -615,10 +615,10 @@ void QuantModulePanel::display_meta_learning_result(const QString& command, cons
         const int n_models = payload.value("n_models").toInt();
 
         QList<QWidget*> top = {
-            gs_make_card("RESULTS", QString::number(results.size()), this, ui::colors::POSITIVE()),
-            gs_make_card("BEST MODEL", best.isEmpty() ? "—" : best, this, ui::colors::POSITIVE()),
-            gs_make_card("N MODELS", QString::number(n_models), this),
-            gs_make_card("KEYS", QString::number(results.size()), this),
+            gs_make_card(tr("RESULTS"), QString::number(results.size()), this, ui::colors::POSITIVE()),
+            gs_make_card(tr("BEST MODEL"), best.isEmpty() ? "—" : best, this, ui::colors::POSITIVE()),
+            gs_make_card(tr("N MODELS"), QString::number(n_models), this),
+            gs_make_card(tr("KEYS"), QString::number(results.size()), this),
         };
         results_layout_->addWidget(gs_card_row(top, this));
 
@@ -630,8 +630,8 @@ void QuantModulePanel::display_meta_learning_result(const QString& command, cons
             if (first_metrics.contains("accuracy")) is_classification = true;
 
             QStringList headers = is_classification
-                ? QStringList{"Model Key", "Model ID", "Accuracy", "F1", "Train N", "Test N"}
-                : QStringList{"Model Key", "Model ID", "R²", "RMSE", "Train N", "Test N"};
+                ? QStringList{tr("Model Key"), tr("Model ID"), tr("Accuracy"), tr("F1"), tr("Train N"), tr("Test N")}
+                : QStringList{tr("Model Key"), tr("Model ID"), tr("R²"), tr("RMSE"), tr("Train N"), tr("Test N")};
             QStringList metric_keys = is_classification
                 ? QStringList{"accuracy", "f1_score"}
                 : QStringList{"r2_score", "rmse"};

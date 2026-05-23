@@ -1,5 +1,6 @@
 #include "services/news/NewsService.h"
 
+#include "ai_chat/LlmService.h"
 #include "core/logging/Logger.h"
 #include "network/http/HttpClient.h"
 #include "storage/cache/CacheManager.h"
@@ -13,6 +14,7 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <QRegularExpression>
+#include <memory>
 #include <QSet>
 #include <QUuid>
 #include <QXmlStreamReader>
@@ -362,58 +364,110 @@ void NewsService::fetch_all_news_progressive(bool force, ArticlesCallback final_
 
 // ── AI Analysis via Fincept API ─────────────────────────────────────────────
 
-void NewsService::analyze_article(const QString& url, AnalysisCallback cb) {
-    QJsonObject body;
-    body["url"] = url;
+void NewsService::analyze_article(const QString& headline, const QString& summary, AnalysisCallback cb) {
+    if (headline.isEmpty() && summary.isEmpty()) {
+        LOG_WARN("NewsService", "Cannot analyze: empty headline and summary");
+        cb(false, {}, QStringLiteral("Empty headline and summary"));
+        return;
+    }
 
-    // context = `this` ensures the callback drops if NewsService ever stops
-    // being a singleton — today it always outlives the request.
-    HttpClient::instance().post("/news/analyze", body, [this, cb](Result<QJsonDocument> result) {
-        if (result.is_err()) {
-            LOG_ERROR("NewsService", "Analysis failed: " + QString::fromStdString(result.error()));
-            cb(false, {});
-            return;
-        }
+    QString prompt = QStringLiteral(
+        "请用中文分析以下财经新闻文章。仅返回有效的 JSON（不要 markdown 代码块，不要额外文本）。\n\n"
+        "标题: %1\n摘要: %2\n\n"
+        "返回如下结构的 JSON：\n"
+        "{\n"
+        "  \"sentiment\": {\"score\": <浮点数 -1 到 1>, \"intensity\": <浮点数 0 到 1>, \"confidence\": <浮点数 0 到 1>},\n"
+        "  \"market_impact\": {\"urgency\": \"<LOW|MEDIUM|HIGH>\", \"prediction\": \"<negative|neutral|moderate_positive|positive>\"},\n"
+        "  \"summary\": \"<简洁的中文 AI 摘要>\",\n"
+        "  \"keywords\": [<字符串数组，中文>],\n"
+        "  \"topics\": [<字符串数组，中文>],\n"
+        "  \"key_points\": [<3-5 个中文要点字符串数组>],\n"
+        "  \"risk_signals\": {\n"
+        "    \"regulatory\": {\"level\": \"<LOW|MEDIUM|HIGH>\", \"details\": \"<中文说明>\"},\n"
+        "    \"geopolitical\": {\"level\": \"<LOW|MEDIUM|HIGH>\", \"details\": \"<中文说明>\"},\n"
+        "    \"operational\": {\"level\": \"<LOW|MEDIUM|HIGH>\", \"details\": \"<中文说明>\"},\n"
+        "    \"market\": {\"level\": \"<LOW|MEDIUM|HIGH>\", \"details\": \"<中文说明>\"}\n"
+        "  }\n"
+        "}"
+    ).arg(headline, summary);
 
-        auto obj = result.value().object();
-        if (!obj["success"].toBool(false)) {
-            LOG_ERROR("NewsService", "API returned failure: " + obj["message"].toString());
-            cb(false, {});
-            return;
-        }
+    QPointer<NewsService> self = this;
+    auto accumulated = std::make_shared<QString>();
+    auto error_msg = std::make_shared<QString>();
 
-        auto data = obj["data"].toObject();
-        auto a = data["analysis"].toObject();
-        auto sent = a["sentiment"].toObject();
-        auto mi = a["market_impact"].toObject();
-        auto rs = a["risk_signals"].toObject();
+    QMetaObject::Connection finish_conn;
+    finish_conn = QObject::connect(&ai_chat::LlmService::instance(), &ai_chat::LlmService::finished_streaming,
+        [error_msg](const ai_chat::LlmResponse& resp) {
+            if (!resp.success && !resp.error.isEmpty())
+                *error_msg = resp.error;
+        });
 
-        NewsAnalysis analysis;
-        analysis.sentiment = {sent["score"].toDouble(), sent["intensity"].toDouble(), sent["confidence"].toDouble()};
-        analysis.market_impact = {mi["urgency"].toString(), mi["prediction"].toString()};
-        analysis.summary = a["summary"].toString();
-        analysis.credits_used = data["credits_used"].toInt();
-        analysis.credits_remaining = data["credits_remaining"].toInt();
+    ai_chat::LlmService::instance().chat_streaming(
+        prompt, {}, [self, cb, accumulated, error_msg, finish_conn](const QString& chunk, bool done) {
+            if (!self)
+                return;
+            *accumulated += chunk;
+            if (!done)
+                return;
 
-        for (const auto& v : a["keywords"].toArray())
-            analysis.keywords << v.toString();
-        for (const auto& v : a["topics"].toArray())
-            analysis.topics << v.toString();
-        for (const auto& v : a["key_points"].toArray())
-            analysis.key_points << v.toString();
+            QObject::disconnect(finish_conn);
 
-        auto reg = rs["regulatory"].toObject();
-        auto geo = rs["geopolitical"].toObject();
-        auto ops = rs["operational"].toObject();
-        auto mkt = rs["market"].toObject();
-        analysis.regulatory = {reg["level"].toString(), reg["details"].toString()};
-        analysis.geopolitical = {geo["level"].toString(), geo["details"].toString()};
-        analysis.operational = {ops["level"].toString(), ops["details"].toString()};
-        analysis.market = {mkt["level"].toString(), mkt["details"].toString()};
+            if (accumulated->isEmpty()) {
+                QString err = error_msg->isEmpty()
+                    ? QStringLiteral("LLM request failed")
+                    : *error_msg;
+                LOG_ERROR("NewsService", "Analysis failed: " + err);
+                cb(false, {}, err);
+                return;
+            }
 
-        cb(true, analysis);
-        emit this->analysis_ready(analysis);
-    }, this);
+            QString json_str = accumulated->trimmed();
+            if (json_str.startsWith("```json"))
+                json_str = json_str.mid(7);
+            else if (json_str.startsWith("```"))
+                json_str = json_str.mid(3);
+            if (json_str.endsWith("```"))
+                json_str.chop(3);
+            json_str = json_str.trimmed();
+
+            QJsonParseError parse_err;
+            auto doc = QJsonDocument::fromJson(json_str.toUtf8(), &parse_err);
+            if (parse_err.error != QJsonParseError::NoError || !doc.isObject()) {
+                LOG_ERROR("NewsService", "Failed to parse LLM analysis JSON: " + parse_err.errorString());
+                LOG_DEBUG("NewsService", "Raw LLM output: " + json_str.left(500));
+                cb(false, {}, QStringLiteral("Invalid LLM response format"));
+                return;
+            }
+
+            auto obj = doc.object();
+            auto sent = obj["sentiment"].toObject();
+            auto mi = obj["market_impact"].toObject();
+            auto rs = obj["risk_signals"].toObject();
+
+            NewsAnalysis analysis;
+            analysis.sentiment = {sent["score"].toDouble(), sent["intensity"].toDouble(), sent["confidence"].toDouble()};
+            analysis.market_impact = {mi["urgency"].toString(), mi["prediction"].toString()};
+            analysis.summary = obj["summary"].toString();
+
+            for (const auto& v : obj["keywords"].toArray())
+                analysis.keywords << v.toString();
+            for (const auto& v : obj["topics"].toArray())
+                analysis.topics << v.toString();
+            for (const auto& v : obj["key_points"].toArray())
+                analysis.key_points << v.toString();
+
+            auto reg = rs["regulatory"].toObject();
+            auto geo = rs["geopolitical"].toObject();
+            auto ops = rs["operational"].toObject();
+            auto mkt = rs["market"].toObject();
+            analysis.regulatory = {reg["level"].toString(), reg["details"].toString()};
+            analysis.geopolitical = {geo["level"].toString(), geo["details"].toString()};
+            analysis.operational = {ops["level"].toString(), ops["details"].toString()};
+            analysis.market = {mkt["level"].toString(), mkt["details"].toString()};
+
+            cb(true, analysis, {});
+            emit self->analysis_ready(analysis);
+        }, false);
 }
 
 // ── AI Headline Summarization ────────────────────────────────────────────────

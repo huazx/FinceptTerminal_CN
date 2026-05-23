@@ -94,6 +94,7 @@ class LoadingOverlay : public QWidget {
     QPropertyAnimation* shimmer_anim_ = nullptr;
     QPropertyAnimation* progress_anim_ = nullptr;
     QPropertyAnimation* fade_anim_ = nullptr;
+    bool constructed_ = false;
 };
 
 } // namespace fincept::screens::widgets
